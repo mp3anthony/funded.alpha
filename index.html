@@ -1,0 +1,1826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Funded</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --lime:#c8ff00;--lime-dim:rgba(200,255,0,0.10);--lime-mid:rgba(200,255,0,0.25);
+  --bg:#0a0a0a;--bg-2:#111;--bg-3:#181818;--bg-4:#202020;
+  --border:rgba(255,255,255,0.07);--border-2:rgba(255,255,255,0.12);
+  --text:#f0f0f0;--text-2:#999;--text-3:#666;
+  --green:#00e676;--amber:#ffab00;--red:#ff3d57;
+  --radius:16px;--radius-sm:10px;--radius-lg:24px;
+  --tab-h:72px;--ease:cubic-bezier(.22,1,.36,1);
+  --sb:env(safe-area-inset-bottom,0px);--st:env(safe-area-inset-top,0px);
+}
+@media(prefers-color-scheme:light){:root{
+  --bg:#f2f2ee;--bg-2:#e8e8e4;--bg-3:#dcdcd8;--bg-4:#d0d0cc;
+  --border:rgba(0,0,0,0.09);--border-2:rgba(0,0,0,0.15);
+  --text:#0f0f0f;--text-2:#444;--text-3:#777;
+  --lime:#7aaa00;--lime-dim:rgba(100,150,0,0.10);--lime-mid:rgba(100,150,0,0.22);
+  --green:#00994a;--amber:#c07800;--red:#cc2233;
+}}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow:hidden}
+#app{height:100dvh;position:relative;overflow:hidden}
+
+/* ── SCREENS ── */
+.screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;background:var(--bg);opacity:0;pointer-events:none;transition:opacity .2s var(--ease);padding-bottom:calc(var(--tab-h) + var(--sb) + 24px);padding-top:var(--st)}
+.screen.active{opacity:1;pointer-events:auto}
+.screen-ob-layout{display:flex;flex-direction:column;align-items:center;padding:0 24px 48px;padding-top:calc(var(--st) + 48px)}
+
+/* ── ONBOARDING ── */
+.ob-logo{font-family:'Syne',sans-serif;font-size:52px;font-weight:800;color:var(--lime);letter-spacing:-2px;margin-bottom:8px}
+.ob-tagline{font-size:14px;color:var(--text-2);text-align:center;max-width:280px;margin-bottom:40px}
+.ob-progress{display:flex;gap:6px;width:100%;max-width:400px;margin-bottom:28px}
+.ob-dot{height:3px;border-radius:2px;background:var(--border-2);flex:1;transition:background .3s var(--ease)}
+.ob-dot.done{background:var(--lime)}
+.ob-step{display:none;width:100%;max-width:400px}
+.ob-step.active{display:block;animation:fadeUp .35s var(--ease) both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.step-mono{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--lime);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
+.step-h{font-family:'Syne',sans-serif;font-size:24px;font-weight:700;margin-bottom:4px;letter-spacing:-.4px}
+.step-sub{font-size:14px;color:var(--text-2);margin-bottom:24px}
+
+/* ── PAYMENT MODE CARDS ── */
+.pay-mode-cards{display:flex;gap:10px;margin-bottom:16px}
+.pay-mode-card{flex:1;border:2px solid var(--border-2);border-radius:var(--radius);padding:16px;cursor:pointer;transition:all .2s var(--ease);-webkit-tap-highlight-color:transparent;background:var(--bg-3)}
+.pay-mode-card.selected{border-color:var(--lime);background:var(--lime-dim)}
+.pay-mode-card-ico{font-size:28px;margin-bottom:8px}
+.pay-mode-card-title{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:4px}
+.pay-mode-card-desc{font-size:12px;color:var(--text-2);line-height:1.4}
+
+/* ── FORM ── */
+.field{margin-bottom:14px}
+.field label{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-3);letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:6px;font-weight:600}
+.field input,.field select,.field textarea{width:100%;background:var(--bg-3);border:1px solid var(--border-2);border-radius:var(--radius-sm);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:16px;padding:13px 16px;outline:none;transition:border-color .2s var(--ease);-webkit-appearance:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--lime)}
+.field select option{background:var(--bg-3)}
+.field textarea{resize:none;min-height:80px;line-height:1.5}
+.field-row{display:flex;gap:10px}
+.field-row .field{flex:1}
+.input-pfx{position:relative}
+.input-pfx span{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--text-3);pointer-events:none}
+.input-pfx input{padding-left:28px}
+.field-hint{font-size:12px;color:var(--text-3);margin-top:5px}
+
+/* ── FUNDED-BY MULTI SELECT ── */
+.funded-by-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.funded-by-row:last-child{border-bottom:none}
+.funded-by-check{width:20px;height:20px;border-radius:5px;border:2px solid var(--border-2);background:var(--bg-3);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .15s}
+.funded-by-check.on{background:var(--lime);border-color:var(--lime)}
+.funded-by-check.on::after{content:'✓';font-size:12px;font-weight:700;color:#000}
+.funded-by-name{flex:1;font-size:15px;font-weight:500}
+.funded-by-pct{width:72px}
+.funded-by-pct input{background:var(--bg-3);border:1px solid var(--border-2);border-radius:6px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;padding:6px 8px;outline:none;width:100%;text-align:right;-webkit-appearance:none}
+.funded-by-pct input:focus{border-color:var(--lime)}
+.funded-by-pct input:disabled{opacity:.35;cursor:not-allowed}
+.pct-warning{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--red);margin-top:6px}
+.pct-ok{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--green);margin-top:6px}
+
+/* ── TOGGLE ── */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.toggle-row:last-child{border-bottom:none}
+.toggle-lbl{font-size:15px;font-weight:500}
+.toggle-sub{font-size:12px;color:var(--text-2);margin-top:2px}
+.tog{width:46px;height:26px;border-radius:13px;background:var(--bg-4);border:1px solid var(--border-2);position:relative;cursor:pointer;transition:background .2s,border-color .2s;flex-shrink:0}
+.tog.on{background:var(--lime);border-color:var(--lime)}
+.tog-thumb{position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .2s var(--ease)}
+.tog.on .tog-thumb{transform:translateX(20px)}
+
+/* ── BUTTONS ── */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:15px;border-radius:var(--radius-sm);border:none;font-family:'Syne',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:transform .15s var(--ease);-webkit-tap-highlight-color:transparent}
+.btn:active{transform:scale(0.97)}
+.btn-primary{background:var(--lime);color:#000}
+.btn-ghost{background:var(--bg-3);color:var(--text);border:1px solid var(--border-2)}
+.btn-sm{padding:8px 14px;font-size:13px;border-radius:8px;width:auto}
+.btn-danger{background:rgba(255,61,87,.12);color:var(--red);border:1px solid rgba(255,61,87,.2)}
+
+/* ── CARDS ── */
+.card{background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:10px}
+.card-sm{background:var(--bg-3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:8px}
+
+/* ── TAB BAR ── */
+#tab-bar{position:fixed;bottom:0;left:0;right:0;height:calc(var(--tab-h) + var(--sb));background:var(--bg-2);border-top:1px solid var(--border);padding-bottom:var(--sb);z-index:100;display:none}
+#tab-bar.visible{display:flex}
+.tab-inner{display:flex;flex:1;height:var(--tab-h);align-items:stretch}
+.tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:none;border:none;cursor:pointer;-webkit-tap-highlight-color:transparent;padding:0}
+.tab-ico{font-size:22px;line-height:1;transition:transform .2s var(--ease)}
+.tab-btn.active .tab-ico{transform:scale(1.15)}
+.tab-lbl{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;color:var(--text-3);transition:color .2s}
+.tab-btn.active .tab-lbl{color:var(--lime)}
+
+/* ── PAGE HEADERS ── */
+.ph{padding:20px 20px 0;padding-top:calc(var(--st) + 20px);margin-bottom:20px}
+.ph-title{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:-.5px}
+.ph-sub{font-size:14px;color:var(--text-2);margin-top:2px}
+
+/* ── DASHBOARD HERO ── */
+.dash-hero{margin:0 16px 16px;background:linear-gradient(135deg,var(--bg-2),var(--bg-3));border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px;position:relative;overflow:hidden}
+.dash-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;background:radial-gradient(circle,var(--lime-dim),transparent 70%);pointer-events:none}
+.hl-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-2);margin-bottom:8px;font-weight:600}
+.hl-score{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:10px}
+.hl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.hl-dot.green{background:var(--green);box-shadow:0 0 8px var(--green)}
+.hl-dot.amber{background:var(--amber);box-shadow:0 0 8px var(--amber)}
+.hl-dot.red{background:var(--red);box-shadow:0 0 8px var(--red)}
+.hl-sub{font-size:13px;color:var(--text-2);margin-bottom:16px}
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.stat-box{background:var(--bg-4);border-radius:var(--radius-sm);padding:12px}
+.stat-lbl{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);margin-bottom:4px;font-weight:600}
+.stat-val{font-family:'Syne',sans-serif;font-size:20px;font-weight:700}
+.stat-val.lime{color:var(--lime)}.stat-val.green{color:var(--green)}.stat-val.red{color:var(--red)}
+
+/* contributor hero chips */
+.contrib-hero-row{display:flex;gap:8px;flex-wrap:wrap}
+.contrib-hero-chip{background:var(--bg-4);border-radius:var(--radius-sm);padding:10px 12px;flex:1;min-width:0;display:flex;align-items:center;gap:10px}
+.contrib-hero-avatar{width:36px;height:36px;border-radius:50%;flex-shrink:0;object-fit:cover;border:2px solid var(--lime-mid)}
+.contrib-hero-avatar-init{width:36px;height:36px;border-radius:50%;flex-shrink:0;background:var(--lime-dim);border:2px solid var(--lime-mid);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:15px;color:var(--lime)}
+.contrib-hero-info{flex:1;min-width:0}
+.contrib-hero-name{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px;font-weight:600}
+.contrib-hero-contrib{font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:var(--lime)}
+.contrib-hero-income{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-2);margin-top:1px}
+
+/* funds in hero */
+.funds-hero-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.funds-hero-item:last-child{border-bottom:none}
+.funds-hero-name{font-size:13px;font-weight:500;flex:1}
+.funds-hero-bar{flex:2;height:4px;background:var(--bg-4);border-radius:2px;overflow:hidden}
+.funds-hero-fill{height:100%;border-radius:2px;background:var(--lime);transition:width .5s var(--ease)}
+.funds-hero-pct{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--lime);min-width:32px;text-align:right}
+
+/* ── SECTION HEADER ── */
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;padding:0 16px;margin-bottom:10px}
+.sec-ttl{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-2);font-weight:600}
+
+/* ── DASHBOARD BILL GROUPS ── */
+.dash-bill-group{margin:0 16px 8px;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.dash-bill-group-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;transition:background .15s}
+.dash-bill-group-hdr:active{background:var(--bg-3)}
+.dash-grp-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-2);font-weight:600}
+.dash-grp-right{display:flex;align-items:center;gap:8px}
+.dash-grp-count{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-3)}
+.dash-grp-arrow{color:var(--text-3);font-size:16px;transition:transform .25s var(--ease);display:inline-block}
+.dash-grp-arrow.open{transform:rotate(90deg)}
+.dash-grp-body{overflow:hidden;transition:max-height .3s var(--ease)}
+.bfr{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--border);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s}
+.bfr:active{background:var(--bg-3)}
+.bfr-name{font-weight:500;font-size:14px}
+.bfr-sub{font-size:12px;color:var(--text-2);margin-top:1px}
+.badge{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.badge-ok{background:rgba(0,180,90,.12);color:var(--green)}
+.badge-bad{background:rgba(200,30,50,.10);color:var(--red)}
+.badge-warn{background:rgba(180,120,0,.12);color:var(--amber)}
+.badge-auto{background:var(--lime-dim);color:var(--lime)}
+.all-clear{margin:0 16px 10px;background:rgba(0,180,90,.06);border:1px solid rgba(0,180,90,.15);border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:14px}
+.all-clear-ico{font-size:28px}
+.all-clear-ttl{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--green)}
+.all-clear-sub{font-size:13px;color:var(--text-2);margin-top:2px}
+
+/* ── PAYDAY ── */
+.chip-row{display:flex;gap:10px;padding:0 16px;margin-bottom:20px}
+.chip{flex:1;padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--border-2);background:var(--bg-3);text-align:center;cursor:pointer;transition:all .2s var(--ease);-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:10px}
+.chip.sel{border-color:var(--lime);background:var(--lime-dim)}
+.chip-avatar{width:36px;height:36px;border-radius:50%;flex-shrink:0;object-fit:cover;border:2px solid var(--border-2)}
+.chip-avatar-init{width:36px;height:36px;border-radius:50%;flex-shrink:0;background:var(--bg-4);border:2px solid var(--border-2);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:15px;color:var(--text-2)}
+.chip.sel .chip-avatar-init{border-color:var(--lime);color:var(--lime);background:var(--lime-dim)}
+.chip-info{text-align:left}
+.chip-name{font-family:'Syne',sans-serif;font-weight:700;font-size:14px}
+.chip-cycle{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-3);margin-top:2px}
+.pay-card{margin:0 16px 16px;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.pay-result{margin:0 16px;background:var(--lime-dim);border:1px solid rgba(200,255,0,.2);border-radius:var(--radius);padding:22px;animation:fadeUp .3s var(--ease) both}
+.pr-title{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--lime);margin-bottom:16px;font-weight:600}
+.pr-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid rgba(128,128,0,.12)}
+.pr-row:last-of-type{border-bottom:none}
+.pr-lbl{font-size:14px;color:var(--text-2)}
+.pr-val{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:600;color:var(--text)}
+.pr-val.big{font-size:20px;color:var(--lime)}
+.pr-val.pos{color:var(--green)}
+.pr-note{margin-top:12px;font-size:12px;color:var(--text-2);font-family:'JetBrains Mono',monospace}
+.recurring-badge{display:inline-flex;align-items:center;gap:6px;background:var(--lime-dim);border:1px solid rgba(200,255,0,.2);border-radius:20px;padding:4px 10px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--lime);margin-bottom:12px}
+
+/* ── BILLS SCREEN ── */
+.bills-total-bar{display:flex;align-items:center;gap:10px;padding:0 16px;margin-bottom:16px}
+.bills-total-val{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--lime)}
+.bills-total-period{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-2);margin-top:2px}
+.bills-period-select{background:var(--bg-3);border:1px solid var(--border-2);border-radius:8px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;padding:6px 10px;outline:none;-webkit-appearance:none;cursor:pointer;margin-left:auto}
+.bill-cat-group{margin-bottom:16px}
+.bill-cat-hdr{display:flex;align-items:center;justify-content:space-between;padding:0 16px;margin-bottom:8px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.bill-cat-name{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-2);font-weight:600}
+.bill-cat-arrow{color:var(--text-3);font-size:14px;transition:transform .2s var(--ease);display:inline-block}
+.bill-cat-arrow.open{transform:rotate(90deg)}
+.bill-cat-items{padding:0 16px}
+.bill-item{background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s}
+.bill-item:active{background:var(--bg-3)}
+.bill-ico{width:38px;height:38px;border-radius:10px;background:var(--bg-4);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.bill-info{flex:1;min-width:0}
+.bill-name{font-weight:600;font-size:14px}
+.bill-meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-2);margin-top:2px}
+.bill-right{text-align:right;flex-shrink:0}
+.bill-wk{font-family:'Syne',sans-serif;font-weight:700;font-size:15px}
+.bill-wk-lbl{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-3)}
+.bill-status-dot{width:8px;height:8px;border-radius:50%;margin-left:4px;flex-shrink:0;align-self:flex-start;margin-top:5px}
+.bill-status-dot.green{background:var(--green)}
+.bill-status-dot.amber{background:var(--amber)}
+.bill-status-dot.red{background:var(--red)}
+
+/* ── FAB ── */
+.fab{position:fixed;bottom:calc(var(--tab-h) + var(--sb) + 16px);right:20px;width:56px;height:56px;border-radius:50%;background:var(--lime);border:none;display:none;align-items:center;justify-content:center;font-size:28px;font-weight:300;line-height:1;cursor:pointer;z-index:90;box-shadow:0 4px 20px rgba(200,255,0,.3);transition:transform .2s var(--ease);-webkit-tap-highlight-color:transparent;color:#000}
+.fab.on{display:flex}
+.fab:active{transform:scale(.92)}
+
+/* ── SINKING FUNDS ── */
+.fund-item{background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin:0 16px 10px}
+.fund-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.fund-name{font-family:'Syne',sans-serif;font-weight:700;font-size:17px}
+.fund-tgt{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-2);margin-top:2px}
+.fund-amt{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--lime);text-align:right}
+.fund-amt span{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:400;color:var(--text-3);display:block}
+.prog-bar{height:6px;background:var(--bg-4);border-radius:3px;overflow:hidden;margin-bottom:8px}
+.prog-fill{height:100%;border-radius:3px;background:var(--lime);transition:width .6s var(--ease)}
+.fund-meta{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-3)}
+
+/* ── SETTINGS ── */
+.set-sec{padding:0 16px;margin-bottom:24px}
+.set-sec-ttl{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-2);margin-bottom:10px;font-weight:600}
+.set-row{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s}
+.set-row:active{background:var(--bg-3)}
+.set-row-lbl{font-size:15px;font-weight:500}
+.set-row-val{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-2)}
+
+/* contributor cards in settings */
+.contrib-card{background:var(--bg-2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:10px}
+.contrib-hdr{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.contrib-avatar-wrap{position:relative;flex-shrink:0}
+.contrib-avatar{width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid var(--lime-mid);display:block}
+.contrib-avatar-init{width:52px;height:52px;border-radius:50%;background:var(--lime-dim);border:2px solid var(--lime-mid);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:var(--lime)}
+.contrib-avatar-edit{position:absolute;bottom:-2px;right:-2px;width:20px;height:20px;border-radius:50%;background:var(--lime);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;-webkit-tap-highlight-color:transparent}
+.contrib-name{font-family:'Syne',sans-serif;font-weight:700;font-size:17px}
+.contrib-role{font-size:13px;color:var(--text-2)}
+
+/* ── BOTTOM SHEET ── */
+.sheet-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;backdrop-filter:blur(4px)}
+.sheet-ov.open{display:block}
+.sheet{position:fixed;bottom:0;left:0;right:0;background:var(--bg-2);border-radius:24px 24px 0 0;padding:0 20px calc(var(--sb) + 28px);z-index:201;transform:translateY(100%);transition:transform .35s var(--ease);max-height:92dvh;overflow-y:auto}
+.sheet.open{transform:translateY(0)}
+.sheet-handle{width:36px;height:4px;background:var(--border-2);border-radius:2px;margin:12px auto 20px}
+.sheet-title{font-family:'Syne',sans-serif;font-weight:700;font-size:20px;margin-bottom:20px;letter-spacing:-.3px}
+
+/* bill detail */
+.bill-detail-hdr{display:flex;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.bill-detail-ico{width:52px;height:52px;border-radius:14px;background:var(--bg-4);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
+.bill-detail-name{font-family:'Syne',sans-serif;font-weight:800;font-size:20px}
+.bill-detail-cat{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-2);margin-top:2px;text-transform:uppercase;letter-spacing:.06em}
+.paid-toggle-row{display:flex;align-items:center;justify-content:space-between;background:var(--bg-3);border-radius:var(--radius-sm);padding:14px 16px;margin:8px 0}
+.paid-toggle-info{flex:1}
+.paid-toggle-lbl{font-weight:600;font-size:15px}
+.paid-toggle-sub{font-size:12px;color:var(--text-2);margin-top:2px}
+
+/* ── EMPTY STATE ── */
+.empty{text-align:center;padding:40px 24px}
+.empty-ico{font-size:40px;margin-bottom:12px}
+.empty-ttl{font-family:'Syne',sans-serif;font-weight:700;font-size:18px;margin-bottom:6px}
+.empty-sub{font-size:14px;color:var(--text-2)}
+
+/* ── SETUP BANNER ── */
+.setup-banner{margin:0 16px 16px;padding:16px 18px;background:var(--lime-dim);border:1px solid rgba(128,160,0,.25);border-radius:var(--radius);display:flex;align-items:center;gap:14px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.setup-banner-ico{font-size:24px;flex-shrink:0}
+.setup-banner-txt{flex:1}
+.setup-banner-ttl{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--lime)}
+.setup-banner-sub{font-size:13px;color:var(--text-2);margin-top:2px}
+
+/* ── OB MINI LIST ── */
+.ob-mini{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.ob-mini:last-child{border-bottom:none}
+.ob-mini-info{flex:1}
+.ob-mini-name{font-weight:600;font-size:14px}
+.ob-mini-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-2);margin-top:1px}
+.ob-mini-del{background:none;border:none;color:var(--text-3);font-size:20px;cursor:pointer;padding:4px;-webkit-tap-highlight-color:transparent}
+
+/* ── VERSION ── */
+.version{text-align:center;padding:16px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-3);line-height:1.8}
+
+/* ── GUIDE SCREEN ── */
+#guide-content{color:var(--text)}
+.g-hero{padding:40px 20px 36px;border-bottom:1px solid var(--border)}
+.g-eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--lime);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.g-eyebrow::before{content:'';display:inline-block;width:20px;height:2px;background:var(--lime);border-radius:1px}
+.g-title{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;letter-spacing:-1px;line-height:1.1;margin-bottom:12px}
+.g-title span{color:var(--lime)}
+.g-sub{font-size:15px;color:var(--text-2);line-height:1.7;margin-bottom:24px}
+.g-cta{display:inline-flex;align-items:center;gap:8px;background:var(--lime);color:#000;font-family:'Syne',sans-serif;font-weight:700;font-size:15px;padding:14px 24px;border-radius:100px;text-decoration:none;-webkit-tap-highlight-color:transparent}
+.g-url{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-3);margin-top:10px;word-break:break-all}
+.g-sec{padding:32px 20px 0}
+.g-sec-eye{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px}
+.g-sec-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.3px;margin-bottom:16px}
+.g-sec-sub{font-size:14px;color:var(--text-2);line-height:1.7;margin-bottom:20px}
+.g-divider{height:1px;background:var(--border);margin:32px 0 0}
+.g-tab-row{display:flex;gap:8px;margin-bottom:20px}
+.g-tab{flex:1;padding:10px;border-radius:10px;border:1px solid var(--border-2);background:var(--bg-3);text-align:center;cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:var(--text-2);user-select:none}
+.g-tab.active{border-color:var(--lime);background:var(--lime-dim);color:var(--lime)}
+.g-tab-ico{font-size:18px;display:block;margin-bottom:3px}
+.g-tab-content{display:none}.g-tab-content.active{display:block}
+.g-steps{display:flex;flex-direction:column;gap:10px}
+.g-step{display:flex;gap:14px;background:var(--bg-2);border:1px solid var(--border);border-radius:12px;padding:16px;align-items:flex-start}
+.g-step-num{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--lime);background:var(--lime-dim);border:1px solid rgba(200,255,0,.2);border-radius:7px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.g-step-body{flex:1}
+.g-step-title{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;margin-bottom:3px}
+.g-step-desc{font-size:13px;color:var(--text-2);line-height:1.6}
+.g-step-desc strong{color:var(--text);font-weight:600}
+.g-step-note{margin-top:8px;background:var(--bg-3);border-radius:7px;padding:9px 11px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-2);line-height:1.5}
+.g-checklist{display:flex;flex-direction:column;gap:8px}
+.g-check-item{display:flex;align-items:flex-start;gap:12px;background:var(--bg-2);border:1px solid var(--border);border-radius:10px;padding:13px 15px}
+.g-check-box{width:18px;height:18px;border-radius:5px;border:2px solid var(--border-2);background:var(--bg-3);flex-shrink:0;margin-top:2px}
+.g-check-text{font-size:13px;line-height:1.5}
+.g-check-text strong{font-weight:600;display:block;margin-bottom:2px}
+.g-check-text span{color:var(--text-2);font-size:12px}
+.g-info{background:var(--bg-2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:10px}
+.g-info-title{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;margin-bottom:6px}
+.g-info-body{font-size:13px;color:var(--text-2);line-height:1.7}
+.g-info-body a{color:var(--lime);text-decoration:none}
+.g-alpha-banner{background:rgba(255,171,0,.07);border:1px solid rgba(255,171,0,.2);border-radius:12px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start;margin-bottom:0}
+.g-alpha-title{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:var(--amber);margin-bottom:3px}
+.g-alpha-body{font-size:13px;color:var(--text-2);line-height:1.6}
+.g-feedback-card{background:var(--lime-dim);border:1px solid rgba(200,255,0,.18);border-radius:12px;padding:20px;text-align:center}
+.g-feedback-title{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;letter-spacing:-.2px;margin-bottom:6px}
+.g-feedback-sub{font-size:13px;color:var(--text-2);margin-bottom:18px;line-height:1.6}
+.g-footer{text-align:center;padding:32px 20px 0;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-3);line-height:2}
+
+/* ── UTILITY ── */
+.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}
+.hidden{display:none!important}
+.divider{height:1px;background:var(--border);margin:16px 0}
+.section-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);font-weight:600;margin:16px 0 8px}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ══════════ ONBOARDING ══════════ -->
+<div id="screen-onboarding" class="screen active screen-ob-layout">
+  <div class="ob-logo">funded.</div>
+  <div class="ob-tagline">Fund the house first. Everything else comes second.</div>
+  <div class="ob-progress">
+    <div class="ob-dot done" id="dot-0"></div>
+    <div class="ob-dot" id="dot-1"></div>
+    <div class="ob-dot" id="dot-2"></div>
+    <div class="ob-dot" id="dot-3"></div>
+    <div class="ob-dot" id="dot-4"></div>
+    <div class="ob-dot" id="dot-5"></div>
+  </div>
+
+  <!-- Step 0: household name -->
+  <div class="ob-step active" id="step-0">
+    <div class="step-mono">Step 1 of 6</div>
+    <div class="step-h">Name your household</div>
+    <div class="step-sub">This appears on your dashboard.</div>
+    <div class="field"><label>Household name</label><input type="text" id="ob-hh-name" placeholder="e.g. The Smiths" autocomplete="off"></div>
+    <button class="btn btn-ghost mt8" onclick="skipOnboarding()">Explore first →</button>
+    <button class="btn btn-primary mt8" onclick="obNext(0)">Continue →</button>
+  </div>
+
+  <!-- Step 1: payment mode -->
+  <div class="ob-step" id="step-1">
+    <div class="step-mono">Step 2 of 6</div>
+    <div class="step-h">How do you pay bills?</div>
+    <div class="step-sub">This shapes how Funded tracks contributions.</div>
+    <div class="pay-mode-cards">
+      <div class="pay-mode-card selected" id="pmc-joint" onclick="selectPayMode('joint')">
+        <div class="pay-mode-card-ico">🏦</div>
+        <div class="pay-mode-card-title">Joint fund</div>
+        <div class="pay-mode-card-desc">Everyone contributes to a shared account and bills are paid from there.</div>
+      </div>
+      <div class="pay-mode-card" id="pmc-direct" onclick="selectPayMode('direct')">
+        <div class="pay-mode-card-ico">↔️</div>
+        <div class="pay-mode-card-title">Direct pay</div>
+        <div class="pay-mode-card-desc">Contributors pay their share directly to whoever handles each bill.</div>
+      </div>
+    </div>
+    <div class="field-hint" style="margin-bottom:16px">You can change this later in Settings.</div>
+    <button class="btn btn-primary" onclick="obNext(1)">Continue →</button>
+  </div>
+
+  <!-- Step 2: contributors -->
+  <div class="ob-step" id="step-2">
+    <div class="step-mono">Step 3 of 6</div>
+    <div class="step-h">Who contributes?</div>
+    <div class="step-sub">Add 1 or 2 income earners.</div>
+    <div class="card-sm">
+      <div class="step-mono" style="margin-bottom:10px">Contributor 1</div>
+      <div class="field"><label>Name</label><input type="text" id="ob-c1-name" placeholder="Name" autocomplete="off"></div>
+      <div class="field-row">
+        <div class="field"><label>Income type</label><select id="ob-c1-type"><option value="fixed">Fixed</option><option value="variable">Variable</option><option value="both">Mixed</option></select></div>
+        <div class="field"><label>Pay cycle</label><select id="ob-c1-cycle"><option value="weekly">Weekly</option><option value="fortnightly">Fortnightly</option><option value="monthly">Monthly</option></select></div>
+      </div>
+      <div class="field"><label>Base income ($)</label><div class="input-pfx"><span>$</span><input type="number" id="ob-c1-income" placeholder="0.00" inputmode="decimal"></div></div>
+      <div class="field"><label>Weekly contribution ($)</label><div class="input-pfx"><span>$</span><input type="number" id="ob-c1-contrib" placeholder="0.00" inputmode="decimal"></div></div>
+    </div>
+    <div id="c2-block" class="card-sm hidden" style="margin-top:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="step-mono">Contributor 2</div>
+        <button class="btn btn-sm btn-danger" onclick="removeC2()">Remove</button>
+      </div>
+      <div class="field"><label>Name</label><input type="text" id="ob-c2-name" placeholder="Name" autocomplete="off"></div>
+      <div class="field-row">
+        <div class="field"><label>Income type</label><select id="ob-c2-type"><option value="fixed">Fixed</option><option value="variable">Variable</option><option value="both">Mixed</option></select></div>
+        <div class="field"><label>Pay cycle</label><select id="ob-c2-cycle"><option value="weekly">Weekly</option><option value="fortnightly">Fortnightly</option><option value="monthly">Monthly</option></select></div>
+      </div>
+      <div class="field"><label>Base income ($)</label><div class="input-pfx"><span>$</span><input type="number" id="ob-c2-income" placeholder="0.00" inputmode="decimal"></div></div>
+      <div class="field"><label>Weekly contribution ($)</label><div class="input-pfx"><span>$</span><input type="number" id="ob-c2-contrib" placeholder="0.00" inputmode="decimal"></div></div>
+    </div>
+    <button class="btn btn-ghost mt8" id="add-c2-btn" onclick="addC2()">+ Add second contributor</button>
+    <button class="btn btn-primary mt8" onclick="obNext(2)">Continue →</button>
+  </div>
+
+  <!-- Step 3: bills -->
+  <div class="ob-step" id="step-3">
+    <div class="step-mono">Step 4 of 6</div>
+    <div class="step-h">Add household bills</div>
+    <div class="step-sub">Any frequency — we convert to weekly.</div>
+    <div class="card-sm" id="ob-bills-list"><div style="color:var(--text-3);font-size:13px;padding:4px 0">No bills yet</div></div>
+    <button class="btn btn-ghost mt8" onclick="openBillSheet('ob')">+ Add a bill</button>
+    <button class="btn btn-primary mt8" onclick="obNext(3)">Continue →</button>
+  </div>
+
+  <!-- Step 4: surplus rules -->
+  <div class="ob-step" id="step-4">
+    <div class="step-mono">Step 5 of 6</div>
+    <div class="step-h">Surplus rules</div>
+    <div class="step-sub">When income exceeds the base, how is the extra split?</div>
+    <div class="card-sm" id="ob-surplus-list"><div style="color:var(--text-3);font-size:13px;padding:4px 0">No rules yet — surplus stays with the contributor</div></div>
+    <button class="btn btn-ghost mt8" onclick="openSurplusSheet()">+ Add a rule</button>
+    <button class="btn btn-primary mt8" onclick="obNext(4)">Continue →</button>
+  </div>
+
+  <!-- Step 5: sinking funds -->
+  <div class="ob-step" id="step-5">
+    <div class="step-mono">Step 6 of 6</div>
+    <div class="step-h">Sinking funds</div>
+    <div class="step-sub">Goals that grow from surplus — holidays, emergencies, and more.</div>
+    <div class="card-sm" id="ob-funds-list"><div style="color:var(--text-3);font-size:13px;padding:4px 0">No funds yet</div></div>
+    <button class="btn btn-ghost mt8" onclick="openFundSheet('ob')">+ Add a fund</button>
+    <button class="btn btn-primary mt8" onclick="finishOnboarding()">Let's go →</button>
+  </div>
+</div>
+
+<!-- ══════════ DASHBOARD ══════════ -->
+<div id="screen-dashboard" class="screen">
+  <div class="ph">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between">
+      <div><div id="dash-hh-name" class="ph-title">funded.</div><div id="dash-week" class="ph-sub">Week overview</div></div>
+      <div style="font-size:26px">🏠</div>
+    </div>
+  </div>
+  <div id="dash-banner"></div>
+  <div class="dash-hero">
+    <div class="hl-label">Household Health</div>
+    <div class="hl-score"><div class="hl-dot" id="hl-dot"></div><span id="hl-text">—</span></div>
+    <div class="hl-sub" id="hl-sub"></div>
+    <div class="stat-row">
+      <div class="stat-box"><div class="stat-lbl">Weekly Income</div><div class="stat-val lime" id="d-income">—</div></div>
+      <div class="stat-box"><div class="stat-lbl">Weekly Bills</div><div class="stat-val" id="d-bills">—</div></div>
+      <div class="stat-box"><div class="stat-lbl">Surplus</div><div class="stat-val" id="d-surplus">—</div></div>
+      <div class="stat-box"><div class="stat-lbl">Sinking Funds</div><div class="stat-val lime" id="d-sinking">—</div></div>
+    </div>
+    <div class="hl-label" style="margin-top:4px;margin-bottom:8px">Contributors</div>
+    <div class="contrib-hero-row" id="d-contrib-row"></div>
+    <div id="d-funds-hero" style="display:none">
+      <div class="hl-label" style="margin-top:16px;margin-bottom:8px">Sinking funds</div>
+      <div id="d-funds-hero-items"></div>
+    </div>
+  </div>
+  <div class="sec-hdr">
+    <div class="sec-ttl">Bills status</div>
+    <div id="d-bills-count" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-3)"></div>
+  </div>
+  <div id="d-bills-container" style="padding-bottom:8px"></div>
+</div>
+
+<!-- ══════════ PAYDAY ══════════ -->
+<div id="screen-payday" class="screen">
+  <div class="ph"><div class="ph-title">Payday</div><div class="ph-sub">Enter what you received — we'll handle the rest.</div></div>
+  <div id="pay-banner"></div>
+  <div class="chip-row" id="pay-chips"></div>
+  <div class="pay-card" id="pay-input-card">
+    <div id="recurring-badge-wrap"></div>
+    <div class="field" id="pay-amount-field">
+      <label>Amount received</label>
+      <div class="input-pfx"><span>$</span><input type="number" id="pay-amount" placeholder="0.00" inputmode="decimal" oninput="calcPayday()"></div>
+    </div>
+    <div class="field"><label>Pay period</label>
+      <select id="pay-period" onchange="calcPayday()">
+        <option value="weekly">This week</option>
+        <option value="fortnightly">This fortnight</option>
+        <option value="monthly">This month</option>
+      </select>
+    </div>
+    <div class="divider"></div>
+    <div class="toggle-row">
+      <div><div class="toggle-lbl">Recurring pay</div><div class="toggle-sub">Lock in a fixed amount each payday</div></div>
+      <div class="tog" id="recurring-toggle" onclick="toggleRecurring()"><div class="tog-thumb"></div></div>
+    </div>
+    <div id="recurring-amount-field" class="hidden" style="margin-top:12px">
+      <div class="field-row" style="align-items:flex-end;margin-bottom:0">
+        <div class="field" style="margin-bottom:0;flex:1">
+          <label>Fixed pay amount ($)</label>
+          <div class="input-pfx"><span>$</span><input type="number" id="recurring-amount" placeholder="0.00" inputmode="decimal"></div>
+        </div>
+        <button class="btn btn-primary btn-sm" style="flex-shrink:0;height:50px;margin-bottom:0" onclick="saveRecurringAmount()">Save</button>
+      </div>
+      <div class="field-hint" style="margin-top:6px">Turn off to override for a one-off pay (e.g. side work, bonuses).</div>
+    </div>
+  </div>
+  <div id="pay-result"></div>
+</div>
+
+<!-- ══════════ BILLS ══════════ -->
+<div id="screen-bills" class="screen">
+  <div class="ph"><div class="ph-title">Bills</div><div class="ph-sub">All household costs, organised by category.</div></div>
+  <div class="bills-total-bar">
+    <div>
+      <div class="bills-total-val" id="b-total-val">—</div>
+      <div class="bills-total-period" id="b-total-period">per week</div>
+    </div>
+    <select class="bills-period-select" id="b-period-sel" onchange="renderBills()">
+      <option value="weekly">Weekly</option>
+      <option value="monthly">Monthly</option>
+      <option value="annual">Annual</option>
+    </select>
+  </div>
+  <div id="bills-list"></div>
+</div>
+
+<!-- ══════════ FUNDS ══════════ -->
+<div id="screen-funds" class="screen">
+  <div class="ph"><div class="ph-title">Sinking Funds</div><div class="ph-sub">Goals growing from surplus income.</div></div>
+  <div id="funds-list"></div>
+</div>
+
+<!-- ══════════ SETTINGS ══════════ -->
+<div id="screen-settings" class="screen">
+  <div class="ph"><div class="ph-title">Settings</div></div>
+  <div class="set-sec">
+    <div class="set-sec-ttl">Household</div>
+    <div class="set-row" onclick="editHHName()">
+      <span class="set-row-lbl">Household name</span>
+      <span class="set-row-val" id="s-hh-name">—</span>
+    </div>
+    <div class="set-row" style="cursor:default">
+      <div><div class="set-row-lbl">Payment mode</div><div style="font-size:12px;color:var(--text-2);margin-top:2px" id="s-pay-mode-desc">—</div></div>
+      <div class="tog" id="s-pay-mode-tog" onclick="togglePayMode()"><div class="tog-thumb"></div></div>
+    </div>
+  </div>
+  <div class="set-sec">
+    <div class="set-sec-ttl">Contributors</div>
+    <div id="s-contributors"></div>
+    <button class="btn btn-ghost mt8" onclick="openAddContribSheet()">+ Add contributor</button>
+  </div>
+  <div class="set-sec">
+    <div class="set-sec-ttl">Surplus rules</div>
+    <div id="s-surplus"></div>
+    <button class="btn btn-ghost mt8" onclick="openSurplusSheet()">+ Add rule</button>
+  </div>
+  <div class="set-sec">
+    <div class="set-sec-ttl">Data</div>
+    <div class="set-row" onclick="exportData()" style="margin-bottom:6px">
+      <div><div class="set-row-lbl">Export household data</div><div style="font-size:12px;color:var(--text-2);margin-top:2px">Download a .json backup</div></div>
+      <div style="font-size:20px">↓</div>
+    </div>
+    <div class="set-row" onclick="triggerImport()">
+      <div><div class="set-row-lbl">Import household data</div><div style="font-size:12px;color:var(--text-2);margin-top:2px">Restore from a .json backup</div></div>
+      <div style="font-size:20px">↑</div>
+    </div>
+  </div>
+  <div class="set-sec">
+    <div class="set-sec-ttl">Alpha testing</div>
+    <div class="set-row" onclick="showTab('guide')">
+      <div>
+        <div class="set-row-lbl">Testing guide</div>
+        <div style="font-size:12px;color:var(--text-2);margin-top:2px">Setup instructions, what to test &amp; feedback form</div>
+      </div>
+      <div style="font-size:20px;color:var(--lime)">›</div>
+    </div>
+  </div>
+  <div class="set-sec">
+    <div class="set-sec-ttl">Danger zone</div>
+    <button class="btn btn-danger" onclick="resetApp()">Reset all data</button>
+  </div>
+  <div class="version">funded v0.2.2.2-alpha<br>Concept &amp; Development: Anthony Paull<br>Built with Claude by Anthropic</div>
+</div>
+
+<!-- ══════════ TAB BAR ══════════ -->
+<nav id="tab-bar">
+  <div class="tab-inner">
+    <button class="tab-btn" id="tb-dashboard" onclick="showTab('dashboard')"><span class="tab-ico">🏠</span><span class="tab-lbl">HOME</span></button>
+    <button class="tab-btn" id="tb-payday"    onclick="showTab('payday')"   ><span class="tab-ico">💸</span><span class="tab-lbl">PAYDAY</span></button>
+    <button class="tab-btn" id="tb-bills"     onclick="showTab('bills')"    ><span class="tab-ico">📋</span><span class="tab-lbl">BILLS</span></button>
+    <button class="tab-btn" id="tb-funds"     onclick="showTab('funds')"    ><span class="tab-ico">🏦</span><span class="tab-lbl">FUNDS</span></button>
+    <button class="tab-btn" id="tb-settings"  onclick="showTab('settings')" ><span class="tab-ico">⚙️</span><span class="tab-lbl">SETTINGS</span></button>
+  </div>
+</nav>
+<button class="fab" id="fab" onclick="fabAction()">+</button>
+
+<!-- ══════════ SHEETS ══════════ -->
+
+<!-- Add Bill -->
+<div class="sheet-ov" id="ov-bill" onclick="closeSheet('bill')"></div>
+<div class="sheet" id="sh-bill">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title">Add a bill</div>
+  <div class="field-row">
+    <div class="field" style="flex:0 0 68px"><label>Icon</label><input type="text" id="sh-bill-icon" placeholder="💸" maxlength="2" style="text-align:center;font-size:22px;padding:10px"></div>
+    <div class="field"><label>Bill name</label><input type="text" id="sh-bill-name" placeholder="Bill name" autocomplete="off"></div>
+  </div>
+  <div class="field"><label>Category</label>
+    <select id="sh-bill-cat">
+      <option value="bills">Bills &amp; Utilities</option><option value="childcare">Childcare</option>
+      <option value="living">Living Costs</option><option value="subscriptions">Subscriptions</option>
+      <option value="debt">Debt &amp; Finance</option><option value="other">Other</option>
+    </select>
+  </div>
+  <div class="field-row">
+    <div class="field"><label>Amount ($)</label><div class="input-pfx"><span>$</span><input type="number" id="sh-bill-amt" placeholder="0.00" inputmode="decimal"></div></div>
+    <div class="field"><label>Frequency</label>
+      <select id="sh-bill-freq" onchange="updateDueDateField('sh-bill-due-wrap','sh-bill-freq')">
+        <option value="weekly">Weekly</option><option value="fortnightly">Fortnightly</option>
+        <option value="monthly" selected>Monthly</option><option value="quarterly">Quarterly</option><option value="annual">Annual</option>
+      </select>
+    </div>
+  </div>
+  <div id="sh-bill-due-wrap">
+    <!-- populated dynamically based on frequency -->
+  </div>
+  <div class="field"><label>Payment method</label>
+    <select id="sh-bill-paymethod">
+      <option value="auto">Automatic (direct debit / standing order)</option>
+      <option value="manual">Manual (I pay this myself)</option>
+    </select>
+  </div>
+  <div class="section-label">Paid by (who makes the payment)</div>
+  <div class="field"><select id="sh-bill-paidby"><option value="">Unassigned</option></select></div>
+  <div id="sh-bill-fundedby-section">
+    <div class="section-label">Funded by (who covers the cost)</div>
+    <div class="card-sm" style="margin-bottom:4px" id="sh-bill-fundedby-rows"></div>
+    <div id="sh-bill-pct-status" style="font-size:12px;margin-bottom:12px"></div>
+  </div>
+  <div class="field"><label>Notes (optional)</label><textarea id="sh-bill-notes" placeholder="Any notes about this bill…"></textarea></div>
+  <button class="btn btn-primary mt8" onclick="saveBill()">Add bill</button>
+</div>
+
+<!-- Bill Detail / Edit -->
+<div class="sheet-ov" id="ov-bill-detail" onclick="closeSheet('bill-detail')"></div>
+<div class="sheet" id="sh-bill-detail">
+  <div class="sheet-handle"></div>
+  <div id="sh-bill-detail-content"></div>
+</div>
+
+<!-- Add Fund -->
+<div class="sheet-ov" id="ov-fund" onclick="closeSheet('fund')"></div>
+<div class="sheet" id="sh-fund">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title">Add a sinking fund</div>
+  <div class="field"><label>Fund name</label><input type="text" id="sh-fund-name" placeholder="Fund name" autocomplete="off"></div>
+  <div class="field-row">
+    <div class="field"><label>Target ($)</label><div class="input-pfx"><span>$</span><input type="number" id="sh-fund-target" placeholder="0.00" inputmode="decimal"></div></div>
+    <div class="field"><label>Current ($)</label><div class="input-pfx"><span>$</span><input type="number" id="sh-fund-current" placeholder="0.00" inputmode="decimal"></div></div>
+  </div>
+  <div class="field"><label>Weekly auto-contribution ($)</label><div class="input-pfx"><span>$</span><input type="number" id="sh-fund-weekly" placeholder="0.00" inputmode="decimal"></div></div>
+  <button class="btn btn-primary mt16" onclick="saveFund()">Add fund</button>
+</div>
+
+<!-- Surplus -->
+<div class="sheet-ov" id="ov-surplus" onclick="closeSheet('surplus')"></div>
+<div class="sheet" id="sh-surplus">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title">Surplus rule</div>
+  <div class="field"><label>Contributor</label><select id="sh-surplus-contrib"></select></div>
+  <div class="field"><label>When weekly income exceeds ($)</label><div class="input-pfx"><span>$</span><input type="number" id="sh-surplus-thresh" placeholder="0.00" inputmode="decimal"></div></div>
+  <div class="field"><label>% to sinking fund</label><input type="number" id="sh-surplus-pct" placeholder="50" min="0" max="100" inputmode="decimal"></div>
+  <div class="field-hint" style="margin-bottom:16px">The remaining % stays with the contributor.</div>
+  <button class="btn btn-primary" onclick="saveSurplusRule()">Save rule</button>
+</div>
+
+<!-- Edit Contributor -->
+<div class="sheet-ov" id="ov-edit-contrib" onclick="closeSheet('edit-contrib')"></div>
+<div class="sheet" id="sh-edit-contrib">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title">Edit contributor</div>
+  <input type="hidden" id="ec-idx">
+  <div class="field"><label>Name</label><input type="text" id="ec-name" autocomplete="off"></div>
+  <div class="field-row">
+    <div class="field"><label>Income type</label><select id="ec-type"><option value="fixed">Fixed</option><option value="variable">Variable</option><option value="both">Mixed</option></select></div>
+    <div class="field"><label>Pay cycle</label><select id="ec-cycle"><option value="weekly">Weekly</option><option value="fortnightly">Fortnightly</option><option value="monthly">Monthly</option></select></div>
+  </div>
+  <div class="field"><label>Base income ($)</label><div class="input-pfx"><span>$</span><input type="number" id="ec-income" inputmode="decimal"></div></div>
+  <div class="field"><label>Weekly contribution ($)</label><div class="input-pfx"><span>$</span><input type="number" id="ec-contrib" inputmode="decimal"></div></div>
+  <button class="btn btn-primary mt16" onclick="saveContribEdit()">Save changes</button>
+  <button class="btn btn-danger mt8" onclick="deleteContrib()">Remove contributor</button>
+</div>
+
+<!-- Add Contributor -->
+<div class="sheet-ov" id="ov-add-contrib" onclick="closeSheet('add-contrib')"></div>
+<div class="sheet" id="sh-add-contrib">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title">Add contributor</div>
+  <div class="field"><label>Name</label><input type="text" id="nc-name" placeholder="Name" autocomplete="off"></div>
+  <div class="field-row">
+    <div class="field"><label>Income type</label><select id="nc-type"><option value="fixed">Fixed</option><option value="variable">Variable</option><option value="both">Mixed</option></select></div>
+    <div class="field"><label>Pay cycle</label><select id="nc-cycle"><option value="weekly">Weekly</option><option value="fortnightly">Fortnightly</option><option value="monthly">Monthly</option></select></div>
+  </div>
+  <div class="field"><label>Base income ($)</label><div class="input-pfx"><span>$</span><input type="number" id="nc-income" placeholder="0.00" inputmode="decimal"></div></div>
+  <div class="field"><label>Weekly contribution ($)</label><div class="input-pfx"><span>$</span><input type="number" id="nc-contrib" placeholder="0.00" inputmode="decimal"></div></div>
+  <button class="btn btn-primary mt16" onclick="saveNewContrib()">Add contributor</button>
+</div>
+
+<!-- Add to Fund -->
+<div class="sheet-ov" id="ov-add-to-fund" onclick="closeSheet('add-to-fund')"></div>
+<div class="sheet" id="sh-add-to-fund">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title" id="sh-atf-title">Add to fund</div>
+  <div class="field"><label>Amount ($)</label><div class="input-pfx"><span>$</span><input type="number" id="sh-atf-amt" placeholder="0.00" inputmode="decimal"></div></div>
+  <button class="btn btn-primary mt16" onclick="confirmAddToFund()">Add</button>
+</div>
+
+<!-- ══════════ TESTING GUIDE ══════════ -->
+<div id="screen-guide" class="screen">
+  <div style="padding-top:calc(var(--st) + 0px)">
+    <!-- Back bar -->
+    <div style="display:flex;align-items:center;gap:12px;padding:16px 16px 0;padding-top:calc(var(--st) + 16px);background:var(--bg);position:sticky;top:0;z-index:10;border-bottom:1px solid var(--border);margin-bottom:0">
+      <button onclick="showTab('settings')" style="background:var(--bg-3);border:1px solid var(--border-2);border-radius:8px;padding:8px 14px;color:var(--text);font-family:'Syne',sans-serif;font-weight:700;font-size:14px;cursor:pointer;-webkit-tap-highlight-color:transparent">← Back</button>
+      <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:17px">Testing Guide</span>
+    </div>
+    <!-- Guide content -->
+    <div id="guide-content" style="padding-bottom:40px"></div>
+  </div>
+</div>
+
+<!-- File inputs at app root — outside all screens -->
+<input type="file" id="import-file" accept=".json" style="position:fixed;top:-999px;left:-999px;opacity:0;width:1px;height:1px">
+<input type="file" id="avatar-file" accept="image/*" style="position:fixed;top:-999px;left:-999px;opacity:0;width:1px;height:1px">
+
+</div><!-- #app -->
+<script>
+const APP_VERSION='v0.2.2.2-alpha';
+const STORAGE_KEY='funded_data_v1';
+let pendingImport=null;
+let avatarTargetIdx=null;
+
+let state={
+  onboarded:false,householdName:'',payMode:'joint',
+  contributors:[],bills:[],surplusRules:[],sinkingFunds:[],
+  selPayday:0,billsPeriod:'weekly'
+};
+
+function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state));}catch(e){}}
+function load(){try{const d=localStorage.getItem(STORAGE_KEY);if(d)state=Object.assign({},state,JSON.parse(d));}catch(e){}}
+function g(id){return document.getElementById(id);}
+
+// ── CATEGORIES ────────────────────────────────────────
+const CATS=[
+  {id:'bills',label:'Bills & Utilities',icon:'⚡'},
+  {id:'childcare',label:'Childcare',icon:'👶'},
+  {id:'living',label:'Living Costs',icon:'🛒'},
+  {id:'subscriptions',label:'Subscriptions',icon:'📱'},
+  {id:'debt',label:'Debt & Finance',icon:'💳'},
+  {id:'other',label:'Other',icon:'📌'},
+];
+function catLabel(id){return(CATS.find(c=>c.id===id)||CATS[5]).label;}
+function autoCat(name){
+  const n=name.toLowerCase();
+  if(/rent|mortgage|power|electricity|gas|water|internet|phone|rates/.test(n))return'bills';
+  if(/daycare|childcare|kinder|school|tuition/.test(n))return'childcare';
+  if(/groceries|supermarket|food|fuel|petrol|parking/.test(n))return'living';
+  if(/netflix|spotify|youtube|amazon|disney|apple|subscription|membership/.test(n))return'subscriptions';
+  if(/loan|credit|card|debt|repay|finance|afterpay|zip/.test(n))return'debt';
+  return'other';
+}
+
+// ── DUE DATE HELPERS ──────────────────────────────────
+const DAYS=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+
+function dueDateOptions(selected){
+  const opts=[{v:'1',l:'1st (default — update when known)'}];
+  for(let i=2;i<=28;i++)opts.push({v:String(i),l:ordinal(i)});
+  opts.push({v:'lastday',l:'Last day of month'});
+  return opts.map(o=>`<option value="${o.v}"${String(o.v)===String(selected)?' selected':''}>${o.l}</option>`).join('');
+}
+
+function dueDayOptions(selected){
+  return DAYS.map((d,i)=>`<option value="${i}"${String(i)===String(selected)?' selected':''}>${d}</option>`).join('');
+}
+
+// Render the correct due field based on frequency into a wrapper element
+function updateDueDateField(wrapperId, freqSelectId){
+  const wrap=g(wrapperId);
+  if(!wrap)return;
+  const freq=g(freqSelectId)?g(freqSelectId).value:'monthly';
+  const inputId=wrapperId+'-input';
+  if(freq==='weekly'||freq==='fortnightly'){
+    wrap.innerHTML=`<div class="field"><label>Due day</label>
+      <select id="${inputId}"><option value="">Any day</option>${dueDayOptions('')}</select>
+      <div class="field-hint">Which day of the week is this typically due?</div>
+    </div>`;
+  } else {
+    wrap.innerHTML=`<div class="field"><label>Due date (day of month)</label>
+      <select id="${inputId}">${dueDateOptions('1')}</select>
+      <div class="field-hint">Default is 1st — update when you know the actual date.</div>
+    </div>`;
+  }
+}
+
+function getDueDateValue(wrapperId){
+  const inp=g(wrapperId+'-input');
+  return inp?inp.value:'1';
+}
+
+function setDueDateField(wrapperId, freqSelectId, existingVal){
+  const wrap=g(wrapperId);
+  if(!wrap)return;
+  const freq=g(freqSelectId)?g(freqSelectId).value:'monthly';
+  const inputId=wrapperId+'-input';
+  if(freq==='weekly'||freq==='fortnightly'){
+    wrap.innerHTML=`<div class="field"><label>Due day</label>
+      <select id="${inputId}"><option value="">Any day</option>${dueDayOptions(existingVal||'')}</select>
+      <div class="field-hint">Which day of the week is this typically due?</div>
+    </div>`;
+  } else {
+    wrap.innerHTML=`<div class="field"><label>Due date (day of month)</label>
+      <select id="${inputId}">${dueDateOptions(existingVal||'1')}</select>
+      <div class="field-hint">Default is 1st — update when you know the actual date.</div>
+    </div>`;
+  }
+}
+
+// ── MATH ─────────────────────────────────────────────
+function toWeekly(amount,freq){
+  const a=parseFloat(amount)||0;
+  return({weekly:a,fortnightly:a/2,monthly:a*12/52,quarterly:a*4/52,annual:a/52})[freq]||a;
+}
+function toDisplay(w,period){
+  if(period==='monthly')return w*52/12;
+  if(period==='annual')return w*52;
+  return w;
+}
+function toWeeklyIncome(amount,cycle){
+  const a=parseFloat(amount)||0;
+  return({weekly:a,fortnightly:a/2,monthly:a*12/52})[cycle]||a;
+}
+function weeklyContribs(){return state.contributors.reduce((s,c)=>s+(parseFloat(c.weeklyContrib)||0),0);}
+function weeklyBills(){return state.bills.reduce((s,b)=>s+toWeekly(b.amount,b.freq),0);}
+function sinkingTotal(){return state.sinkingFunds.reduce((s,f)=>s+(parseFloat(f.current)||0),0);}
+function surplus(){return weeklyContribs()-weeklyBills();}
+function fmt(n){return'$'+Math.abs(parseFloat(n)||0).toLocaleString('en-AU',{minimumFractionDigits:0,maximumFractionDigits:0});}
+function fmtd(n){return'$'+Math.abs(parseFloat(n)||0).toFixed(2);}
+function cycleL(c){return({weekly:'Weekly',fortnightly:'Fortnightly',monthly:'Monthly'})[c]||c;}
+function freqL(f){return({weekly:'Weekly',fortnightly:'Fortnightly',monthly:'Monthly',quarterly:'Quarterly',annual:'Annual'})[f]||f;}
+function periodL(p){return({weekly:'per week',monthly:'per month',annual:'per year'})[p]||'per week';}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function initials(n){return(n||'?').trim().charAt(0).toUpperCase();}
+function ordinal(n){const s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0]);}
+
+function healthStatus(){
+  const s=surplus();
+  if(!state.contributors.length)return{label:'No contributors set up',cls:'amber'};
+  if(!state.bills.length)return{label:'No bills added yet',cls:'amber'};
+  if(s>=0)return{label:'Fully Funded',cls:'green'};
+  if(s>=-50)return{label:'Tight — watch it',cls:'amber'};
+  return{label:'At Risk',cls:'red'};
+}
+
+// ── CONTRIBUTOR AVATAR ────────────────────────────────
+function avatarHTML(c, size=36, cls=''){
+  if(c&&c.avatar){
+    return`<img src="${c.avatar}" class="${cls||'contrib-hero-avatar'}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;border:2px solid var(--lime-mid)" alt="${c.name}">`;
+  }
+  return`<div style="width:${size}px;height:${size}px;border-radius:50%;background:var(--lime-dim);border:2px solid var(--lime-mid);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:${Math.round(size*0.4)}px;color:var(--lime);flex-shrink:0">${initials(c?c.name:'?')}</div>`;
+}
+
+// ── BILL STATUS ────────────────────────────────────────
+function billNeedsReset(bill){
+  if(!bill.paidDate)return false;
+  const paid=new Date(bill.paidDate),now=new Date();
+  if(bill.freq==='weekly')return Math.floor((now-paid)/864e5)>=7;
+  if(bill.freq==='fortnightly')return Math.floor((now-paid)/864e5)>=14;
+  const pm=paid.getMonth()+paid.getFullYear()*12;
+  const nm=now.getMonth()+now.getFullYear()*12;
+  const cy=bill.freq==='quarterly'?3:bill.freq==='annual'?12:1;
+  return(nm-pm)>=cy;
+}
+function billIsPaid(bill){
+  if(bill.payMethod==='auto')return true;
+  if(!bill.paidDate)return false;
+  if(billNeedsReset(bill))return false;
+  return true;
+}
+function billStatusBadge(bill){
+  const funded=weeklyContribs()>=weeklyBills()&&weeklyContribs()>0;
+  const paid=billIsPaid(bill);
+  if(bill.payMethod==='auto')return funded?`<span class="badge badge-auto">Auto · Funded</span>`:`<span class="badge badge-warn">Auto · Unfunded</span>`;
+  if(paid&&funded)return`<span class="badge badge-ok">✓ Paid &amp; Funded</span>`;
+  if(paid&&!funded)return`<span class="badge badge-warn">Paid · Unfunded</span>`;
+  if(!paid&&funded)return`<span class="badge badge-warn">Funded · Unpaid</span>`;
+  return`<span class="badge badge-bad">Unpaid · Unfunded</span>`;
+}
+
+function fundedByStr(bill){
+  if(!bill.fundedBy||!bill.fundedBy.length)return'Unassigned';
+  return bill.fundedBy.map(fb=>{
+    if(fb.id==='__external__')return`${fb.label||'External'} ${fb.pct}%`;
+    const c=state.contributors.find(c=>c.id===fb.id);return c?`${c.name} ${fb.pct}%`:'?';
+  }).join(' · ');
+}
+
+const FREQ_ORDER=['weekly','fortnightly','monthly','quarterly','annual'];
+function freqSortVal(f){return FREQ_ORDER.indexOf(f);}
+
+// ── PAY MODE ──────────────────────────────────────────
+function selectPayMode(mode){
+  state.payMode=mode;
+  g('pmc-joint').classList.toggle('selected',mode==='joint');
+  g('pmc-direct').classList.toggle('selected',mode==='direct');
+}
+function togglePayMode(){
+  state.payMode=state.payMode==='joint'?'direct':'joint';
+  save();renderSettings();
+}
+
+// ── SCREEN NAV ────────────────────────────────────────
+let curTab='',fabCtx='';
+// Use a plain object for collapse state — keys are freq strings, value true=collapsed
+const dashGroupCollapsed={};
+const collapsedCats=new Set();
+
+function showTab(tab){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  g('screen-'+tab).classList.add('active');
+  // Tab bar: hide for guide screen, show for all others
+  if(tab==='guide'){
+    g('tab-bar').style.display='none';
+  } else {
+    g('tab-bar').style.display='';
+    const tbEl=g('tb-'+tab);
+    if(tbEl) tbEl.classList.add('active');
+  }
+  curTab=tab;
+  const fab=g('fab');
+  if(tab==='bills'||tab==='funds'){fab.classList.add('on');fabCtx=tab;}else fab.classList.remove('on');
+  if(tab==='dashboard')renderDashboard();
+  if(tab==='payday')renderPayday();
+  if(tab==='bills')renderBills();
+  if(tab==='funds')renderFunds();
+  if(tab==='settings')renderSettings();
+  if(tab==='guide')renderGuide();
+}
+function fabAction(){
+  if(fabCtx==='bills')openBillSheet('bills');
+  if(fabCtx==='funds')openFundSheet('funds');
+}
+
+// ── ONBOARDING ────────────────────────────────────────
+let obStep=0,billCtx='ob',fundCtx='ob';
+const OB_STEPS=6;
+
+function obSetStep(n){
+  document.querySelectorAll('.ob-step').forEach(s=>s.classList.remove('active'));
+  g('step-'+n).classList.add('active');
+  for(let i=0;i<OB_STEPS;i++)g('dot-'+i).classList.toggle('done',i<=n);
+  obStep=n;
+}
+
+function obNext(step){
+  if(step===0){
+    const name=g('ob-hh-name').value.trim();
+    if(!name){alert('Please enter a household name.');return;}
+    state.householdName=name;save();obSetStep(1);
+  }else if(step===1){
+    // payMode already set by selectPayMode
+    save();obSetStep(2);
+  }else if(step===2){
+    const n1=g('ob-c1-name').value.trim();
+    if(!n1){alert('Please enter a name for contributor 1.');return;}
+    state.contributors=[{id:uid(),name:n1,type:g('ob-c1-type').value,cycle:g('ob-c1-cycle').value,income:parseFloat(g('ob-c1-income').value)||0,weeklyContrib:parseFloat(g('ob-c1-contrib').value)||0}];
+    const n2=g('ob-c2-name').value.trim();
+    if(n2)state.contributors.push({id:uid(),name:n2,type:g('ob-c2-type').value,cycle:g('ob-c2-cycle').value,income:parseFloat(g('ob-c2-income').value)||0,weeklyContrib:parseFloat(g('ob-c2-contrib').value)||0});
+    save();obSetStep(3);
+  }else if(step===3){
+    obSetStep(4);renderObSurplus();
+  }else if(step===4){
+    obSetStep(5);renderObFunds();
+  }
+}
+
+function skipOnboarding(){state.onboarded=true;if(!state.householdName)state.householdName='My Household';save();launchApp();}
+function finishOnboarding(){state.onboarded=true;save();launchApp();}
+function launchApp(){g('screen-onboarding').classList.remove('active');g('tab-bar').classList.add('visible');showTab('dashboard');}
+function addC2(){g('c2-block').classList.remove('hidden');g('add-c2-btn').classList.add('hidden');}
+function removeC2(){g('c2-block').classList.add('hidden');g('add-c2-btn').classList.remove('hidden');g('ob-c2-name').value='';}
+
+function renderObBills(){
+  const el=g('ob-bills-list');if(!el)return;
+  el.innerHTML=state.bills.length?state.bills.map(b=>`<div class="ob-mini"><span style="font-size:18px">${b.icon}</span><div class="ob-mini-info"><div class="ob-mini-name">${b.name}</div><div class="ob-mini-sub">${fmtd(toWeekly(b.amount,b.freq))}/wk · ${freqL(b.freq)}</div></div><button class="ob-mini-del" onclick="deleteBill('${b.id}')">×</button></div>`).join(''):'<div style="color:var(--text-3);font-size:13px;padding:4px 0">No bills yet</div>';
+}
+function renderObSurplus(){
+  const el=g('ob-surplus-list');if(!el)return;
+  el.innerHTML=state.surplusRules.length?state.surplusRules.map((r,i)=>{const c=state.contributors.find(c=>c.id===r.contributorId);return`<div class="ob-mini"><div class="ob-mini-info"><div class="ob-mini-name">${c?c.name:'?'}: above ${fmt(r.threshold)}/wk → ${r.pct}%</div></div><button class="ob-mini-del" onclick="deleteSurplusRule(${i})">×</button></div>`}).join(''):'<div style="color:var(--text-3);font-size:13px;padding:4px 0">No rules yet</div>';
+}
+function renderObFunds(){
+  const el=g('ob-funds-list');if(!el)return;
+  el.innerHTML=state.sinkingFunds.length?state.sinkingFunds.map(f=>`<div class="ob-mini"><span style="font-size:18px">🏦</span><div class="ob-mini-info"><div class="ob-mini-name">${f.name}</div><div class="ob-mini-sub">${fmt(f.current)} of ${fmt(f.target)}</div></div><button class="ob-mini-del" onclick="deleteFund('${f.id}')">×</button></div>`).join(''):'<div style="color:var(--text-3);font-size:13px;padding:4px 0">No funds yet</div>';
+}
+
+// ── SHEETS ────────────────────────────────────────────
+function openSheet(name){
+  g('ov-'+name).classList.add('open');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>g('sh-'+name).classList.add('open')));
+}
+function closeSheet(name){g('sh-'+name).classList.remove('open');g('ov-'+name).classList.remove('open');}
+
+// ── BILL SHEET ────────────────────────────────────────
+function openBillSheet(ctx){
+  billCtx=ctx;
+  g('sh-bill-icon').value='';g('sh-bill-name').value='';g('sh-bill-notes').value='';
+  g('sh-bill-amt').value='';g('sh-bill-freq').value='monthly';
+  g('sh-bill-cat').value='bills';
+  updateDueDateField('sh-bill-due-wrap','sh-bill-freq');
+  g('sh-bill-paymethod').value='auto';
+  const pb=g('sh-bill-paidby');
+  pb.innerHTML='<option value="">Unassigned</option>'+state.contributors.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  // Show/hide funded-by based on payMode
+  const fbSection=g('sh-bill-fundedby-section');
+  if(state.payMode==='joint'){
+    fbSection.style.display='none';
+  }else{
+    fbSection.style.display='block';
+    renderFundedByRows('sh-bill-fundedby-rows','sh-bill-pct-status',[]);
+  }
+  openSheet('bill');
+}
+
+function saveBill(){
+  const name=g('sh-bill-name').value.trim();
+  const icon=g('sh-bill-icon').value.trim()||'💸';
+  const amount=parseFloat(g('sh-bill-amt').value)||0;
+  if(!name||!amount){alert('Please enter a name and amount.');return;}
+  const fundedBy=state.payMode==='direct'?getFundedByFromUI('sh-bill-fundedby-rows'):[];
+  if(state.payMode==='direct'&&!validateFundedBy(fundedBy)){alert('Funded by percentages cannot exceed 100%.');return;}
+  const freq=g('sh-bill-freq').value;
+  const cat=g('sh-bill-cat').value||autoCat(name);
+  state.bills.push({
+    id:uid(),name,icon,amount,freq,cat,
+    dueDay:getDueDateValue('sh-bill-due-wrap'),
+    paidById:g('sh-bill-paidby').value,
+    fundedBy,
+    payMethod:g('sh-bill-paymethod').value,
+    notes:g('sh-bill-notes').value.trim(),
+    paidDate:null
+  });
+  save();closeSheet('bill');
+  renderObBills();
+  if(curTab==='bills')renderBills();
+  if(curTab==='dashboard')renderDashboard();
+}
+
+function deleteBill(id){
+  state.bills=state.bills.filter(b=>b.id!==id);save();
+  renderObBills();
+  if(curTab==='bills')renderBills();
+  if(curTab==='dashboard')renderDashboard();
+}
+
+// ── BILL DETAIL / EDIT ────────────────────────────────
+let editBillId=null;
+
+function openBillDetail(id){
+  editBillId=id;
+  const b=state.bills.find(b=>b.id===id);
+  if(!b)return;
+  const paid=billIsPaid(b);
+  const paidBy=b.paidById?state.contributors.find(c=>c.id===b.paidById):null;
+  const isWeekly=b.freq==='weekly'||b.freq==='fortnightly';
+  const showFundedBy=state.payMode==='direct';
+
+  g('sh-bill-detail-content').innerHTML=`
+    <div class="bill-detail-hdr">
+      <div class="bill-detail-ico">${b.icon}</div>
+      <div style="flex:1"><div class="bill-detail-name">${b.name}</div><div class="bill-detail-cat">${catLabel(b.cat||'other')}</div></div>
+      ${billStatusBadge(b)}
+    </div>
+    <div class="section-label">Bill details</div>
+    <div class="field-row">
+      <div class="field" style="flex:0 0 68px"><label>Icon</label><input type="text" id="ed-icon" value="${b.icon}" maxlength="2" style="text-align:center;font-size:22px;padding:10px"></div>
+      <div class="field"><label>Name</label><input type="text" id="ed-name" value="${b.name}" autocomplete="off"></div>
+    </div>
+    <div class="field"><label>Category</label>
+      <select id="ed-cat">
+        <option value="bills" ${b.cat==='bills'?'selected':''}>Bills &amp; Utilities</option>
+        <option value="childcare" ${b.cat==='childcare'?'selected':''}>Childcare</option>
+        <option value="living" ${b.cat==='living'?'selected':''}>Living Costs</option>
+        <option value="subscriptions" ${b.cat==='subscriptions'?'selected':''}>Subscriptions</option>
+        <option value="debt" ${b.cat==='debt'?'selected':''}>Debt &amp; Finance</option>
+        <option value="other" ${(!b.cat||b.cat==='other')?'selected':''}>Other</option>
+      </select>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Amount ($)</label><div class="input-pfx"><span>$</span><input type="number" id="ed-amt" value="${b.amount}" inputmode="decimal"></div></div>
+      <div class="field"><label>Frequency</label>
+        <select id="ed-freq" onchange="updateDueDateField('ed-due-wrap','ed-freq')">
+          <option value="weekly" ${b.freq==='weekly'?'selected':''}>Weekly</option>
+          <option value="fortnightly" ${b.freq==='fortnightly'?'selected':''}>Fortnightly</option>
+          <option value="monthly" ${b.freq==='monthly'?'selected':''}>Monthly</option>
+          <option value="quarterly" ${b.freq==='quarterly'?'selected':''}>Quarterly</option>
+          <option value="annual" ${b.freq==='annual'?'selected':''}>Annual</option>
+        </select>
+      </div>
+    </div>
+    <div id="ed-due-wrap"></div>
+    <div class="field"><label>Payment method</label>
+      <select id="ed-paymethod">
+        <option value="auto" ${b.payMethod==='auto'?'selected':''}>Automatic</option>
+        <option value="manual" ${b.payMethod==='manual'?'selected':''}>Manual</option>
+      </select>
+    </div>
+    <div class="section-label">Paid by</div>
+    <div class="field"><select id="ed-paidby">
+      <option value="" ${!b.paidById?'selected':''}>Unassigned</option>
+      ${state.contributors.map(c=>`<option value="${c.id}" ${b.paidById===c.id?'selected':''}>${c.name}</option>`).join('')}
+    </select></div>
+    ${showFundedBy?`
+    <div class="section-label">Funded by</div>
+    <div class="card-sm" style="margin-bottom:4px" id="ed-fundedby-rows"></div>
+    <div id="ed-pct-status" style="font-size:12px;margin-bottom:12px"></div>`:''}
+    <div class="section-label">Notes</div>
+    <div class="field"><textarea id="ed-notes" placeholder="Any notes about this bill…">${b.notes||''}</textarea></div>
+    ${b.payMethod==='manual'?`
+    <div class="paid-toggle-row">
+      <div class="paid-toggle-info">
+        <div class="paid-toggle-lbl">${paid?'✓ Marked as paid':'Mark as paid'}</div>
+        <div class="paid-toggle-sub">${paid?'Resets automatically next cycle':'Tap to mark this bill as paid'}</div>
+      </div>
+      <div class="tog ${paid?'on':''}" onclick="toggleBillPaid('${b.id}')"><div class="tog-thumb"></div></div>
+    </div>`:''}
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn btn-primary" style="flex:1" onclick="saveBillEdit()">Save changes</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteBillFromDetail('${b.id}')">Delete</button>
+    </div>
+  `;
+
+  // Set due date field after innerHTML is set
+  setDueDateField('ed-due-wrap','ed-freq',b.dueDay||'1');
+  if(showFundedBy) renderFundedByRows('ed-fundedby-rows','ed-pct-status',b.fundedBy||[]);
+  openSheet('bill-detail');
+}
+
+function saveBillEdit(){
+  const b=state.bills.find(b=>b.id===editBillId);if(!b)return;
+  const showFundedBy=state.payMode==='direct';
+  const fundedBy=showFundedBy?getFundedByFromUI('ed-fundedby-rows'):[];
+  if(showFundedBy&&!validateFundedBy(fundedBy)){alert('Funded by percentages cannot exceed 100%.');return;}
+  b.icon=g('ed-icon').value.trim()||b.icon;
+  b.name=g('ed-name').value.trim()||b.name;
+  b.cat=g('ed-cat').value;
+  b.amount=parseFloat(g('ed-amt').value)||b.amount;
+  b.freq=g('ed-freq').value;
+  b.dueDay=getDueDateValue('ed-due-wrap');
+  b.payMethod=g('ed-paymethod').value;
+  b.paidById=g('ed-paidby').value;
+  b.fundedBy=fundedBy;
+  b.notes=g('ed-notes').value.trim();
+  save();closeSheet('bill-detail');
+  if(curTab==='bills')renderBills();
+  if(curTab==='dashboard')renderDashboard();
+}
+
+function toggleBillPaid(id){
+  const b=state.bills.find(b=>b.id===id);if(!b)return;
+  b.paidDate=billIsPaid(b)?null:new Date().toISOString();
+  save();openBillDetail(id);
+  if(curTab==='bills')renderBills();
+  if(curTab==='dashboard')renderDashboard();
+}
+function deleteBillFromDetail(id){
+  if(!confirm('Delete this bill?'))return;
+  closeSheet('bill-detail');deleteBill(id);
+}
+
+// ── FUNDED-BY UI ──────────────────────────────────────
+function renderFundedByRows(containerId,statusId,existing){
+  const container=g(containerId);if(!container)return;
+  if(!state.contributors.length){container.innerHTML='<div style="color:var(--text-3);font-size:13px;padding:4px 0">No contributors set up yet.</div>';return;}
+  const exMap={};(existing||[]).forEach(fb=>exMap[fb.id]=fb);
+  const extEntry=exMap['__external__']||null;
+  const extChecked=!!extEntry;
+  const extPct=extEntry?extEntry.pct:'';
+  const extLabel=extEntry?extEntry.label:'';
+  container.innerHTML=state.contributors.map(c=>{
+    const saved=exMap[c.id];
+    const checked=!!saved;
+    const pct=saved?saved.pct:Math.round(100/state.contributors.length);
+    return`<div class="funded-by-row">
+      <div class="funded-by-check ${checked?'on':''}" onclick="toggleFundedBy('${containerId}','${statusId}','${c.id}')"></div>
+      <div class="funded-by-name">${c.name}</div>
+      <div class="funded-by-pct"><input type="number" id="fbpct-${containerId}-${c.id}" value="${checked?pct:''}" placeholder="%" min="0" max="100" ${checked?'':'disabled'} oninput="updatePctStatus('${containerId}','${statusId}')"></div>
+    </div>`;
+  }).join('')+`<div class="funded-by-row" id="fbrow-${containerId}-__external__">
+    <div class="funded-by-check ${extChecked?'on':''}" onclick="toggleFundedBy('${containerId}','${statusId}','__external__')"></div>
+    <div class="funded-by-name" style="flex:1;min-width:0"><input type="text" id="fblabel-${containerId}-__external__" value="${extLabel}" placeholder="e.g. Working for Families" ${extChecked?'':'disabled'} style="background:transparent;border:none;border-bottom:1px solid var(--border-2);border-radius:0;padding:2px 0;font-size:14px;font-family:inherit;color:var(--text);width:100%;outline:none;-webkit-appearance:none"></div>
+    <div class="funded-by-pct"><input type="number" id="fbpct-${containerId}-__external__" value="${extChecked?extPct:''}" placeholder="%" min="0" max="100" ${extChecked?'':'disabled'} oninput="updatePctStatus('${containerId}','${statusId}')"></div>
+  </div>`;
+  updatePctStatus(containerId,statusId);
+}
+
+function toggleFundedBy(containerId,statusId,cid){
+  let check=null,inp=g(`fbpct-${containerId}-${cid}`);
+  document.querySelectorAll(`#${containerId} .funded-by-row`).forEach(row=>{if(row.querySelector(`#fbpct-${containerId}-${cid}`))check=row.querySelector('.funded-by-check');});
+  if(!check||!inp)return;
+  const labelInp=cid==='__external__'?g(`fblabel-${containerId}-__external__`):null;
+  if(check.classList.contains('on')){
+    // Unchecking — disable this row
+    check.classList.remove('on');inp.disabled=true;inp.value='';
+    if(labelInp){labelInp.disabled=true;}
+    // Redistribute equally among remaining checked rows if they're all still equal
+    const remaining=getCheckedFundedBy(containerId);
+    if(remaining.length){
+      const vals=remaining.map(id=>{const i=g(`fbpct-${containerId}-${id}`);return parseFloat(i?i.value:0)||0;});
+      const allEqual=vals.every(v=>v===vals[0]);
+      if(allEqual){
+        const eq=Math.round(100/remaining.length);
+        remaining.forEach(id=>{const i=g(`fbpct-${containerId}-${id}`);if(i)i.value=eq;});
+      }
+    }
+  }else{
+    // Checking — enable this row
+    check.classList.add('on');inp.disabled=false;
+    if(labelInp){labelInp.disabled=false;}
+    // Get all checked ids (now includes the newly checked one)
+    const checked=getCheckedFundedBy(containerId);
+    const eq=Math.round(100/checked.length);
+    // Check if all previously checked rows are equal to each other (still on auto)
+    const others=checked.filter(id=>id!==cid);
+    const otherVals=others.map(id=>{const i=g(`fbpct-${containerId}-${id}`);return parseFloat(i?i.value:0)||0;});
+    const othersAreEqual=otherVals.length===0||otherVals.every(v=>v===otherVals[0]);
+    if(othersAreEqual){
+      // All others still on auto — redistribute equally across all checked
+      checked.forEach(id=>{const i=g(`fbpct-${containerId}-${id}`);if(i)i.value=eq;});
+    }else{
+      // User has customised — only set default on the new row
+      if(!inp.value)inp.value=eq;
+    }
+  }
+  updatePctStatus(containerId,statusId);
+}
+function getCheckedFundedBy(containerId){
+  const ids=[];
+  state.contributors.forEach(c=>{
+    let ck=null;
+    document.querySelectorAll(`#${containerId} .funded-by-row`).forEach(row=>{if(row.querySelector(`#fbpct-${containerId}-${c.id}`))ck=row.querySelector('.funded-by-check');});
+    if(ck&&ck.classList.contains('on'))ids.push(c.id);
+  });
+  const extRow=g(`fbrow-${containerId}-__external__`);
+  if(extRow&&extRow.querySelector('.funded-by-check.on'))ids.push('__external__');
+  return ids;
+}
+function updatePctStatus(containerId,statusId){
+  const statusEl=g(statusId);if(!statusEl)return;
+  const checked=getCheckedFundedBy(containerId);
+  if(!checked.length){statusEl.textContent='';return;}
+  const total=checked.reduce((s,id)=>{const i=g(`fbpct-${containerId}-${id}`);return s+(parseFloat(i?i.value:0)||0);},0);
+  const r=Math.round(total);
+  if(r===100){statusEl.innerHTML='<span class="pct-ok">&#10003; 100% &#8212; fully assigned</span>';}
+  else if(r>0&&r<100){statusEl.innerHTML='<span class="pct-ok">&#10003; '+r+'% assigned &middot; '+(100-r)+'% unassigned</span>';}
+  else if(r>100){statusEl.innerHTML='<span class="pct-warning">'+r+'% &#8212; reduce to 100% or below</span>';}
+  else{statusEl.textContent='';}
+}
+function getFundedByFromUI(containerId){
+  return getCheckedFundedBy(containerId).map(id=>{
+    const i=g(`fbpct-${containerId}-${id}`);
+    if(id==='__external__'){
+      const lbl=g(`fblabel-${containerId}-__external__`);
+      return{id:'__external__',label:(lbl?lbl.value.trim():'')||'External',pct:parseFloat(i?i.value:0)||0};
+    }
+    return{id,pct:parseFloat(i?i.value:0)||0};
+  });
+}
+function validateFundedBy(fb){if(!fb.length)return true;return Math.round(fb.reduce((s,f)=>s+f.pct,0))<=100;}
+
+// ── FUND ─────────────────────────────────────────────
+function openFundSheet(ctx){fundCtx=ctx;['sh-fund-name','sh-fund-target','sh-fund-current','sh-fund-weekly'].forEach(id=>g(id).value='');openSheet('fund');}
+function saveFund(){
+  const name=g('sh-fund-name').value.trim();if(!name){alert('Please enter a fund name.');return;}
+  state.sinkingFunds.push({id:uid(),name,target:parseFloat(g('sh-fund-target').value)||0,current:parseFloat(g('sh-fund-current').value)||0,weeklyContrib:parseFloat(g('sh-fund-weekly').value)||0});
+  save();closeSheet('fund');renderObFunds();
+  if(curTab==='funds')renderFunds();if(curTab==='dashboard')renderDashboard();
+}
+function deleteFund(id){state.sinkingFunds=state.sinkingFunds.filter(f=>f.id!==id);save();renderObFunds();if(curTab==='funds')renderFunds();if(curTab==='dashboard')renderDashboard();}
+
+// ── SURPLUS ───────────────────────────────────────────
+function openSurplusSheet(){
+  const sel=g('sh-surplus-contrib');
+  sel.innerHTML=state.contributors.length?state.contributors.map(c=>`<option value="${c.id}">${c.name}</option>`).join(''):'<option value="">No contributors yet</option>';
+  g('sh-surplus-thresh').value='';g('sh-surplus-pct').value='';openSheet('surplus');
+}
+function saveSurplusRule(){
+  const cid=g('sh-surplus-contrib').value,thresh=parseFloat(g('sh-surplus-thresh').value)||0,pct=parseFloat(g('sh-surplus-pct').value)||0;
+  if(!cid||pct<1||pct>100){alert('Please fill in all fields correctly.');return;}
+  state.surplusRules.push({id:uid(),contributorId:cid,threshold:thresh,pct});
+  save();closeSheet('surplus');renderObSurplus();if(curTab==='settings')renderSettings();
+}
+function deleteSurplusRule(idx){state.surplusRules.splice(idx,1);save();renderObSurplus();if(curTab==='settings')renderSettings();}
+
+// ── CONTRIBUTORS ──────────────────────────────────────
+function openAddContribSheet(){['nc-name','nc-income','nc-contrib'].forEach(id=>g(id).value='');g('nc-type').value='fixed';g('nc-cycle').value='weekly';openSheet('add-contrib');}
+function saveNewContrib(){
+  const name=g('nc-name').value.trim();if(!name){alert('Please enter a name.');return;}
+  state.contributors.push({id:uid(),name,type:g('nc-type').value,cycle:g('nc-cycle').value,income:parseFloat(g('nc-income').value)||0,weeklyContrib:parseFloat(g('nc-contrib').value)||0});
+  save();closeSheet('add-contrib');renderSettings();
+}
+function openEditContrib(i){
+  const c=state.contributors[i];
+  g('ec-idx').value=i;g('ec-name').value=c.name;g('ec-type').value=c.type;g('ec-cycle').value=c.cycle;g('ec-income').value=c.income;g('ec-contrib').value=c.weeklyContrib;
+  openSheet('edit-contrib');
+}
+function saveContribEdit(){
+  const i=parseInt(g('ec-idx').value);
+  state.contributors[i]={...state.contributors[i],name:g('ec-name').value.trim()||state.contributors[i].name,type:g('ec-type').value,cycle:g('ec-cycle').value,income:parseFloat(g('ec-income').value)||0,weeklyContrib:parseFloat(g('ec-contrib').value)||0};
+  save();closeSheet('edit-contrib');renderSettings();
+  if(curTab==='dashboard')renderDashboard();if(curTab==='payday')renderPayday();
+}
+function deleteContrib(){
+  const i=parseInt(g('ec-idx').value);if(!confirm('Remove this contributor?'))return;
+  const id=state.contributors[i].id;
+  state.contributors.splice(i,1);
+  state.surplusRules=state.surplusRules.filter(r=>r.contributorId!==id);
+  state.bills.forEach(b=>{if(b.paidById===id)b.paidById='';b.fundedBy=(b.fundedBy||[]).filter(fb=>fb.id!==id);});
+  if(state.selPayday>=state.contributors.length)state.selPayday=0;
+  save();closeSheet('edit-contrib');renderSettings();if(curTab==='dashboard')renderDashboard();
+}
+
+// ── AVATAR UPLOAD ─────────────────────────────────────
+function triggerAvatarUpload(idx){
+  avatarTargetIdx=idx;
+  const inp=g('avatar-file');
+  inp.value='';inp.click();
+}
+function handleAvatarUpload(event){
+  const file=event.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const dataUrl=e.target.result;
+    if(avatarTargetIdx!==null&&state.contributors[avatarTargetIdx]){
+      state.contributors[avatarTargetIdx].avatar=dataUrl;
+      save();renderSettings();
+      if(curTab==='dashboard')renderDashboard();
+      if(curTab==='payday')renderPayday();
+    }
+    try{event.target.value='';}catch(ex){}
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── ADD TO FUND ───────────────────────────────────────
+let atfId=null;
+function openAddToFundSheet(id,name){atfId=id;g('sh-atf-title').textContent='Add to '+name;g('sh-atf-amt').value='';openSheet('add-to-fund');}
+function confirmAddToFund(){
+  const n=parseFloat(g('sh-atf-amt').value)||0;if(!n){alert('Enter an amount.');return;}
+  const f=state.sinkingFunds.find(f=>f.id===atfId);if(f){f.current=(f.current||0)+n;save();}
+  closeSheet('add-to-fund');renderFunds();if(curTab==='dashboard')renderDashboard();
+}
+
+// ── PAYDAY ────────────────────────────────────────────
+function toggleRecurring(){
+  const c=state.contributors[state.selPayday];if(!c)return;
+  c.recurringOn=!c.recurringOn;save();renderPayday();
+}
+function saveRecurringAmount(){
+  const c=state.contributors[state.selPayday];if(!c)return;
+  const val=parseFloat(g('recurring-amount').value)||0;
+  c.recurringAmt=val;save();
+  calcPayday();
+}
+function renderPayday(){
+  const bannerEl=g('pay-banner'),inputCard=g('pay-input-card'),chipsEl=g('pay-chips');
+  if(!state.contributors.length){
+    bannerEl.innerHTML=banner('No contributors yet','Set up contributors in Settings to use Payday.','settings');
+    chipsEl.innerHTML='';inputCard.style.display='none';g('pay-result').innerHTML='';return;
+  }
+  bannerEl.innerHTML='';inputCard.style.display='block';
+  chipsEl.innerHTML=state.contributors.map((c,i)=>`
+    <div class="chip ${state.selPayday===i?'sel':''}" onclick="selPaydayContrib(${i})">
+      ${c.avatar?`<img src="${c.avatar}" class="chip-avatar" alt="${c.name}">`:`<div class="chip-avatar-init">${initials(c.name)}</div>`}
+      <div class="chip-info"><div class="chip-name">${c.name}</div><div class="chip-cycle">${cycleL(c.cycle)}</div></div>
+    </div>`).join('');
+  const c=state.contributors[state.selPayday];
+  if(c)g('pay-period').value=c.cycle;
+  const tog=g('recurring-toggle'),recField=g('recurring-amount-field'),amtField=g('pay-amount-field'),badgeWrap=g('recurring-badge-wrap');
+  if(c&&c.recurringOn){
+    tog.classList.add('on');recField.classList.remove('hidden');g('recurring-amount').value=c.recurringAmt||'';
+    amtField.classList.add('hidden');
+    badgeWrap.innerHTML=`<div class="recurring-badge">🔁 Recurring — ${fmtd(c.recurringAmt||0)} ${cycleL(c.cycle).toLowerCase()}</div>`;
+  }else{
+    tog.classList.remove('on');recField.classList.add('hidden');amtField.classList.remove('hidden');badgeWrap.innerHTML='';
+  }
+  if(!g('pay-amount').value&&!(c&&c.recurringOn))g('pay-result').innerHTML='';
+  else calcPayday();
+}
+function selPaydayContrib(i){state.selPayday=i;g('pay-amount').value='';g('pay-result').innerHTML='';renderPayday();}
+function calcPayday(){
+  if(state.selPayday>=state.contributors.length)state.selPayday=0;
+  const c=state.contributors[state.selPayday];if(!c)return;
+  const resEl=g('pay-result');
+  let amount,period;
+  if(c.recurringOn){amount=parseFloat(c.recurringAmt)||0;period=c.cycle;}
+  else{amount=parseFloat(g('pay-amount').value)||0;period=g('pay-period').value;}
+  if(!amount){resEl.innerHTML='';return;}
+  const wa=toWeeklyIncome(amount,period);
+  const contrib=parseFloat(c.weeklyContrib)||0;
+  const toJoint=Math.min(wa,contrib);
+  let toFund=0,rem=wa-toJoint,ruleUsed=null;
+  for(const r of state.surplusRules.filter(r=>r.contributorId===c.id)){
+    if(wa>r.threshold){const excess=wa-r.threshold;toFund=excess*(r.pct/100);rem=wa-toJoint-toFund;ruleUsed=r;break;}
+  }
+  resEl.innerHTML=`<div class="pay-result" style="margin:0 16px">
+    <div class="pr-title">Payday instructions</div>
+    <div class="pr-row"><div class="pr-lbl">Received (weekly equiv.)</div><div class="pr-val">${fmtd(wa)}</div></div>
+    <div class="pr-row"><div class="pr-lbl">→ Transfer to joint account</div><div class="pr-val big">${fmtd(toJoint)}</div></div>
+    ${toFund>0?`<div class="pr-row"><div class="pr-lbl">→ Transfer to sinking fund</div><div class="pr-val" style="color:var(--amber)">${fmtd(toFund)}</div></div>`:''}
+    <div class="pr-row"><div class="pr-lbl">Yours to keep</div><div class="pr-val pos">${fmtd(Math.max(0,rem))}</div></div>
+    ${ruleUsed?`<div class="pr-note">Rule: above ${fmt(ruleUsed.threshold)}/wk → ${ruleUsed.pct}% to fund</div>`:''}
+  </div>`;
+}
+
+// ── DASHBOARD ─────────────────────────────────────────
+function banner(title,sub,tab){return`<div class="setup-banner" onclick="showTab('${tab}')"><div class="setup-banner-ico">⚙️</div><div class="setup-banner-txt"><div class="setup-banner-ttl">${title}</div><div class="setup-banner-sub">${sub}</div></div><div style="color:var(--lime);font-size:20px">›</div></div>`;}
+
+function renderDashboard(){
+  g('dash-hh-name').textContent=state.householdName||'funded.';
+  const now=new Date();
+  g('dash-week').textContent='Week of '+now.toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'});
+  const income=weeklyContribs(),bills=weeklyBills(),surp=income-bills,sinking=sinkingTotal();
+  g('d-income').textContent=fmt(income);g('d-bills').textContent=fmt(bills);
+  g('d-sinking').textContent=fmt(sinking);
+  g('d-surplus').textContent=(surp<0?'-':'')+fmt(surp);
+  g('d-surplus').className='stat-val '+(surp>=0?'green':'red');
+  const hs=healthStatus();
+  g('hl-dot').className='hl-dot '+hs.cls;g('hl-text').textContent=hs.label;
+  g('hl-sub').textContent=!state.contributors.length?'Add contributors in Settings to get started.':surp>=0?fmt(surp)+' surplus after bills this week':fmt(Math.abs(surp))+' shortfall — review contributions';
+  const bEl=g('dash-banner');
+  if(!state.contributors.length)bEl.innerHTML=banner('Set up contributors','Add income earners to see household health.','settings');
+  else if(!state.bills.length)bEl.innerHTML=banner('Add your bills','Track costs and see funding status.','bills');
+  else bEl.innerHTML='';
+
+  // Contributors with avatar
+  g('d-contrib-row').innerHTML=state.contributors.length?state.contributors.map(c=>`
+    <div class="contrib-hero-chip">
+      ${avatarHTML(c,36,'contrib-hero-avatar')}
+      <div class="contrib-hero-info">
+        <div class="contrib-hero-name">${c.name}</div>
+        <div class="contrib-hero-contrib">${fmt(c.weeklyContrib)}<span style="font-size:11px;font-weight:400;color:var(--text-3)">/wk</span></div>
+        <div class="contrib-hero-income">${fmt(c.income)} ${cycleL(c.cycle).toLowerCase()}</div>
+      </div>
+    </div>`).join(''):'<div style="color:var(--text-3);font-size:13px">No contributors set up yet.</div>';
+
+  // Sinking funds in hero
+  const fhWrap=g('d-funds-hero'),fhItems=g('d-funds-hero-items');
+  if(state.sinkingFunds.length){
+    fhWrap.style.display='block';
+    fhItems.innerHTML=state.sinkingFunds.slice(0,4).map(f=>{
+      const pct=f.target?Math.min(100,Math.round((f.current/f.target)*100)):0;
+      return`<div class="funds-hero-item"><div class="funds-hero-name">${f.name}</div><div class="funds-hero-bar"><div class="funds-hero-fill" style="width:${pct}%"></div></div><div class="funds-hero-pct">${pct}%</div></div>`;
+    }).join('');
+  }else{fhWrap.style.display='none';}
+
+  // Bills — grouped by frequency, collapsible
+  const bContainer=g('d-bills-container');
+  if(!state.bills.length){bContainer.innerHTML='<div style="padding:0 16px 16px;color:var(--text-3);font-size:13px">No bills added yet.</div>';g('d-bills-count').textContent='';return;}
+  const allOk=state.bills.every(b=>billIsPaid(b)&&weeklyContribs()>=weeklyBills()&&weeklyContribs()>0);
+  const sorted=[...state.bills].sort((a,b)=>freqSortVal(a.freq)-freqSortVal(b.freq));
+  const groups={};sorted.forEach(b=>{if(!groups[b.freq])groups[b.freq]=[];groups[b.freq].push(b);});
+  const freqLabels={weekly:'Weekly',fortnightly:'Fortnightly',monthly:'Monthly',quarterly:'Quarterly',annual:'Annual'};
+  const freqKeys=FREQ_ORDER.filter(f=>groups[f]);
+  let html='';
+  if(allOk)html+=`<div class="all-clear"><div class="all-clear-ico">✅</div><div><div class="all-clear-ttl">You're all covered</div><div class="all-clear-sub">All bills paid and funded this cycle.</div></div></div>`;
+
+  freqKeys.forEach((f,idx)=>{
+    // First group defaults open, rest default collapsed — but user toggle overrides
+    const defaultCollapsed=idx>0;
+    const isCollapsed=dashGroupCollapsed.hasOwnProperty(f)?dashGroupCollapsed[f]:defaultCollapsed;
+    const items=groups[f];
+    const unpaid=items.filter(b=>b.payMethod==='manual'&&!billIsPaid(b)).length;
+    html+=`<div class="dash-bill-group">
+      <div class="dash-bill-group-hdr" onclick="toggleDashGroup('${f}')">
+        <span class="dash-grp-label">${freqLabels[f]}</span>
+        <div class="dash-grp-right">
+          ${unpaid?`<span class="badge badge-warn">${unpaid} unpaid</span>`:''}
+          <span class="dash-grp-count">${items.length} bill${items.length!==1?'s':''}</span>
+          <span class="dash-grp-arrow ${isCollapsed?'':'open'}">›</span>
+        </div>
+      </div>
+      <div class="dash-grp-body" style="${isCollapsed?'display:none':''}">
+        ${items.map(b=>`<div class="bfr" onclick="openBillDetail('${b.id}')">
+          <div><div class="bfr-name">${b.icon} ${b.name}</div><div class="bfr-sub">${fmtd(toWeekly(b.amount,b.freq))}/week</div></div>
+          ${billStatusBadge(b)}
+        </div>`).join('')}
+      </div>
+    </div>`;
+  });
+  bContainer.innerHTML=html;
+  const totalUnpaid=state.bills.filter(b=>b.payMethod==='manual'&&!billIsPaid(b)).length;
+  g('d-bills-count').textContent=totalUnpaid?`${totalUnpaid} unpaid`:'';
+}
+
+function toggleDashGroup(freq){
+  // Read current rendered state from DOM rather than stored state
+  const arrow=document.querySelector(`.dash-bill-group-hdr[onclick="toggleDashGroup('${freq}')"] .dash-grp-arrow`);
+  const body=arrow?arrow.closest('.dash-bill-group').querySelector('.dash-grp-body'):null;
+  if(!body)return;
+  const isCurrentlyCollapsed=body.style.display==='none';
+  dashGroupCollapsed[freq]=!isCurrentlyCollapsed;
+  body.style.display=isCurrentlyCollapsed?'':'none';
+  arrow.classList.toggle('open',isCurrentlyCollapsed);
+  arrow.closest('.dash-bill-group-hdr').querySelector('.dash-grp-arrow').classList.toggle('open',isCurrentlyCollapsed);
+}
+
+// ── BILLS SCREEN ──────────────────────────────────────
+function renderBills(){
+  const period=g('b-period-sel').value;state.billsPeriod=period;
+  const weekly=weeklyBills(),total=toDisplay(weekly,period);
+  g('b-total-val').textContent=fmtd(total);g('b-total-period').textContent=periodL(period);
+  const el=g('bills-list');
+  if(!state.bills.length){el.innerHTML=`<div class="empty"><div class="empty-ico">📋</div><div class="empty-ttl">No bills yet</div><div class="empty-sub">Tap + to add your first household cost.</div></div>`;return;}
+  const grouped={};CATS.forEach(c=>{grouped[c.id]=[];});
+  state.bills.forEach(b=>{const cat=b.cat||autoCat(b.name);if(!grouped[cat])grouped[cat]=[];grouped[cat].push(b);});
+  el.innerHTML=CATS.filter(c=>grouped[c.id].length>0).map(cat=>{
+    const isCollapsed=collapsedCats.has(cat.id);
+    const catWeekly=grouped[cat.id].reduce((s,b)=>s+toWeekly(b.amount,b.freq),0);
+    const catTotal=toDisplay(catWeekly,period);
+    return`<div class="bill-cat-group">
+      <div class="bill-cat-hdr" onclick="toggleCat('${cat.id}')">
+        <div style="display:flex;align-items:center;gap:8px"><span>${cat.icon}</span><span class="bill-cat-name">${cat.label}</span></div>
+        <div style="display:flex;align-items:center;gap:10px"><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-2)">${fmtd(catTotal)}</span><span class="bill-cat-arrow ${isCollapsed?'':'open'}">›</span></div>
+      </div>
+      <div class="bill-cat-items" ${isCollapsed?'style="display:none"':''}>
+        ${grouped[cat.id].map(b=>{
+          const w=toWeekly(b.amount,b.freq),disp=toDisplay(w,period),paid=billIsPaid(b);
+          return`<div class="bill-item" onclick="openBillDetail('${b.id}')">
+            <div class="bill-ico">${b.icon}</div>
+            <div class="bill-info"><div class="bill-name">${b.name}</div><div class="bill-meta">${fmt(b.amount)} · ${freqL(b.freq)}${b.payMethod==='auto'?' · Auto':''}</div></div>
+            <div class="bill-right"><div class="bill-wk">${fmtd(disp)}</div><div class="bill-wk-lbl">${periodL(period)}</div></div>
+            <div class="bill-status-dot ${paid?'green':weeklyContribs()>=weeklyBills()&&weeklyContribs()>0?'amber':'red'}"></div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+function toggleCat(catId){if(collapsedCats.has(catId))collapsedCats.delete(catId);else collapsedCats.add(catId);renderBills();}
+
+// ── FUNDS ─────────────────────────────────────────────
+function renderFunds(){
+  const el=g('funds-list');
+  if(!state.sinkingFunds.length){el.innerHTML=`<div class="empty"><div class="empty-ico">🏦</div><div class="empty-ttl">No sinking funds</div><div class="empty-sub">Add goals like holidays, emergencies, or a rainy day fund.</div></div>`;return;}
+  el.innerHTML=state.sinkingFunds.map(f=>{
+    const pct=f.target?Math.min(100,Math.round((f.current/f.target)*100)):0;
+    const wl=(f.target&&f.weeklyContrib&&f.target>f.current)?Math.ceil((f.target-f.current)/f.weeklyContrib):null;
+    return`<div class="fund-item">
+      <div class="fund-hdr"><div><div class="fund-name">${f.name}</div><div class="fund-tgt">Target: ${fmt(f.target)}</div></div><div class="fund-amt">${fmt(f.current)}<span>${pct}% funded</span></div></div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
+      <div class="fund-meta"><span>${f.weeklyContrib?fmt(f.weeklyContrib)+'/wk auto':'No auto-contrib'}</span><span>${wl?wl+' weeks to target':pct>=100?'✓ Reached':'—'}</span></div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn btn-ghost btn-sm" onclick="openAddToFundSheet('${f.id}','${f.name}')">+ Add</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteFund('${f.id}')">Remove</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── SETTINGS ──────────────────────────────────────────
+function renderSettings(){
+  g('s-hh-name').textContent=state.householdName||'—';
+  const isJoint=state.payMode!=='direct';
+  const pmTog=g('s-pay-mode-tog');
+  if(pmTog){pmTog.classList.toggle('on',isJoint);}
+  const pmDesc=g('s-pay-mode-desc');
+  if(pmDesc)pmDesc.textContent=isJoint?'Joint fund — bills paid from shared account':'Direct pay — contributors pay bill assignees';
+
+  const cEl=g('s-contributors');
+  cEl.innerHTML=state.contributors.length?state.contributors.map((c,i)=>`
+    <div class="contrib-card">
+      <div class="contrib-hdr">
+        <div class="contrib-avatar-wrap">
+          ${c.avatar?`<img src="${c.avatar}" class="contrib-avatar" alt="${c.name}">`:`<div class="contrib-avatar-init">${initials(c.name)}</div>`}
+          <button class="contrib-avatar-edit" onclick="triggerAvatarUpload(${i})" title="Change photo">📷</button>
+        </div>
+        <div><div class="contrib-name">${c.name}</div><div class="contrib-role">${cycleL(c.cycle)} · ${c.type}</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+        <div class="card-sm" style="margin:0"><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-3);margin-bottom:2px;font-weight:600">BASE INCOME</div><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px">${fmt(c.income)}</div></div>
+        <div class="card-sm" style="margin:0"><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-3);margin-bottom:2px;font-weight:600">WK CONTRIB</div><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:var(--lime)">${fmt(c.weeklyContrib)}</div></div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="openEditContrib(${i})">Edit details</button>
+    </div>`).join(''):'<div class="card-sm" style="color:var(--text-2);font-size:14px">No contributors yet.</div>';
+
+  const srEl=g('s-surplus');
+  srEl.innerHTML=state.surplusRules.length?state.surplusRules.map((r,i)=>{
+    const c=state.contributors.find(c=>c.id===r.contributorId);
+    return`<div class="set-row" style="cursor:default"><div><div class="set-row-lbl">${c?c.name:'?'}: above ${fmt(r.threshold)}/wk</div><div style="font-size:12px;color:var(--text-2);margin-top:2px">${r.pct}% → sinking fund</div></div><button class="btn btn-sm btn-danger" onclick="deleteSurplusRule(${i})">Remove</button></div>`;
+  }).join(''):'<div class="card-sm" style="color:var(--text-2);font-size:14px;margin-bottom:0">No rules — surplus stays with the contributor.</div>';
+}
+
+function editHHName(){const n=prompt('Household name:',state.householdName);if(n&&n.trim()){state.householdName=n.trim();save();renderSettings();if(curTab==='dashboard')renderDashboard();}}
+function resetApp(){if(confirm('Reset all data? This cannot be undone.')){localStorage.removeItem(STORAGE_KEY);location.reload();}}
+
+// ── EXPORT / IMPORT ───────────────────────────────────
+function exportData(){
+  const exp={...state,_exported:new Date().toISOString(),_version:APP_VERSION};
+  const blob=new Blob([JSON.stringify(exp,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const slug=(state.householdName||'funded').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+  a.href=url;a.download=`funded-${slug}-${new Date().toISOString().slice(0,10)}.json`;a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importData(event){
+  const files=event.target.files;if(!files||!files.length)return;
+  const file=files[0];
+  const reader=new FileReader();
+  reader.onload=function(e){
+    event.target.value='';
+    try{
+      const text=e.target.result;if(!text)return;
+      const imp=JSON.parse(text);
+      if(!imp.householdName&&!imp.contributors){alert('Not a valid Funded backup file.');return;}
+      pendingImport=imp;
+      setTimeout(function(){
+        if(!pendingImport)return;
+        const d=pendingImport;pendingImport=null;
+        const cleaned={};
+        Object.keys(d).forEach(function(k){if(k!=='_exported'&&k!=='_version')cleaned[k]=d[k];});
+        state=Object.assign({},state,cleaned,{onboarded:true});
+        save();
+        if(!g('tab-bar').classList.contains('visible')){g('screen-onboarding').classList.remove('active');g('tab-bar').classList.add('visible');}
+        showTab('dashboard');
+        alert('Imported — welcome back, '+(state.householdName||'household')+'!');
+      },0);
+    }catch(err){alert('Could not read file: '+err.message);}
+  };
+  reader.onerror=function(){alert('File read failed.');};
+  reader.readAsText(file);
+}
+
+function triggerImport(){var inp=g('import-file');if(inp){inp.value='';inp.click();}}
+
+// ── TESTING GUIDE ────────────────────────────────────
+function renderGuide(){
+  const el=g('guide-content');
+  if(!el)return;
+  el.innerHTML=`
+    <!-- Hero -->
+    <div class="g-hero">
+      <div class="g-eyebrow">Alpha Testing · v0.2.2.2</div>
+      <div class="g-title">Test <span>funded.</span><br>Help shape it.</div>
+      <div class="g-sub">You're one of the first people to use Funded. This guide gets you set up in a few minutes — then tells you exactly what to try and how to share your feedback.</div>
+      <a class="g-cta" href="https://fundedalpha.netlify.app/" target="_blank">Open Funded →</a>
+      <div class="g-url">https://fundedalpha.netlify.app/</div>
+    </div>
+
+    <!-- What is this -->
+    <div class="g-sec">
+      <div class="g-sec-eye">Before you start</div>
+      <div class="g-sec-title">What you're testing</div>
+      <div class="g-info">
+        <div class="g-info-title">🏠 Funded is a household cash-flow app</div>
+        <div class="g-info-body">It's not a budgeting app that tracks every coffee. It's built around one idea: <strong style="color:var(--text)">fund the house first</strong>. You enter your income and bills, and Funded tells each contributor exactly what to transfer on payday — no maths required.</div>
+      </div>
+      <div class="g-alpha-banner">
+        <span style="font-size:20px">⚠️</span>
+        <div>
+          <div class="g-alpha-title">This is alpha software</div>
+          <div class="g-alpha-body">Expect rough edges, missing features, and things that don't quite work yet. That's exactly why you're here. Your feedback during this phase directly shapes what gets built next.</div>
+        </div>
+      </div>
+    </div>
+    <div class="g-divider"></div>
+
+    <!-- Install -->
+    <div class="g-sec">
+      <div class="g-sec-eye">Step one</div>
+      <div class="g-sec-title">Add to your home screen</div>
+      <div class="g-sec-sub">Funded is a web app — no App Store required. Adding it to your home screen gives you the full-screen experience, just like a native app.</div>
+      <div class="g-tab-row">
+        <div class="g-tab active" id="gt-ios" onclick="switchGuideTab('ios')"><span class="g-tab-ico">🍎</span>iPhone / iPad</div>
+        <div class="g-tab" id="gt-android" onclick="switchGuideTab('android')"><span class="g-tab-ico">🤖</span>Android</div>
+      </div>
+      <div class="g-tab-content active" id="gtc-ios">
+        <div class="g-steps">
+          <div class="g-step"><div class="g-step-num">1</div><div class="g-step-body"><div class="g-step-title">Open Safari</div><div class="g-step-desc">Go to <strong>https://fundedalpha.netlify.app/</strong> in Safari. Must be Safari — Chrome on iOS won't add to home screen properly.</div></div></div>
+          <div class="g-step"><div class="g-step-num">2</div><div class="g-step-body"><div class="g-step-title">Tap the Share button</div><div class="g-step-desc">Tap the <strong>Share icon</strong> at the bottom of Safari — a box with an arrow pointing up.</div></div></div>
+          <div class="g-step"><div class="g-step-num">3</div><div class="g-step-body"><div class="g-step-title">Add to Home Screen</div><div class="g-step-desc">Scroll down and tap <strong>Add to Home Screen</strong>, then tap <strong>Add</strong> in the top right.</div></div></div>
+          <div class="g-step"><div class="g-step-num">4</div><div class="g-step-body"><div class="g-step-title">Open from your home screen</div><div class="g-step-desc">Tap the Funded icon on your home screen. It will open full-screen.</div><div class="g-step-note">💡 Always open from the home screen icon, not from Safari.</div></div></div>
+        </div>
+      </div>
+      <div class="g-tab-content" id="gtc-android">
+        <div class="g-steps">
+          <div class="g-step"><div class="g-step-num">1</div><div class="g-step-body"><div class="g-step-title">Open Chrome</div><div class="g-step-desc">Go to <strong>https://fundedalpha.netlify.app/</strong> in Chrome.</div></div></div>
+          <div class="g-step"><div class="g-step-num">2</div><div class="g-step-body"><div class="g-step-title">Tap the three-dot menu</div><div class="g-step-desc">Tap the <strong>⋮ menu</strong> in the top-right corner of Chrome.</div></div></div>
+          <div class="g-step"><div class="g-step-num">3</div><div class="g-step-body"><div class="g-step-title">Add to Home screen</div><div class="g-step-desc">Tap <strong>Add to Home screen</strong>. A banner at the bottom of Chrome may appear — you can tap that instead.</div></div></div>
+          <div class="g-step"><div class="g-step-num">4</div><div class="g-step-body"><div class="g-step-title">Confirm and open</div><div class="g-step-desc">Tap <strong>Add</strong> on the dialog, then open Funded from your home screen.</div><div class="g-step-note">💡 Always open from the home screen icon, not from Chrome.</div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="g-divider"></div>
+
+    <!-- Setup -->
+    <div class="g-sec">
+      <div class="g-sec-eye">Step two</div>
+      <div class="g-sec-title">Set up your household</div>
+      <div class="g-sec-sub">Funded walks you through a 6-step setup. Use your real details — the more accurate your data, the more useful your feedback.</div>
+      <div class="g-steps">
+        <div class="g-step"><div class="g-step-num">1</div><div class="g-step-body"><div class="g-step-title">Name your household</div><div class="g-step-desc">Whatever you call home — your name, a nickname, anything.</div></div></div>
+        <div class="g-step"><div class="g-step-num">2</div><div class="g-step-body"><div class="g-step-title">Choose how you pay bills</div><div class="g-step-desc"><strong>Joint fund</strong> — shared account, bills paid from there. <strong>Direct pay</strong> — contributors pay their share to whoever handles each bill.</div></div></div>
+        <div class="g-step"><div class="g-step-num">3</div><div class="g-step-body"><div class="g-step-title">Add contributors</div><div class="g-step-desc">Add 1 or 2 income earners — name, pay cycle, income, and weekly contribution.</div></div></div>
+        <div class="g-step"><div class="g-step-num">4</div><div class="g-step-body"><div class="g-step-title">Add your bills</div><div class="g-step-desc">Enter regular household costs. Any frequency — Funded converts everything to weekly.</div></div></div>
+        <div class="g-step"><div class="g-step-num">5</div><div class="g-step-body"><div class="g-step-title">Surplus rules (optional)</div><div class="g-step-desc">Set how extra income above the base is split — e.g. 50% goes to a sinking fund.</div></div></div>
+        <div class="g-step"><div class="g-step-num">6</div><div class="g-step-body"><div class="g-step-title">Sinking funds (optional)</div><div class="g-step-desc">Add savings goals — holidays, emergencies, Christmas, anything.</div><div class="g-step-note">💡 Tap "Explore first" on the first screen to skip setup and browse now. Add details from Settings later.</div></div></div>
+      </div>
+    </div>
+    <div class="g-divider"></div>
+
+    <!-- What to test -->
+    <div class="g-sec">
+      <div class="g-sec-eye">Step three</div>
+      <div class="g-sec-title">What to test</div>
+      <div class="g-sec-sub">Work through this checklist. You don't need to do it all in one session.</div>
+      <div class="g-checklist">
+        <div class="g-check-item"><div class="g-check-box"></div><div class="g-check-text"><strong>Onboarding</strong><span>Does the setup flow make sense? Anything confusing or missing?</span></div></div>
+        <div class="g-check-item"><div class="g-check-box"></div><div class="g-check-text"><strong>Dashboard — Household Health</strong><span>Does the health score and surplus feel accurate based on your numbers?</span></div></div>
+        <div class="g-check-item"><div class="g-check-box"></div><div class="g-check-text"><strong>Dashboard — Bill status</strong><span>Try collapsing and expanding frequency groups. Do the paid/funded badges look right?</span></div></div>
+        <div class="g-check-item"><div class="g-check-box"></div><div class="g-check-text"><strong>Payday tab</strong><span>Enter your actual pay. If you're salaried, turn on Recurring pay and save your amount. Does it calculate correctly?</span></div></div>
+        <div class="g-check-item"><div class="g-check-box"></div><div class="g-check-text"><strong>Bills tab</strong><span>Add bills, try categories, tap to edit, mark a manual bill as paid.</span></div></div>
+        <div class="g-check-item"><div class="g-check-box"></div><div class="g-check-text"><strong>Funds tab</strong><span>Add a sinking fund, tap + Add to top it up. Does the progress bar update?</span></div></div>
+        <div class="g-check-item"><div class="g-check-box"></div><div class="g-check-text"><strong>Settings — Contributors</strong><span>Upload a profile photo. Does it appear on the dashboard and payday screen?</span></div></div>
+        <div class="g-check-item"><div class="g-check-box"></div><div class="g-check-text"><strong>Export and import</strong><span>Export your data, then re-import it. Does everything restore correctly?</span></div></div>
+        <div class="g-check-item"><div class="g-check-box"></div><div class="g-check-text"><strong>Light mode</strong><span>Switch your phone to light mode. Is everything readable?</span></div></div>
+        <div class="g-check-item"><div class="g-check-box"></div><div class="g-check-text"><strong>General feel</strong><span>Anything broken, confusing, or missing that you'd expect to be there?</span></div></div>
+      </div>
+    </div>
+    <div class="g-divider"></div>
+
+    <!-- Feedback -->
+    <div class="g-sec">
+      <div class="g-sec-eye">Step four</div>
+      <div class="g-sec-title">Share your feedback</div>
+      <div class="g-sec-sub">All feedback goes through a Microsoft Form. Be as specific as you can — every submission gets read.</div>
+      <div class="g-feedback-card">
+        <div class="g-feedback-title">Submit feedback →</div>
+        <div class="g-feedback-sub">Report bugs, suggest features, or share anything that felt off.</div>
+        <a class="g-cta" href="https://forms.office.com/r/eCyJuX9JW9" target="_blank">Open feedback form →</a>
+        <div class="g-url" style="margin-top:12px">https://forms.office.com/r/eCyJuX9JW9</div>
+      </div>
+    </div>
+    <div class="g-divider"></div>
+
+    <!-- FAQ -->
+    <div class="g-sec">
+      <div class="g-sec-eye">Good to know</div>
+      <div class="g-sec-title">Common questions</div>
+      <div class="g-info"><div class="g-info-title">💾 Where is my data stored?</div><div class="g-info-body">All data is stored locally on your device — nothing is sent to a server. Use Settings → Data → Export to back up as a JSON file.</div></div>
+      <div class="g-info"><div class="g-info-title">🔄 What if I update the app?</div><div class="g-info-body">When a new version is deployed, your browser loads it automatically. Your data stays intact. If something looks broken, export first, then reset and re-import.</div></div>
+      <div class="g-info"><div class="g-info-title">📱 Why add to home screen?</div><div class="g-info-body">Opening from the home screen icon gives Funded its own storage space and full-screen layout. Running from a browser tab can cause display or storage quirks.</div></div>
+      <div class="g-info"><div class="g-info-title">🐛 Found something broken?</div><div class="g-info-body">Note what you were doing, then submit it using the <a href="https://forms.office.com/r/eCyJuX9JW9" target="_blank">feedback form</a>. Screenshots are always helpful.</div></div>
+    </div>
+
+    <!-- Footer -->
+    <div class="g-footer">
+      funded v0.2.2.2-alpha<br>
+      Concept &amp; Development: Anthony Paull<br>
+      Built with Claude by Anthropic
+    </div>
+  `;
+}
+
+function switchGuideTab(platform){
+  document.querySelectorAll('.g-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.g-tab-content').forEach(c=>c.classList.remove('active'));
+  const tabEl=g('gt-'+platform);
+  const contentEl=g('gtc-'+platform);
+  if(tabEl)tabEl.classList.add('active');
+  if(contentEl)contentEl.classList.add('active');
+}
+
+// ── INIT ──────────────────────────────────────────────
+function init(){
+  load();
+  g('import-file').addEventListener('change',function(e){importData(e);});
+  g('avatar-file').addEventListener('change',function(e){handleAvatarUpload(e);});
+  if(state.onboarded){g('tab-bar').classList.add('visible');launchApp();}
+}
+init();
+</script>
+</body>
+</html>
