@@ -21,7 +21,7 @@ function formatCurrency(n: number): string {
 }
 
 export default function Home() {
-  const { bills, funds, paydays } = useApp();
+  const { bills, funds, paydays, householdName } = useApp();
 
   /* ── Derived summary values ────────────────── */
   const totalSaved = useMemo(
@@ -57,14 +57,14 @@ export default function Home() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-            Welcome back, Ant
+            Welcome to {householdName || "Funded"}
           </h1>
           <p className="text-sm text-muted mt-1">
             {"Here's your financial overview for today."}
           </p>
         </div>
         <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-gradient-to-tr from-secondary to-indigo-600 flex items-center justify-center text-white font-bold text-base sm:text-lg shadow-md shadow-secondary/20">
-          A
+          {(householdName || "A").charAt(0).toUpperCase()}
         </div>
       </div>
 

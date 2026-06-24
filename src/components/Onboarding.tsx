@@ -74,7 +74,7 @@ export default function Onboarding() {
 
   /* ── Can proceed? ──────────────────────────── */
   function canProceed(): boolean {
-    if (currentStep === 1) return householdName.trim().length > 0;
+    if (currentStep === 1) return localHouseholdName.trim().length > 0;
     if (currentStep === 2) return paydayDate !== "" && payAmount !== "";
     if (currentStep === 3) return billName.trim().length > 0 && billAmount !== "";
     return true;
@@ -154,8 +154,8 @@ export default function Onboarding() {
                     id="ob-household"
                     type="text"
                     placeholder="e.g. The Smiths"
-                    value={householdName}
-                    onChange={(e) => setHouseholdName(e.target.value)}
+                    value={localHouseholdName}
+                    onChange={(e) => setLocalHouseholdName(e.target.value)}
                     className="w-full px-4 py-3 rounded-xl bg-surface-raised border border-border text-foreground text-sm font-medium focus:ring-2 focus:ring-secondary/40 focus:border-secondary outline-none transition-all"
                   />
                 </div>
@@ -310,7 +310,7 @@ export default function Onboarding() {
                     You&apos;re All Set! 🎉
                   </h2>
                   <p className="text-sm text-muted max-w-xs mx-auto">
-                    <span className="font-bold text-foreground">{householdName || "Your household"}</span> is ready to go.
+                    <span className="font-bold text-foreground">{localHouseholdName || "Your household"}</span> is ready to go.
                     Your payday and first bill are already tracked.
                   </p>
                 </div>
