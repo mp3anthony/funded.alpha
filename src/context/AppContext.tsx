@@ -166,6 +166,12 @@ const INITIAL_PAYDAYS: Payday[] = [
    ═══════════════════════════════════════════════ */
 
 interface AppContextValue {
+  /* Onboarding */
+  isOnboarded: boolean;
+  completeOnboarding: () => void;
+  householdName: string;
+  setHouseholdName: (name: string) => void;
+
   /* Bills */
   bills: Bill[];
   addBill: (bill: Bill) => void;
@@ -190,6 +196,14 @@ const AppContext = createContext<AppContextValue | null>(null);
    ═══════════════════════════════════════════════ */
 
 export function AppProvider({ children }: { children: ReactNode }) {
+  /* ── Onboarding ─────────────────────────────── */
+  const [isOnboarded, setIsOnboarded] = useState(false);
+  const [householdName, setHouseholdName] = useState("");
+
+  function completeOnboarding() {
+    setIsOnboarded(true);
+  }
+
   /* ── Bills ──────────────────────────────────── */
   const [bills, setBills] = useState<Bill[]>(INITIAL_BILLS);
 
@@ -246,6 +260,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   /* ── Value ─────────────────────────────────── */
   const value: AppContextValue = {
+    isOnboarded,
+    completeOnboarding,
+    householdName,
+    setHouseholdName,
     bills,
     addBill,
     togglePaid,

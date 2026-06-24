@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
-import BottomNav from "@/components/BottomNav";
 import { AppProvider } from "@/context/AppContext";
+import AppShell from "@/components/AppShell";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
@@ -27,12 +27,9 @@ export default function RootLayout({
       className={`${plusJakartaSans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground font-sans">
-        <main className="flex-1 w-full pb-16 flex flex-col">
-          <AppProvider>
-            {children}
-          </AppProvider>
-        </main>
-        <BottomNav />
+        <AppProvider>
+          <AppShell>{children}</AppShell>
+        </AppProvider>
       </body>
     </html>
   );
