@@ -2,13 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Calendar, Clock, Plus, Trash2, X, DollarSign } from "lucide-react";
-
-/* ── Types ──────────────────────────────────── */
-interface Payday {
-  id: number;
-  date: string;   // ISO date string (YYYY-MM-DD)
-  amount: number;
-}
+import { useApp } from "@/context/AppContext";
 
 /* ── Helpers ─────────────────────────────────── */
 function daysUntil(isoDate: string): number {
@@ -34,16 +28,10 @@ function formatCurrency(n: number): string {
   });
 }
 
-/* ── Initial Mock Data ───────────────────────── */
-const INITIAL_PAYDAYS: Payday[] = [
-  { id: 1, date: "2026-07-05", amount: 2500 },
-  { id: 2, date: "2026-07-19", amount: 2500 },
-  { id: 3, date: "2026-08-02", amount: 2500 },
-];
-
 /* ── Page Component ──────────────────────────── */
 export default function PaydayPage() {
-  const [paydays, setPaydays] = useState<Payday[]>(INITIAL_PAYDAYS);
+  const { paydays, addPayday, deletePayday } = useApp();
+
   const [showModal, setShowModal] = useState(false);
   const [newDate, setNewDate] = useState("");
   const [newAmount, setNewAmount] = useState("");
@@ -62,19 +50,14 @@ export default function PaydayPage() {
   /* ── Handlers ──────────────────────────────── */
   function handleAdd() {
     if (!newDate || !newAmount) return;
-    const entry: Payday = {
+    addPayday({
       id: Date.now(),
       date: newDate,
       amount: parseFloat(newAmount),
-    };
-    setPaydays((prev) => [...prev, entry]);
+    });
     setNewDate("");
     setNewAmount("");
     setShowModal(false);
-  }
-
-  function handleDelete(id: number) {
-    setPaydays((prev) => prev.filter((p) => p.id !== id));
   }
 
   /* ── Render ────────────────────────────────── */
@@ -214,7 +197,7 @@ export default function PaydayPage() {
                     </div>
 
                     <button
-                      onClick={() => handleDelete(payday.id)}
+                      onClick={() => deletePayday(payday.id)}
                       aria-label="Delete payday"
                       className="flex h-9 w-9 items-center justify-center rounded-xl text-muted hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer"
                     >

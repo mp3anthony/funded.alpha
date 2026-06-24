@@ -1,72 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { Target, Plus, Plane, Shield, Car, TrendingUp, PiggyBank } from "lucide-react";
-
-// ─── Types ───────────────────────────────────────────────────────────────────
-type Fund = {
-  id: number;
-  name: string;
-  category: string;
-  currentAmount: number;
-  targetAmount: number;
-  // Tailwind colour strings for the icon badge and bar
-  bgLight: string;
-  barColor: string;
-  accentText: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  icon: React.ComponentType<any>;
-};
-
-// ─── Initial data (outside component so it's stable) ─────────────────────────
-const initialFunds: Fund[] = [
-  {
-    id: 1,
-    name: "Holiday Trip",
-    category: "Travel",
-    currentAmount: 3250.00,
-    targetAmount: 5000.00,
-    bgLight: "bg-secondary/10 text-secondary",
-    barColor: "bg-secondary",
-    accentText: "text-secondary",
-    icon: Plane,
-  },
-  {
-    id: 2,
-    name: "Emergency Fund",
-    category: "Safety Net",
-    currentAmount: 7500.00,
-    targetAmount: 10000.00,
-    bgLight: "bg-primary/10 text-primary",
-    barColor: "bg-primary",
-    accentText: "text-primary",
-    icon: Shield,
-  },
-  {
-    id: 3,
-    name: "New Car",
-    category: "Transport",
-    currentAmount: 1700.00,
-    targetAmount: 15000.00,
-    bgLight: "bg-accent/10 text-accent",
-    barColor: "bg-accent",
-    accentText: "text-accent",
-    icon: Car,
-  },
-];
+import { Target, Plus, PiggyBank, TrendingUp } from "lucide-react";
+import { useApp } from "@/context/AppContext";
 
 const ADD_AMOUNT = 50; // dollars added per click
 
 export default function Funds() {
-  // ─── State ─────────────────────────────────────────────────────────────────
-  const [funds, setFunds] = useState<Fund[]>(initialFunds);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { funds, addFund, addMoneyToFund } = useApp();
 
-  // Modal form state
+  // ── Local UI state ────────────────────────────────────────────────
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [newTarget, setNewTarget] = useState("");
 
-  // ─── Derived summary values ────────────────────────────────────────────────
+  // ── Derived summary values ────────────────────────────────────────
   const totalSaved = funds.reduce((sum, f) => sum + f.currentAmount, 0);
   const avgCompletion =
     funds.length > 0
@@ -74,20 +22,10 @@ export default function Funds() {
         funds.length
       : 0;
 
-  // ─── Handlers ──────────────────────────────────────────────────────────────
-  function addMoney(id: number) {
-    setFunds((prev) =>
-      prev.map((f) =>
-        f.id === id
-          ? { ...f, currentAmount: Math.min(f.currentAmount + ADD_AMOUNT, f.targetAmount) }
-          : f
-      )
-    );
-  }
-
+  // ── Handlers ──────────────────────────────────────────────────────
   function handleCreateFund(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const newFund: Fund = {
+    const newFund = {
       id: Date.now(),
       name: newName,
       category: "Custom",
@@ -98,7 +36,7 @@ export default function Funds() {
       accentText: "text-secondary",
       icon: PiggyBank,
     };
-    setFunds((prev) => [...prev, newFund]);
+    addFund(newFund);
     setNewName("");
     setNewTarget("");
     setIsModalOpen(false);
@@ -228,7 +166,7 @@ export default function Funds() {
                   ) : (
                     <button
                       type="button"
-                      onClick={() => addMoney(fund.id)}
+                      onClick={() => addMoneyToFund(fund.id, ADD_AMOUNT)}
                       className="flex items-center justify-center gap-1.5 w-full py-2 rounded-xl border border-border bg-surface-raised hover:bg-primary/10 hover:border-primary/30 hover:text-primary text-muted text-xs font-semibold transition-all duration-200 active:scale-[0.98]"
                     >
                       <Plus className="h-3.5 w-3.5" />

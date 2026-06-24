@@ -1,92 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Plus, Search, Filter, CheckCircle, Clock, AlertCircle, Trash2 } from "lucide-react";
-
-const initialMockBills = [
-  {
-    id: 1,
-    name: "Rent / Mortgage",
-    category: "Housing",
-    dueDate: "June 30, 2026",
-    amount: 1200.00,
-    status: "Due Soon",
-    frequency: "Monthly",
-    statusColor: "text-amber-600 bg-amber-500/10 dark:text-amber-400",
-    statusIcon: Clock,
-    categoryColor: "bg-secondary/10 text-secondary",
-  },
-  {
-    id: 2,
-    name: "Electricity Bill",
-    category: "Utilities",
-    dueDate: "July 02, 2026",
-    amount: 145.50,
-    status: "Due Soon",
-    frequency: "Monthly",
-    statusColor: "text-amber-600 bg-amber-500/10 dark:text-amber-400",
-    statusIcon: Clock,
-    categoryColor: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-  },
-  {
-    id: 3,
-    name: "Fiber Internet",
-    category: "Services",
-    dueDate: "July 05, 2026",
-    amount: 79.99,
-    status: "Due Soon",
-    frequency: "Monthly",
-    statusColor: "text-amber-600 bg-amber-500/10 dark:text-amber-400",
-    statusIcon: Clock,
-    categoryColor: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
-  },
-  {
-    id: 4,
-    name: "Gold's Gym Membership",
-    category: "Health & Fitness",
-    dueDate: "June 20, 2026",
-    amount: 45.00,
-    status: "Paid",
-    frequency: "Monthly",
-    statusColor: "text-emerald-600 bg-emerald-500/10 dark:text-emerald-400",
-    statusIcon: CheckCircle,
-    categoryColor: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-  },
-  {
-    id: 5,
-    name: "Car Insurance",
-    category: "Auto",
-    dueDate: "June 18, 2026",
-    amount: 180.00,
-    status: "Paid",
-    frequency: "Monthly",
-    statusColor: "text-emerald-600 bg-emerald-500/10 dark:text-emerald-400",
-    statusIcon: CheckCircle,
-    categoryColor: "bg-rose-500/10 text-rose-600 dark:text-rose-400",
-  },
-  {
-    id: 6,
-    name: "Netflix & Spotify Premium",
-    category: "Entertainment",
-    dueDate: "June 15, 2026",
-    amount: 24.99,
-    status: "Overdue",
-    frequency: "Monthly",
-    statusColor: "text-rose-600 bg-rose-500/10 dark:text-rose-400",
-    statusIcon: AlertCircle,
-    categoryColor: "bg-pink-500/10 text-pink-600 dark:text-pink-400",
-  },
-];
+import { useApp } from "@/context/AppContext";
 
 export default function Bills() {
+  const { bills, addBill, togglePaid, deleteBill } = useApp();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [bills, setBills] = useState(initialMockBills);
 
   // Form field state
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [frequency, setFrequency] = useState("Monthly");
+
+  // Derived summary values — reactive to context state
+  const totalBills = useMemo(() => bills.reduce((s, b) => s + b.amount, 0), [bills]);
+  const totalPaid = useMemo(
+    () => bills.filter((b) => b.status === "Paid").reduce((s, b) => s + b.amount, 0),
+    [bills],
+  );
+  const remainingDue = totalBills - totalPaid;
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -102,31 +37,12 @@ export default function Bills() {
       statusIcon: Clock,
       categoryColor: "bg-secondary/10 text-secondary",
     };
-    setBills([...bills, newBill]);
+    addBill(newBill);
     setName("");
     setAmount("");
     setDueDate("");
     setFrequency("Monthly");
     setIsModalOpen(false);
-  }
-
-  function togglePaid(id: number) {
-    setBills((prev) =>
-      prev.map((bill) =>
-        bill.id === id
-          ? {
-              ...bill,
-              status: "Paid",
-              statusColor: "text-emerald-600 bg-emerald-500/10 dark:text-emerald-400",
-              statusIcon: CheckCircle,
-            }
-          : bill
-      )
-    );
-  }
-
-  function deleteBill(id: number) {
-    setBills((prev) => prev.filter((bill) => bill.id !== id));
   }
 
   return (
@@ -150,14 +66,14 @@ export default function Bills() {
         </button>
       </div>
 
-      {/* Summary Banner Cards */}
+      {/* Summary Banner Cards — reactive */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-surface border border-border rounded-2xl p-5 shadow-sm">
           <span className="text-xs font-bold uppercase tracking-wider text-subtle">
             Total Monthly Bills
           </span>
           <h3 className="text-2xl font-bold text-foreground mt-1 tracking-tight">
-            $1,675.48
+            ${totalBills.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </h3>
         </div>
         <div className="bg-surface border border-border rounded-2xl p-5 shadow-sm">
@@ -165,7 +81,7 @@ export default function Bills() {
             Remaining Due
           </span>
           <h3 className="text-2xl font-bold text-accent mt-1 tracking-tight">
-            $1,425.49
+            ${remainingDue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </h3>
         </div>
         <div className="bg-surface border border-border rounded-2xl p-5 shadow-sm">
@@ -173,7 +89,7 @@ export default function Bills() {
             Total Paid
           </span>
           <h3 className="text-2xl font-bold text-primary mt-1 tracking-tight">
-            $225.00
+            ${totalPaid.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </h3>
         </div>
       </div>

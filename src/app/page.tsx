@@ -1,34 +1,55 @@
+"use client";
+
+import { useMemo } from "react";
 import { PiggyBank, Calendar, ListChecks, ArrowUpRight, TrendingUp } from "lucide-react";
 import Link from "next/link";
+import { useApp } from "@/context/AppContext";
+
+/* ── Helpers ─────────────────────────────────── */
+function daysUntil(isoDate: string): number {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const target = new Date(isoDate + "T00:00:00");
+  return Math.ceil((target.getTime() - now.getTime()) / 86_400_000);
+}
+
+function formatCurrency(n: number): string {
+  return n.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
 
 export default function Home() {
-  // Mock bills list
-  const mockBills = [
-    {
-      id: 1,
-      name: "Rent / Mortgage",
-      category: "Housing",
-      dueDate: "June 30, 2026",
-      amount: 1200.00,
-      color: "bg-secondary/10 text-secondary",
-    },
-    {
-      id: 2,
-      name: "Electricity Bill",
-      category: "Utilities",
-      dueDate: "July 02, 2026",
-      amount: 145.50,
-      color: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-    },
-    {
-      id: 3,
-      name: "Fiber Internet",
-      category: "Services",
-      dueDate: "July 05, 2026",
-      amount: 79.99,
-      color: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
-    },
-  ];
+  const { bills, funds, paydays } = useApp();
+
+  /* ── Derived summary values ────────────────── */
+  const totalSaved = useMemo(
+    () => funds.reduce((s, f) => s + f.currentAmount, 0),
+    [funds],
+  );
+
+  const unpaidBills = useMemo(
+    () => bills.filter((b) => b.status !== "Paid"),
+    [bills],
+  );
+
+  const totalUnpaid = useMemo(
+    () => unpaidBills.reduce((s, b) => s + b.amount, 0),
+    [unpaidBills],
+  );
+
+  const nextPayday = useMemo(() => {
+    const upcoming = paydays
+      .filter((p) => daysUntil(p.date) >= 0)
+      .sort((a, b) => a.date.localeCompare(b.date));
+    return upcoming[0] ?? null;
+  }, [paydays]);
+
+  const nextPaydayDays = nextPayday ? daysUntil(nextPayday.date) : null;
+
+  /* First 3 unpaid bills for the preview list */
+  const previewBills = unpaidBills.slice(0, 3);
 
   return (
     <div className="flex-1 w-full max-w-4xl mx-auto px-4 py-8 sm:px-6 md:py-12 space-y-8">
@@ -36,7 +57,7 @@ export default function Home() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-            Welcome back, Alex
+            Welcome back, Ant
           </h1>
           <p className="text-sm text-muted mt-1">
             {"Here's your financial overview for today."}
@@ -54,7 +75,7 @@ export default function Home() {
           <div className="absolute top-0 left-0 right-0 h-1 bg-primary" />
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-subtle">
-              Total Funds
+              Total Saved
             </span>
             <div className="p-2 rounded-xl bg-primary/10 text-primary">
               <PiggyBank className="h-5 w-5" />
@@ -62,11 +83,11 @@ export default function Home() {
           </div>
           <div className="mt-4">
             <h3 className="text-3xl font-bold text-foreground tracking-tight">
-              $12,450.00
+              ${formatCurrency(totalSaved)}
             </h3>
             <div className="flex items-center gap-1.5 mt-2 text-primary text-xs font-medium">
               <TrendingUp className="h-3.5 w-3.5" />
-              <span>+2.4% this month</span>
+              <span>{funds.length} active goal{funds.length !== 1 ? "s" : ""}</span>
             </div>
           </div>
         </div>
@@ -83,12 +104,27 @@ export default function Home() {
             </div>
           </div>
           <div className="mt-4">
-            <h3 className="text-3xl font-bold text-foreground tracking-tight">
-              $4,250.00
-            </h3>
-            <span className="inline-block text-xs font-medium text-secondary mt-2 bg-secondary/10 px-2 py-0.5 rounded-full">
-              In 12 days (July 5)
-            </span>
+            {nextPayday ? (
+              <>
+                <h3 className="text-3xl font-bold text-foreground tracking-tight">
+                  ${formatCurrency(nextPayday.amount)}
+                </h3>
+                <span className="inline-block text-xs font-medium text-secondary mt-2 bg-secondary/10 px-2 py-0.5 rounded-full">
+                  {nextPaydayDays === 0
+                    ? "Today! 🎉"
+                    : nextPaydayDays === 1
+                      ? "In 1 day"
+                      : `In ${nextPaydayDays} days`}
+                </span>
+              </>
+            ) : (
+              <>
+                <h3 className="text-3xl font-bold text-muted tracking-tight">—</h3>
+                <span className="inline-block text-xs font-medium text-muted mt-2">
+                  No upcoming paydays
+                </span>
+              </>
+            )}
           </div>
         </div>
 
@@ -105,10 +141,10 @@ export default function Home() {
           </div>
           <div className="mt-4">
             <h3 className="text-3xl font-bold text-foreground tracking-tight">
-              $1,425.49
+              ${formatCurrency(totalUnpaid)}
             </h3>
             <span className="inline-block text-xs font-medium text-accent mt-2 bg-accent/10 px-2 py-0.5 rounded-full">
-              3 bills due soon
+              {unpaidBills.length} bill{unpaidBills.length !== 1 ? "s" : ""} due
             </span>
           </div>
         </div>
@@ -130,40 +166,47 @@ export default function Home() {
         </div>
 
         <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-sm divide-y divide-border">
-          {mockBills.map((bill) => (
-            <div
-              key={bill.id}
-              className="p-4 sm:p-5 flex items-center justify-between hover:bg-surface-raised transition-colors"
-            >
-              <div className="flex items-center gap-4">
-                <div className={`hidden sm:flex h-10 w-10 rounded-xl items-center justify-center font-bold text-xs ${bill.color}`}>
-                  {bill.category.substring(0, 2).toUpperCase()}
-                </div>
-                <div>
-                  <h4 className="text-sm sm:text-base font-semibold text-foreground">
-                    {bill.name}
-                  </h4>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xs text-subtle">
-                      Due: {bill.dueDate}
-                    </span>
-                    <span className="h-1 w-1 rounded-full bg-border-strong" />
-                    <span className="text-xs font-medium text-muted bg-surface-raised px-2 py-0.5 rounded-md">
-                      {bill.category}
-                    </span>
+          {previewBills.length === 0 ? (
+            <div className="p-8 text-center">
+              <ListChecks className="h-8 w-8 mx-auto text-muted mb-2" />
+              <p className="text-sm text-muted font-medium">All bills are paid! 🎉</p>
+            </div>
+          ) : (
+            previewBills.map((bill) => (
+              <div
+                key={bill.id}
+                className="p-4 sm:p-5 flex items-center justify-between hover:bg-surface-raised transition-colors"
+              >
+                <div className="flex items-center gap-4">
+                  <div className={`hidden sm:flex h-10 w-10 rounded-xl items-center justify-center font-bold text-xs ${bill.categoryColor}`}>
+                    {bill.category.substring(0, 2).toUpperCase()}
+                  </div>
+                  <div>
+                    <h4 className="text-sm sm:text-base font-semibold text-foreground">
+                      {bill.name}
+                    </h4>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs text-subtle">
+                        Due: {bill.dueDate}
+                      </span>
+                      <span className="h-1 w-1 rounded-full bg-border-strong" />
+                      <span className="text-xs font-medium text-muted bg-surface-raised px-2 py-0.5 rounded-md">
+                        {bill.category}
+                      </span>
+                    </div>
                   </div>
                 </div>
+                <div className="text-right">
+                  <span className="text-base sm:text-lg font-bold text-foreground">
+                    ${bill.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                  <span className="block text-[10px] text-accent font-semibold tracking-wider uppercase mt-1">
+                    Pay Soon
+                  </span>
+                </div>
               </div>
-              <div className="text-right">
-                <span className="text-base sm:text-lg font-bold text-foreground">
-                  ${bill.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </span>
-                <span className="block text-[10px] text-accent font-semibold tracking-wider uppercase mt-1">
-                  Pay Soon
-                </span>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </div>
