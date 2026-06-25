@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 import { CheckCircle, Clock, AlertCircle, Plane, Shield, Car, PiggyBank } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { type Session } from "@supabase/supabase-js";
 
 /* ═══════════════════════════════════════════════
    Types
@@ -339,7 +340,7 @@ interface AppContextValue {
   isOnboarded: boolean;
   completeOnboarding: () => void;
   householdName: string;
-  setHouseholdName: (name: string) => void;
+  setHouseholdName: (name: string, userId?: string | null) => void;
 
   /* Bills */
   bills: Bill[];
@@ -361,6 +362,10 @@ interface AppContextValue {
   members: Member[];
   addMember: (member: Member) => void;
   removeMember: (id: string | number) => void;
+
+  /* Auth */
+  session: Session | null;
+  isAuthLoading: boolean;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -375,6 +380,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [householdName, setHouseholdNameState] = useState("");
   const [dbHouseholdId, setDbHouseholdId] = useState<string | null>(null);
 
+  /* ── Auth ────────────────────────────────── */
+  const [session, setSession] = useState<Session | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Auth useEffect - getSession result:', session ? 'has session' : 'no session', 'user:', session?.user?.id);
+      setSession(session);
+      setIsAuthLoading(false);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log('Auth useEffect - onAuthStateChange event:', _event, 'session:', session ? 'has session' : 'no session', 'user:', session?.user?.id);
+      setSession(session);
+      setIsAuthLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   function completeOnboarding() {
     setIsOnboarded(true);
   }
@@ -386,8 +413,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [members, setMembers] = useState<Member[]>([]);
 
   /* ── Sync/Load Data ─────────────────────────── */
+  // Only load data AFTER auth has resolved and we have a valid session.
+  // This prevents a race condition where RLS returns empty results
+  // (because no auth token is set yet), causing the app to show onboarding.
   useEffect(() => {
+    if (isAuthLoading || !session) {
+      console.log('loadData skipped - isAuthLoading:', isAuthLoading, 'session:', session ? 'exists' : 'null');
+      return;
+    }
+
     async function loadData() {
+      console.log('loadData running with authenticated session, user:', session?.user?.id);
       try {
         const { data: households, error: hError } = await supabase
           .from("households")
@@ -401,16 +437,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
         if (households && households.length > 0) {
           const household = households[0];
+          console.log('loadData - found household:', household.id, household.name);
           setDbHouseholdId(household.id);
           setHouseholdNameState(household.name);
           setIsOnboarded(true);
 
           // Fetch related data
           const [billsRes, fundsRes, paydaysRes, membersRes] = await Promise.all([
-            supabase.from("bills").select("*").eq("household_id", household.id),
-            supabase.from("funds").select("*").eq("household_id", household.id),
-            supabase.from("paydays").select("*").eq("household_id", household.id),
-            supabase.from("household_members").select("*").eq("household_id", household.id),
+            supabase.from("bills").select("*"),
+            supabase.from("funds").select("*"),
+            supabase.from("paydays").select("*"),
+            supabase.from("household_members").select("*"),
           ]);
 
           if (billsRes.data) {
@@ -427,6 +464,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           }
         } else {
           // No household, user needs to onboard
+          console.log('loadData - no household found, user needs onboarding');
           setIsOnboarded(false);
         }
       } catch (err) {
@@ -435,7 +473,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
 
     loadData();
-  }, []);
+  }, [isAuthLoading, session]);
 
   /* ── Helper to Ensure Household Exists ──────── */
   async function ensureHousehold(): Promise<string> {
@@ -453,9 +491,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
 
     const nameToUse = householdName.trim() || "My Household";
+    const { data: { session: currentSession } } = await supabase.auth.getSession();
+    const userIdToUse = currentSession?.user?.id;
+    console.log('ensureHousehold - currentSession:', currentSession ? 'exists' : 'null', 'userIdToUse:', userIdToUse);
+
+    const insertData: any = { name: nameToUse };
+    if (userIdToUse) {
+      insertData.user_id = userIdToUse;
+    }
+
     const { data: newHousehold, error } = await supabase
       .from("households")
-      .insert({ name: nameToUse })
+      .insert(insertData)
       .select()
       .single();
 
@@ -471,7 +518,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }
 
   /* ── Household Name Actions ─────────────────── */
-  async function setHouseholdName(name: string) {
+  async function setHouseholdName(name: string, userId?: string | null) {
     setHouseholdNameState(name);
     try {
       if (dbHouseholdId) {
@@ -480,9 +527,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
           .update({ name })
           .eq("id", dbHouseholdId);
       } else {
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        const userIdToUse = userId || currentSession?.user?.id;
+        console.log('setHouseholdName - currentSession:', currentSession ? 'exists' : 'null', 'userId param:', userId, 'userIdToUse:', userIdToUse);
+
+        const insertData: any = { name };
+        if (userIdToUse) {
+          insertData.user_id = userIdToUse;
+        }
+
         const { data, error } = await supabase
           .from("households")
-          .insert({ name })
+          .insert(insertData)
           .select()
           .single();
 
@@ -744,6 +800,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     members,
     addMember,
     removeMember,
+    session,
+    isAuthLoading,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

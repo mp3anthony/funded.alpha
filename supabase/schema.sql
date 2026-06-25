@@ -16,6 +16,7 @@
 -- Create households table
 CREATE TABLE IF NOT EXISTS households (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT timezone('utc', now()) NOT NULL
 );

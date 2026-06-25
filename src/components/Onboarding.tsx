@@ -16,7 +16,7 @@ import {
 const TOTAL_STEPS = 4;
 
 export default function Onboarding() {
-  const { addPayday, addBill, completeOnboarding, setHouseholdName: setGlobalHouseholdName } = useApp();
+  const { addPayday, addBill, completeOnboarding, setHouseholdName: setGlobalHouseholdName, session } = useApp();
 
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -35,7 +35,7 @@ export default function Onboarding() {
   /* ── Navigation ─────────────────────────────── */
   function handleNext() {
     if (currentStep === 1 && localHouseholdName.trim()) {
-      setGlobalHouseholdName(localHouseholdName.trim());
+      setGlobalHouseholdName(localHouseholdName.trim(), session?.user?.id);
     }
 
     if (currentStep === 2 && paydayDate && payAmount) {
