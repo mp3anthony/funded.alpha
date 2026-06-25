@@ -41,6 +41,14 @@ export interface Payday {
   amount: number;
 }
 
+export interface Member {
+  id: string | number;
+  name: string;
+  email: string;
+  role: string;
+  avatar: string;
+}
+
 /* ═══════════════════════════════════════════════
    Initial Mock Data (Retained for reference)
    ═══════════════════════════════════════════════ */
@@ -310,6 +318,18 @@ function mapPaydayFromDb(dbPayday: any): Payday {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapMemberFromDb(dbMember: any): Member {
+  const name = dbMember.name || dbMember.email.split("@")[0];
+  return {
+    id: dbMember.id,
+    name,
+    email: dbMember.email,
+    role: dbMember.role || "member",
+    avatar: name.charAt(0).toUpperCase(),
+  };
+}
+
 /* ═══════════════════════════════════════════════
    Context Shape
    ═══════════════════════════════════════════════ */
@@ -336,6 +356,11 @@ interface AppContextValue {
   paydays: Payday[];
   addPayday: (payday: Payday) => void;
   deletePayday: (id: string | number) => void;
+
+  /* Members */
+  members: Member[];
+  addMember: (member: Member) => void;
+  removeMember: (id: string | number) => void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -358,6 +383,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [bills, setBills] = useState<Bill[]>([]);
   const [funds, setFunds] = useState<Fund[]>([]);
   const [paydays, setPaydays] = useState<Payday[]>([]);
+  const [members, setMembers] = useState<Member[]>([]);
 
   /* ── Sync/Load Data ─────────────────────────── */
   useEffect(() => {
@@ -380,10 +406,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
           setIsOnboarded(true);
 
           // Fetch related data
-          const [billsRes, fundsRes, paydaysRes] = await Promise.all([
+          const [billsRes, fundsRes, paydaysRes, membersRes] = await Promise.all([
             supabase.from("bills").select("*").eq("household_id", household.id),
             supabase.from("funds").select("*").eq("household_id", household.id),
             supabase.from("paydays").select("*").eq("household_id", household.id),
+            supabase.from("household_members").select("*").eq("household_id", household.id),
           ]);
 
           if (billsRes.data) {
@@ -394,6 +421,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
           }
           if (paydaysRes.data) {
             setPaydays(paydaysRes.data.map(mapPaydayFromDb));
+          }
+          if (membersRes.data) {
+            setMembers(membersRes.data.map(mapMemberFromDb));
           }
         } else {
           // No household, user needs to onboard
@@ -649,6 +679,52 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  /* ── Members Actions ────────────────────────── */
+  async function addMember(member: Member) {
+    try {
+      const hId = await ensureHousehold();
+
+      const dbMemberData = {
+        household_id: hId,
+        name: member.name,
+        email: member.email,
+        role: member.role || "member",
+      };
+
+      const { data, error } = await supabase
+        .from("household_members")
+        .insert(dbMemberData)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error inserting member:", error);
+        return;
+      }
+
+      if (data) {
+        setMembers((prev) => [...prev, mapMemberFromDb(data)]);
+      }
+    } catch (err) {
+      console.error("Failed to add member:", err);
+    }
+  }
+
+  async function removeMember(id: string | number) {
+    try {
+      const { error } = await supabase.from("household_members").delete().eq("id", id);
+
+      if (error) {
+        console.error("Error deleting member:", error);
+        return;
+      }
+
+      setMembers((prev) => prev.filter((m) => m.id !== id));
+    } catch (err) {
+      console.error("Failed to remove member:", err);
+    }
+  }
+
   /* ── Value ─────────────────────────────────── */
   const value: AppContextValue = {
     isOnboarded,
@@ -665,6 +741,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     paydays,
     addPayday,
     deletePayday,
+    members,
+    addMember,
+    removeMember,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

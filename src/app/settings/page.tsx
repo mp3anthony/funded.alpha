@@ -13,17 +13,13 @@ import {
   Save,
   Check,
 } from "lucide-react";
-
-/* ── Types ──────────────────────────────────── */
-interface HouseholdMember {
-  id: number;
-  name: string;
-  email: string;
-  avatar: string; // first letter
-}
+import { useApp } from "@/context/AppContext";
 
 /* ── Page Component ──────────────────────────── */
 export default function SettingsPage() {
+  /* Context */
+  const { members, addMember, removeMember } = useApp();
+
   /* Profile */
   const [fullName, setFullName] = useState("Ant");
   const [email, setEmail] = useState("ant@funded.com");
@@ -32,12 +28,6 @@ export default function SettingsPage() {
   /* Preferences */
   const [pushNotifications, setPushNotifications] = useState(true);
   const [emailAlerts, setEmailAlerts] = useState(false);
-
-  /* Household Members */
-  const [members, setMembers] = useState<HouseholdMember[]>([
-    { id: 1, name: "Ant", email: "ant@funded.com", avatar: "A" },
-    { id: 2, name: "Sarah", email: "sarah@funded.com", avatar: "S" },
-  ]);
 
   /* Invite modal */
   const [showInvite, setShowInvite] = useState(false);
@@ -52,19 +42,19 @@ export default function SettingsPage() {
   function handleInvite() {
     if (!inviteEmail.trim()) return;
     const name = inviteEmail.split("@")[0];
-    const member: HouseholdMember = {
-      id: Date.now(),
+    addMember({
+      id: Date.now(), // placeholder, Supabase will assign real UUID
       name: name.charAt(0).toUpperCase() + name.slice(1),
       email: inviteEmail.trim(),
+      role: "member",
       avatar: name.charAt(0).toUpperCase(),
-    };
-    setMembers((prev) => [...prev, member]);
+    });
     setInviteEmail("");
     setShowInvite(false);
   }
 
-  function handleRemoveMember(id: number) {
-    setMembers((prev) => prev.filter((m) => m.id !== id));
+  function handleRemoveMember(id: string | number) {
+    removeMember(id);
   }
 
   /* ── Render ────────────────────────────────── */
