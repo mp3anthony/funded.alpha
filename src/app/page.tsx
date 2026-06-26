@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useApp } from "@/context/AppContext";
+import HouseholdHealth from "@/components/HouseholdHealth";
 
 /* ── Helpers ─────────────────────────────────── */
 function daysUntil(dateStr: string): number {
@@ -97,7 +98,10 @@ export default function Home() {
   return (
     <div className="flex-1 w-full max-w-4xl mx-auto px-4 py-8 sm:px-6 md:py-12 space-y-8">
       {/* Header Greeting */}
-      <div className="flex items-center justify-between">
+      <div className="relative">
+        {/* Ambient radial glow background */}
+        <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-full max-w-2xl aspect-[3/1] bg-[radial-gradient(ellipse_at_top,_rgba(200,255,0,0.15),_transparent_70%)] pointer-events-none -z-10" />
+
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
             Welcome to {householdName || "Funded"}
@@ -106,8 +110,10 @@ export default function Home() {
             {"Here's your financial overview for today."}
           </p>
         </div>
-        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-gradient-to-tr from-secondary to-indigo-600 flex items-center justify-center text-white font-bold text-base sm:text-lg shadow-md shadow-secondary/20">
-          {(householdName || "A").charAt(0).toUpperCase()}
+
+        {/* Household Health Section */}
+        <div className="mt-6">
+          <HouseholdHealth />
         </div>
       </div>
 
