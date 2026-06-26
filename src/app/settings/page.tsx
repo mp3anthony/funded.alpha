@@ -6,7 +6,6 @@ import {
   Bell,
   Mail,
   Users,
-  LogOut,
   Plus,
   X,
   Trash2,
@@ -283,13 +282,6 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      {/* ── Log Out ──────────────────────────────── */}
-      <div className="pt-2 pb-4">
-        <button className="w-full bg-destructive text-destructive-fg py-3.5 px-4 rounded-2xl flex items-center justify-center gap-2 font-bold shadow-lg shadow-destructive/20 hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer">
-          <LogOut className="h-4 w-4" />
-          <span>Log Out</span>
-        </button>
-      </div>
 
       {/* ── Invite Member Modal ──────────────────── */}
       {showInvite && (

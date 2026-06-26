@@ -1,125 +1,126 @@
 @import "tailwindcss";
 
 /* ─────────────────────────────────────────────
-   FUNDED — Global Brand Tokens (Light Mode)
+   FUNDED — Brand Tokens (Matching Prototype)
 ───────────────────────────────────────────── */
 :root {
-  /* Primary: Deep Emerald Green — success, money, growth */
-  --color-primary:         #059669; /* emerald-600 */
-  --color-primary-light:   #d1fae5; /* emerald-100 */
-  --color-primary-dark:    #065f46; /* emerald-800 */
-  --color-primary-fg:      #ffffff;
+  /* Primary: Lime Green — the signature color */
+  --color-primary: #c8ff00;
+  --color-primary-light: rgba(200, 255, 0, 0.10);
+  --color-primary-mid: rgba(200, 255, 0, 0.25);
+  --color-primary-fg: #000000;
 
-  /* Secondary: Royal Blue — CTAs, navigation, interactive */
-  --color-secondary:       #2563eb; /* blue-600 */
-  --color-secondary-light: #dbeafe; /* blue-100 */
-  --color-secondary-dark:  #1e3a8a; /* blue-900 */
-  --color-secondary-fg:    #ffffff;
+  /* Secondary: Keep for compatibility, but map to lime variants */
+  --color-secondary: #c8ff00;
+  --color-secondary-light: rgba(200, 255, 0, 0.10);
+  --color-secondary-dark: #7aaa00;
+  --color-secondary-fg: #000000;
 
-  /* Accent: Amber — warnings, "due soon" states */
-  --color-accent:          #d97706; /* amber-600 */
-  --color-accent-light:    #fef3c7; /* amber-100 */
-  --color-accent-fg:       #ffffff;
+  /* Accent: Amber — warnings */
+  --color-accent: #ffab00;
+  --color-accent-light: rgba(255, 171, 0, 0.12);
+  --color-accent-fg: #000000;
 
-  /* Destructive: Rose Red — overdue, logout, danger */
-  --color-destructive:     #e11d48; /* rose-600 */
-  --color-destructive-light: #ffe4e6; /* rose-100 */
-  --color-destructive-fg:  #ffffff;
+  /* Destructive: Red */
+  --color-destructive: #ff3d57;
+  --color-destructive-light: rgba(255, 61, 87, 0.12);
+  --color-destructive-fg: #ffffff;
 
-  /* Background */
-  --color-background:      #f5f7fa; /* cool off-white */
-  --color-surface:         #ffffff; /* card / panel surface */
-  --color-surface-raised:  #f0f2f5; /* subtly elevated surface */
+  /* Success: Green */
+  --color-success: #00e676;
+  --color-success-light: rgba(0, 230, 118, 0.12);
+
+  /* Background — Dark mode default */
+  --color-background: #0a0a0a;
+  --color-surface: #111111;
+  --color-surface-raised: #181818;
+  --color-surface-elevated: #202020;
 
   /* Text */
-  --color-foreground:      #0f172a; /* slate-900 */
-  --color-muted:           #64748b; /* slate-500 */
-  --color-subtle:          #94a3b8; /* slate-400 */
+  --color-foreground: #f0f0f0;
+  --color-muted: #999999;
+  --color-subtle: #666666;
 
   /* Border */
-  --color-border:          rgba(15, 23, 42, 0.10);
-  --color-border-strong:   rgba(15, 23, 42, 0.18);
+  --color-border: rgba(255, 255, 255, 0.07);
+  --color-border-strong: rgba(255, 255, 255, 0.12);
 }
 
 /* ─────────────────────────────────────────────
-   Dark Mode Overrides
+   Light Mode
 ───────────────────────────────────────────── */
-@media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: light) {
   :root {
-    /* Primary stays vivid but softened for dark surfaces */
-    --color-primary:         #10b981; /* emerald-500 */
-    --color-primary-light:   #064e3b; /* emerald-900 */
-    --color-primary-dark:    #d1fae5; /* emerald-100 */
+    --color-background: #f2f2ee;
+    --color-surface: #e8e8e4;
+    --color-surface-raised: #dcdcd8;
+    --color-surface-elevated: #d0d0cc;
 
-    /* Secondary */
-    --color-secondary:       #3b82f6; /* blue-500 */
-    --color-secondary-light: #1e3a8a; /* blue-900 */
-    --color-secondary-dark:  #dbeafe; /* blue-100 */
+    --color-foreground: #0f0f0f;
+    --color-muted: #444444;
+    --color-subtle: #777777;
 
-    /* Accent */
-    --color-accent:          #f59e0b; /* amber-500 */
-    --color-accent-light:    #78350f; /* amber-900 */
+    --color-border: rgba(0, 0, 0, 0.09);
+    --color-border-strong: rgba(0, 0, 0, 0.15);
 
-    /* Destructive */
-    --color-destructive:     #fb7185; /* rose-400 */
-    --color-destructive-light: #4c0519; /* rose-950 */
+    --color-primary: #7aaa00;
+    --color-primary-light: rgba(100, 150, 0, 0.10);
+    --color-primary-mid: rgba(100, 150, 0, 0.22);
 
-    /* Background — deep slate */
-    --color-background:      #0b0f19; /* very dark blue-slate */
-    --color-surface:         #141929; /* dark card surface */
-    --color-surface-raised:  #1c2338; /* elevated dark panel */
+    --color-secondary: #7aaa00;
+    --color-secondary-light: rgba(100, 150, 0, 0.10);
 
-    /* Text */
-    --color-foreground:      #f1f5f9; /* slate-100 */
-    --color-muted:           #94a3b8; /* slate-400 */
-    --color-subtle:          #475569; /* slate-600 */
-
-    /* Border */
-    --color-border:          rgba(241, 245, 249, 0.08);
-    --color-border-strong:   rgba(241, 245, 249, 0.15);
+    --color-accent: #c07800;
+    --color-destructive: #cc2233;
+    --color-success: #00994a;
   }
 }
 
 /* ─────────────────────────────────────────────
    Tailwind v4 @theme — map tokens → utilities
-   (bg-primary, text-secondary, border-border…)
 ───────────────────────────────────────────── */
 @theme inline {
-  /* Font */
-  --font-sans: var(--font-jakarta), "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  /* Fonts — matching prototype exactly */
+  --font-heading: var(--font-heading);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
 
   /* Brand colors */
-  --color-primary:           var(--color-primary);
-  --color-primary-light:     var(--color-primary-light);
-  --color-primary-dark:      var(--color-primary-dark);
-  --color-primary-fg:        var(--color-primary-fg);
+  --color-primary: var(--color-primary);
+  --color-primary-light: var(--color-primary-light);
+  --color-primary-mid: var(--color-primary-mid);
+  --color-primary-fg: var(--color-primary-fg);
 
-  --color-secondary:         var(--color-secondary);
-  --color-secondary-light:   var(--color-secondary-light);
-  --color-secondary-dark:    var(--color-secondary-dark);
-  --color-secondary-fg:      var(--color-secondary-fg);
+  --color-secondary: var(--color-secondary);
+  --color-secondary-light: var(--color-secondary-light);
+  --color-secondary-dark: var(--color-secondary-dark);
+  --color-secondary-fg: var(--color-secondary-fg);
 
-  --color-accent:            var(--color-accent);
-  --color-accent-light:      var(--color-accent-light);
-  --color-accent-fg:         var(--color-accent-fg);
+  --color-accent: var(--color-accent);
+  --color-accent-light: var(--color-accent-light);
+  --color-accent-fg: var(--color-accent-fg);
 
-  --color-destructive:       var(--color-destructive);
+  --color-destructive: var(--color-destructive);
   --color-destructive-light: var(--color-destructive-light);
-  --color-destructive-fg:    var(--color-destructive-fg);
+  --color-destructive-fg: var(--color-destructive-fg);
+
+  --color-success: var(--color-success);
+  --color-success-light: var(--color-success-light);
 
   /* Layout */
-  --color-background:        var(--color-background);
-  --color-surface:           var(--color-surface);
-  --color-surface-raised:    var(--color-surface-raised);
+  --color-background: var(--color-background);
+  --color-surface: var(--color-surface);
+  --color-surface-raised: var(--color-surface-raised);
+  --color-surface-elevated: var(--color-surface-elevated);
 
   /* Text */
-  --color-foreground:        var(--color-foreground);
-  --color-muted:             var(--color-muted);
-  --color-subtle:            var(--color-subtle);
+  --color-foreground: var(--color-foreground);
+  --color-muted: var(--color-muted);
+  --color-subtle: var(--color-subtle);
 
   /* Border */
-  --color-border:            var(--color-border);
-  --color-border-strong:     var(--color-border-strong);
+  --color-border: var(--color-border);
+  --color-border-strong: var(--color-border-strong);
 }
 
 /* ─────────────────────────────────────────────
@@ -128,13 +129,13 @@
 body {
   background-color: var(--color-background);
   color: var(--color-foreground);
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Smooth focus rings for interactive elements */
+/* Smooth focus rings */
 :focus-visible {
-  outline: 2px solid var(--color-secondary);
+  outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }

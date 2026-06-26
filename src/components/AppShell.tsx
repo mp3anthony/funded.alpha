@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import BottomNav from "@/components/BottomNav";
 import Onboarding from "@/components/Onboarding";
+import UserProfileMenu from "@/components/UserProfileMenu";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const { isOnboarded, session, isAuthLoading } = useApp();
@@ -58,11 +59,16 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <>
-      <main className="flex-1 w-full pb-16 flex flex-col">
+    <div className="relative min-h-screen">
+      {/* User Profile Avatar – top-right */}
+      <div className="absolute top-4 right-4 z-50">
+        <UserProfileMenu />
+      </div>
+
+      <main className="flex-1 w-full pt-14 pb-16 flex flex-col">
         {children}
       </main>
       <BottomNav />
-    </>
+    </div>
   );
 }

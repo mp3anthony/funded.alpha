@@ -1,15 +1,30 @@
+import { Syne, Instrument_Sans, JetBrains_Mono } from 'next/font/google';
+
+const syne = Syne({
+  subsets: ['latin'],
+  variable: '--font-heading',
+  weight: ['400', '500', '600', '700', '800'],
+  display: 'swap'
+});
+
+const instrument = Instrument_Sans({
+  subsets: ['latin'],
+  variable: '--font-body',
+  weight: ['400', '500', '600'],
+  style: ['normal', 'italic'],
+  display: 'swap'
+});
+
+const jetbrains = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+  weight: ['400', '500', '600'],
+  display: 'swap'
+});
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { AppProvider } from "@/context/AppContext";
 import AppShell from "@/components/AppShell";
-
-const plusJakartaSans = Plus_Jakarta_Sans({
-  variable: "--font-jakarta",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "Funded",
@@ -22,11 +37,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${plusJakartaSans.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col bg-background text-foreground font-sans">
+    <html lang="en" className="h-full antialiased">
+      <body className={`${syne.variable} ${instrument.variable} ${jetbrains.variable} font-body`}>
         <AppProvider>
           <AppShell>{children}</AppShell>
         </AppProvider>
