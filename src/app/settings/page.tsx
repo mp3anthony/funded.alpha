@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   User,
   Bell,
@@ -12,17 +12,74 @@ import {
   Save,
   Check,
 } from "lucide-react";
-import { useApp } from "@/context/AppContext";
+import { useApp, useCurrentUser } from "@/context/AppContext";
+import PaymentModeToggle from "@/components/PaymentModeToggle";
+import ContributionSettingsSheet from "@/components/ContributionSettingsSheet";
+import RulesSettingsSheet from "@/components/RulesSettingsSheet";
+import PageHeader from "@/components/PageHeader";
+import AvatarUpload from "@/components/AvatarUpload";
+import { AlertTriangle } from "lucide-react";
 
 /* ── Page Component ──────────────────────────── */
 export default function SettingsPage() {
   /* Context */
-  const { members, addMember, removeMember } = useApp();
+  const {
+    members,
+    addMember,
+    removeMember,
+    isJointFund,
+    updateHouseholdPaymentMode,
+    householdContributions,
+    contributionRules,
+    funds,
+    session,
+    updateMember,
+    updateMemberAvatar,
+  } = useApp();
+  const currentUser = useCurrentUser();
+
+  /* Toggle States */
+  const [tempMode, setTempMode] = useState<boolean | null>(null);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [isContributionOpen, setIsContributionOpen] = useState(false);
+  const [isRulesOpen, setIsRulesOpen] = useState(false);
+
+  /* Contribution Totals */
+  const contributionWeekly = householdContributions
+    .filter((c) => c.frequency === "weekly")
+    .reduce((sum, c) => sum + Number(c.amount), 0);
+
+  const contributionFortnightly = householdContributions
+    .filter((c) => c.frequency === "fortnightly")
+    .reduce((sum, c) => sum + Number(c.amount), 0);
+
+  const contributionMonthly = householdContributions
+    .filter((c) => c.frequency === "monthly")
+    .reduce((sum, c) => sum + Number(c.amount), 0);
+
+  const grandTotalMonthly =
+    contributionWeekly * 4.33 +
+    contributionFortnightly * 2.16 +
+    contributionMonthly;
+
+  const hasContributions = householdContributions.length > 0;
+
+  const currentMember = members.find((m) => m.email === session?.user?.email);
 
   /* Profile */
-  const [fullName, setFullName] = useState("Ant");
-  const [email, setEmail] = useState("ant@funded.com");
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
   const [profileSaved, setProfileSaved] = useState(false);
+
+  useEffect(() => {
+    if (currentMember) {
+      setFullName(currentMember.name);
+      setEmail(currentMember.email);
+    } else if (session?.user) {
+      setFullName(session.user.user_metadata?.full_name || session.user.email?.split("@")[0] || "");
+      setEmail(session.user.email || "");
+    }
+  }, [currentMember, session]);
 
   /* Preferences */
   const [pushNotifications, setPushNotifications] = useState(true);
@@ -33,7 +90,10 @@ export default function SettingsPage() {
   const [inviteEmail, setInviteEmail] = useState("");
 
   /* ── Handlers ──────────────────────────────── */
-  function handleProfileSave() {
+  async function handleProfileSave() {
+    if (currentMember) {
+      await updateMember(currentMember.id, { name: fullName, email: email });
+    }
     setProfileSaved(true);
     setTimeout(() => setProfileSaved(false), 2000);
   }
@@ -56,18 +116,33 @@ export default function SettingsPage() {
     removeMember(id);
   }
 
+  function handleModeChangeClick(newMode: boolean) {
+    if (newMode === isJointFund) return;
+    setTempMode(newMode);
+    setShowConfirm(true);
+  }
+
+  async function handleConfirmModeChange() {
+    if (tempMode !== null) {
+      await updateHouseholdPaymentMode(tempMode);
+    }
+    setTempMode(null);
+    setShowConfirm(false);
+  }
+
+  function handleCancelModeChange() {
+    setTempMode(null);
+    setShowConfirm(false);
+  }
+
   /* ── Render ────────────────────────────────── */
   return (
     <div className="flex-1 w-full max-w-4xl mx-auto px-4 py-8 sm:px-6 md:py-12 space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-          Settings
-        </h1>
-        <p className="text-sm text-muted mt-1">
-          Customize your application and account preferences.
-        </p>
-      </div>
+      <PageHeader
+        title="Settings"
+        subtitle="Manage your account and household preferences"
+        user={currentUser}
+      />
 
       {/* ── Profile Section ──────────────────────── */}
       <section className="space-y-3">
@@ -76,20 +151,17 @@ export default function SettingsPage() {
         </h2>
 
         <div className="bg-surface border border-border rounded-2xl shadow-sm p-5 sm:p-6 space-y-5">
-          {/* Avatar + badge row */}
-          <div className="flex items-center gap-4">
-            <div className="h-14 w-14 rounded-full bg-gradient-to-tr from-secondary to-indigo-600 flex items-center justify-center text-white font-black text-xl shadow-md shrink-0">
-              {fullName.charAt(0).toUpperCase()}
-            </div>
-            <div>
-              <h3 className="text-base sm:text-lg font-bold text-foreground">
-                {fullName || "Your Name"}
-              </h3>
-              <span className="inline-block text-[10px] font-bold text-secondary uppercase tracking-wider bg-secondary/10 px-2 py-0.5 rounded-md mt-1">
-                Funded Premium
-              </span>
-            </div>
-          </div>
+          {/* Avatar Upload */}
+          {currentMember && (
+            <AvatarUpload
+              currentAvatarUrl={currentMember.avatar_url || null}
+              memberName={currentMember.name}
+              userId={String(currentMember.id)}
+              onAvatarChange={async (newUrl) => {
+                await updateMemberAvatar(currentMember.id, newUrl);
+              }}
+            />
+          )}
 
           {/* Full Name */}
           <div className="space-y-2">
@@ -222,6 +294,154 @@ export default function SettingsPage() {
         </div>
       </section>
 
+      {/* ── Household Settings Section ────────────────── */}
+      <section className="space-y-3">
+        <h2 className="text-base font-bold text-subtle uppercase tracking-wider px-1">
+          Household Settings
+        </h2>
+
+        <div className="bg-surface border border-border rounded-2xl shadow-sm p-5 sm:p-6 space-y-6">
+          <PaymentModeToggle
+            currentMode={tempMode !== null ? tempMode : isJointFund}
+            onModeChange={handleModeChangeClick}
+          />
+
+          {isJointFund && (
+            <div className="border-t border-border pt-6 space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <h4 className="text-sm font-bold text-foreground">
+                    Joint Fund Contributions
+                  </h4>
+                  <p className="text-xs text-muted">
+                    Configure how much each household member contributes per pay cycle.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsContributionOpen(true)}
+                  className="px-4 py-2.5 bg-primary text-primary-fg text-xs font-bold rounded-xl shadow-md hover:brightness-110 active:scale-95 transition-all cursor-pointer font-heading uppercase tracking-wider shrink-0"
+                >
+                  Set Contributions
+                </button>
+              </div>
+
+              {/* Individual Contributions Display Tile */}
+              <div className="bg-[#111111] border border-white/10 rounded-2xl p-4 mt-4">
+                {!hasContributions ? (
+                  <p className="text-muted text-sm font-mono text-center py-2">
+                    No contributions set. Click &apos;Set Contributions&apos; to get started.
+                  </p>
+                ) : (
+                  <div className="divide-y divide-white/5">
+                    {householdContributions.map((contribution, idx) => {
+                      const member = members.find((m) => String(m.id) === String(contribution.member_id));
+                      const memberName = member ? member.name : "Unknown Member";
+                      const memberAvatar = member ? member.avatar : "?";
+
+                      return (
+                        <div
+                          key={contribution.id}
+                          className={`flex items-center justify-between py-3 ${
+                            idx > 0 ? "pt-3" : "pt-0"
+                          } ${idx < householdContributions.length - 1 ? "pb-3" : "pb-0"}`}
+                        >
+                          {/* Left: Avatar & Name */}
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="h-8 w-8 rounded-full overflow-hidden bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-white font-bold text-xs shadow-sm shrink-0">
+                              {member?.avatar_url ? (
+                                <img src={member.avatar_url} alt={memberName} className="h-full w-full object-cover" />
+                              ) : (
+                                memberAvatar
+                              )}
+                            </div>
+                            <span className="font-heading text-sm font-bold text-foreground truncate font-syne">
+                              {memberName}
+                            </span>
+                          </div>
+
+                          {/* Center: Contribution Amount */}
+                          <span className="font-jetbrains text-sm font-semibold text-foreground">
+                            ${Number(contribution.amount).toFixed(2)}
+                          </span>
+
+                          {/* Right: Selected Frequency highlighted in lime green */}
+                          <span className="text-[#c8ff00] text-xs font-bold uppercase tracking-wider font-mono">
+                            {contribution.frequency}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Contribution Rules Section */}
+              <div className="border-t border-border pt-6 space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <h4 className="text-sm font-bold text-foreground">
+                      Contribution Rules
+                    </h4>
+                    <p className="text-xs text-muted">
+                      Automatically allocate excess pay when you earn above a threshold.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setIsRulesOpen(true)}
+                    className="px-4 py-2.5 bg-primary text-primary-fg text-xs font-bold rounded-xl shadow-md hover:brightness-110 active:scale-95 transition-all cursor-pointer font-heading uppercase tracking-wider shrink-0"
+                  >
+                    Manage Rules
+                  </button>
+                </div>
+
+                {/* Rules Summary Tile */}
+                <div className="bg-[#111111] border border-white/10 rounded-2xl p-4 mt-4">
+                  {contributionRules.length === 0 ? (
+                    <p className="text-muted text-xs font-mono text-center py-2">
+                      No rules set. Click &apos;Manage Rules&apos; to automate excess pay allocation.
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      <span className="text-[10px] font-bold text-primary uppercase tracking-wider block font-mono">
+                        {contributionRules.filter(r => r.is_active).length} Active Automation Rules
+                      </span>
+                      <div className="divide-y divide-white/5 font-mono text-[11px] text-muted">
+                        {contributionRules.map((rule, idx) => {
+                          const m = members.find((member) => String(member.id) === String(rule.member_id));
+                          const mName = m ? m.name : "Member";
+                          
+                          let targetName = "contribution";
+                          if (rule.action_type === "goal") {
+                            const goal = funds.find((g) => String(g.id) === String(rule.action_target_id));
+                            targetName = goal ? goal.name : "goal";
+                          }
+
+                          return (
+                            <div
+                              key={rule.id}
+                              className={`flex items-center justify-between py-2 ${
+                                idx > 0 ? "pt-2" : "pt-0"
+                              } ${idx < contributionRules.length - 1 ? "pb-2" : "pb-0"}`}
+                            >
+                              <span>
+                                When {mName}&apos;s pay &gt; ${rule.threshold_amount.toFixed(2)}
+                              </span>
+                              <span className={rule.is_active ? "text-[#c8ff00] font-bold" : "text-muted"}>
+                                Add {rule.amount_type === "percentage" ? `${rule.amount_to_add}% of surplus` : `$${rule.amount_to_add.toFixed(2)}`} to {targetName}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* ── Household Members Section ────────────── */}
       <section className="space-y-3">
         <div className="flex items-center justify-between px-1">
@@ -258,8 +478,12 @@ export default function SettingsPage() {
                 className="group p-4 sm:p-5 flex items-center justify-between hover:bg-surface-raised transition-colors"
               >
                 <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-white font-bold text-sm shadow-sm shrink-0">
-                    {member.avatar}
+                  <div className="h-10 w-10 rounded-full overflow-hidden bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-white font-bold text-sm shadow-sm shrink-0">
+                    {member.avatar_url ? (
+                      <img src={member.avatar_url} alt={member.name} className="h-full w-full object-cover" />
+                    ) : (
+                      member.avatar
+                    )}
                   </div>
                   <div>
                     <h4 className="text-sm sm:text-base font-bold text-foreground">
@@ -354,6 +578,70 @@ export default function SettingsPage() {
           </div>
         </div>
       )}
+
+      {/* ── Mode Change Confirmation Modal ──────────── */}
+      {showConfirm && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
+          onClick={handleCancelModeChange}
+        >
+          <div
+            className="bg-surface border border-border rounded-3xl w-full max-w-md shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal header */}
+            <div className="p-5 border-b border-border">
+              <h3 className="text-lg font-bold text-foreground font-heading">
+                Confirm Payment Mode Change
+              </h3>
+            </div>
+
+            {/* Modal body */}
+            <div className="p-5 space-y-3">
+              <p className="text-sm text-foreground">
+                Changing the payment mode will **reset all bill contributor splits**.
+              </p>
+              <p className="text-xs text-muted leading-relaxed font-mono">
+                You will need to reconfigure who pays what share for all existing bills. This action cannot be undone. Are you sure you want to continue?
+              </p>
+            </div>
+
+            {/* Modal footer */}
+            <div className="flex items-center gap-3 p-5 border-t border-border">
+              <button
+                onClick={handleCancelModeChange}
+                className="flex-1 py-3 rounded-xl border border-border text-sm font-bold text-muted hover:text-foreground hover:bg-surface-raised transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmModeChange}
+                className="flex-1 py-3 rounded-xl bg-destructive text-white text-sm font-bold shadow-lg shadow-destructive/20 hover:brightness-110 active:scale-95 transition-all cursor-pointer"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Contribution Settings Sheet */}
+      <ContributionSettingsSheet
+        isOpen={isContributionOpen}
+        onClose={() => setIsContributionOpen(false)}
+        householdMembers={members}
+        contributions={householdContributions}
+      />
+
+      {/* Rules Settings Sheet */}
+      <RulesSettingsSheet
+        isOpen={isRulesOpen}
+        onClose={() => setIsRulesOpen(false)}
+        householdMembers={members}
+        rules={contributionRules}
+        goals={funds}
+        contributions={householdContributions}
+      />
     </div>
   );
 }

@@ -2,17 +2,25 @@
 
 import { useState } from "react";
 import { Target, Plus, PiggyBank, TrendingUp } from "lucide-react";
-import { useApp } from "@/context/AppContext";
+import { useApp, useCurrentUser, type Fund } from "@/context/AppContext";
+import AddGoalSheet from "@/components/AddGoalSheet";
+import EditGoalSheet from "@/components/EditGoalSheet";
+import GoalDetailSheet from "@/components/GoalDetailSheet";
+import AddAmountModal from "@/components/AddAmountModal";
+import PageHeader from "@/components/PageHeader";
 
 const ADD_AMOUNT = 50; // dollars added per click
 
 export default function Funds() {
-  const { funds, addFund, addMoneyToFund } = useApp();
+  const { funds, deleteGoal, addToGoal } = useApp();
+  const currentUser = useCurrentUser();
 
   // ── Local UI state ────────────────────────────────────────────────
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newName, setNewName] = useState("");
-  const [newTarget, setNewTarget] = useState("");
+  const [selectedGoal, setSelectedGoal] = useState<Fund | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [addAmountGoal, setAddAmountGoal] = useState<Fund | null>(null);
 
   // ── Derived summary values ────────────────────────────────────────
   const totalSaved = funds.reduce((sum, f) => sum + f.currentAmount, 0);
@@ -23,45 +31,30 @@ export default function Funds() {
       : 0;
 
   // ── Handlers ──────────────────────────────────────────────────────
-  function handleCreateFund(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const newFund = {
-      id: Date.now(),
-      name: newName,
-      category: "Custom",
-      currentAmount: 0,
-      targetAmount: parseFloat(newTarget),
-      bgLight: "bg-secondary/10 text-secondary",
-      barColor: "bg-secondary",
-      accentText: "text-secondary",
-      icon: PiggyBank,
-    };
-    addFund(newFund);
-    setNewName("");
-    setNewTarget("");
-    setIsModalOpen(false);
-  }
+  const handleDeleteGoal = async () => {
+    if (selectedGoal && confirm(`Are you sure you want to delete "${selectedGoal.name}"?`)) {
+      await deleteGoal(selectedGoal.id);
+      setIsDetailOpen(false);
+      setSelectedGoal(null);
+    }
+  };
 
   return (
     <div className="flex-1 w-full max-w-4xl mx-auto px-4 py-8 sm:px-6 md:py-12 space-y-6">
-      {/* Header and Create Button */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-            Savings Goals
-          </h1>
-          <p className="text-sm text-muted mt-1">
-            Track and build your specific fund buckets.
-          </p>
-        </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 bg-secondary hover:bg-secondary-dark active:scale-95 text-secondary-fg text-sm font-semibold px-4 py-2.5 rounded-xl shadow-md shadow-secondary/15 transition-all duration-200"
-        >
-          <Plus className="h-4 w-4" />
-          <span>New Goal</span>
-        </button>
-      </div>
+      <PageHeader
+        title="Goals"
+        subtitle="Track your savings and financial targets"
+        user={currentUser}
+        action={
+          <button
+            onClick={() => setIsAddOpen(true)}
+            className="flex items-center gap-2 bg-secondary hover:bg-secondary-dark active:scale-95 text-secondary-fg text-sm font-semibold px-4 py-2.5 rounded-xl shadow-md shadow-secondary/15 transition-all duration-200"
+          >
+            <Plus className="h-4 w-4" />
+            <span>New Goal</span>
+          </button>
+        }
+      />
 
       {/* Summary Banner — reactive to state */}
       <div className="bg-surface border border-border rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
@@ -95,16 +88,16 @@ export default function Funds() {
         </div>
       </div>
 
-      {/* Fund Buckets Grid */}
+      {/* Savings Goals Grid */}
       <div className="space-y-4">
         <h2 className="text-base font-bold text-subtle uppercase tracking-wider px-1">
-          Fund Buckets
+          Savings Goals
         </h2>
 
         {funds.length === 0 ? (
           <div className="bg-surface border border-border rounded-2xl p-10 text-center shadow-sm">
-            <PiggyBank className="h-10 w-10 text-subtle mx-auto mb-3" />
-            <p className="text-sm font-semibold text-muted">No funds yet.</p>
+            <Target className="h-10 w-10 text-subtle mx-auto mb-3" />
+            <p className="text-sm font-semibold text-muted">No goals configured yet.</p>
             <p className="text-xs text-subtle mt-1">Create your first savings goal to get started.</p>
           </div>
         ) : (
@@ -117,7 +110,11 @@ export default function Funds() {
               return (
                 <div
                   key={fund.id}
-                  className="bg-surface border border-border rounded-2xl p-5 shadow-sm space-y-4 hover:shadow-md transition-shadow"
+                  onClick={() => {
+                    setSelectedGoal(fund);
+                    setIsDetailOpen(true);
+                  }}
+                  className="bg-surface border border-border rounded-2xl p-5 shadow-sm space-y-4 hover:border-primary/30 hover:shadow-md transition-all cursor-pointer"
                 >
                   {/* Card header */}
                   <div className="flex items-center justify-between">
@@ -166,11 +163,14 @@ export default function Funds() {
                   ) : (
                     <button
                       type="button"
-                      onClick={() => addMoneyToFund(fund.id, ADD_AMOUNT)}
-                      className="flex items-center justify-center gap-1.5 w-full py-2 rounded-xl border border-border bg-surface-raised hover:bg-primary/10 hover:border-primary/30 hover:text-primary text-muted text-xs font-semibold transition-all duration-200 active:scale-[0.98]"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setAddAmountGoal(fund);
+                      }}
+                      className="flex items-center justify-center gap-1.5 w-full py-2 border border-border bg-surface-raised hover:bg-primary/10 hover:border-primary/30 hover:text-primary text-muted text-xs font-semibold transition-all duration-200 active:scale-[0.98]"
                     >
                       <Plus className="h-3.5 w-3.5" />
-                      Add ${ADD_AMOUNT}
+                      Add Amount
                     </button>
                   )}
                 </div>
@@ -180,77 +180,48 @@ export default function Funds() {
         )}
       </div>
 
-      {/* Create New Fund Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-surface border border-border w-full max-w-md p-6 rounded-3xl shadow-2xl flex flex-col gap-5">
-            <div>
-              <h3 className="text-lg font-bold text-foreground">Create New Fund</h3>
-              <p className="text-xs text-muted mt-1">
-                Set a name and a savings target for your new fund bucket.
-              </p>
-            </div>
+      {/* Goal Detail Sheet */}
+      <GoalDetailSheet
+        isOpen={isDetailOpen}
+        onClose={() => {
+          setIsDetailOpen(false);
+          setSelectedGoal(null);
+        }}
+        goal={selectedGoal}
+        onEdit={() => {
+          setIsDetailOpen(false);
+          setIsEditOpen(true);
+        }}
+        onDelete={handleDeleteGoal}
+      />
 
-            <form className="space-y-4" onSubmit={handleCreateFund}>
-              {/* Fund Name */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-subtle uppercase tracking-wider">
-                  Fund Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Holiday, House Deposit, Laptop"
-                  className="w-full border border-border rounded-xl px-3.5 py-2.5 text-sm bg-surface-raised text-foreground outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all"
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  required
-                />
-              </div>
+      {/* Edit Goal Sheet */}
+      <EditGoalSheet
+        isOpen={isEditOpen}
+        onClose={() => {
+          setIsEditOpen(false);
+          setSelectedGoal(null);
+        }}
+        existingGoal={selectedGoal}
+      />
 
-              {/* Target Amount */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-subtle uppercase tracking-wider">
-                  Target Amount
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-subtle text-sm">$</span>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="1"
-                    placeholder="0.00"
-                    className="w-full border border-border rounded-xl pl-8 pr-3.5 py-2.5 text-sm bg-surface-raised text-foreground outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all"
-                    value={newTarget}
-                    onChange={(e) => setNewTarget(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
+      {/* Add Goal Sheet */}
+      <AddGoalSheet
+        isOpen={isAddOpen}
+        onClose={() => setIsAddOpen(false)}
+      />
 
-              {/* Actions */}
-              <div className="flex gap-3 justify-end pt-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setNewName("");
-                    setNewTarget("");
-                    setIsModalOpen(false);
-                  }}
-                  className="px-4 py-2.5 border border-border text-muted hover:bg-surface-raised text-sm font-semibold rounded-xl transition-colors active:scale-[0.98]"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2.5 bg-secondary hover:bg-secondary-dark active:scale-[0.98] text-secondary-fg text-sm font-semibold rounded-xl shadow-md shadow-secondary/15 transition-colors"
-                >
-                  Create Fund
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Add Amount Modal */}
+      <AddAmountModal
+        isOpen={addAmountGoal !== null}
+        onClose={() => setAddAmountGoal(null)}
+        goal={addAmountGoal}
+        onConfirm={(amount) => {
+          if (addAmountGoal) {
+            addToGoal(addAmountGoal.id, amount);
+          }
+        }}
+      />
     </div>
   );
 }

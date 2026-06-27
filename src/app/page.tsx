@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   PiggyBank,
   Calendar,
@@ -11,10 +11,18 @@ import {
   Target,
   Clock,
   AlertTriangle,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import Link from "next/link";
-import { useApp } from "@/context/AppContext";
+import { useApp, useCurrentUser, type Bill, type Fund } from "@/context/AppContext";
 import HouseholdHealth from "@/components/HouseholdHealth";
+import HealthScore from "@/components/HealthScore";
+import BillDetailSheet from "@/components/BillDetailSheet";
+import AddBillSheet from "@/components/AddBillSheet";
+import GoalDetailSheet from "@/components/GoalDetailSheet";
+import EditGoalSheet from "@/components/EditGoalSheet";
+import PageHeader from "@/components/PageHeader";
 
 /* ── Helpers ─────────────────────────────────── */
 function daysUntil(dateStr: string): number {
@@ -45,7 +53,18 @@ function isCurrentMonth(dateStr: string): boolean {
 }
 
 export default function Home() {
-  const { bills, funds, paydays, householdName } = useApp();
+  const { bills, funds, paydays, householdName, billSplits, members: householdMembers, deleteBill, deleteGoal } = useApp();
+  const currentUser = useCurrentUser();
+
+  /* ── Local UI States ───────────────────────── */
+  const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(true);
+
+  const [selectedGoal, setSelectedGoal] = useState<Fund | null>(null);
+  const [isGoalDetailOpen, setIsGoalDetailOpen] = useState(false);
+  const [isGoalEditOpen, setIsGoalEditOpen] = useState(false);
 
   /* ── Derived summary values ────────────────── */
   const totalSaved = useMemo(
@@ -89,11 +108,35 @@ export default function Home() {
   const monthlyBillsPercent =
     monthlyBillsTotal > 0 ? Math.round((monthlyBillsPaid / monthlyBillsTotal) * 100) : 0;
 
-  /* First 3 unpaid bills for the preview list */
-  const previewBills = unpaidBills.slice(0, 3);
-
   /* Top 2 funds for the savings preview */
   const previewFunds = funds.slice(0, 2);
+
+  const upcomingBills = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return bills.filter((b) => {
+      let d = b.due_date ? new Date(b.due_date + "T00:00:00") : new Date(b.dueDate);
+      if (isNaN(d.getTime())) return false;
+      d.setHours(0, 0, 0, 0);
+      return d.getTime() >= today.getTime();
+    });
+  }, [bills]);
+
+  const handleDeleteBill = () => {
+    if (selectedBill && confirm(`Are you sure you want to delete "${selectedBill.name}"?`)) {
+      deleteBill(selectedBill.id);
+      setIsDetailOpen(false);
+      setSelectedBill(null);
+    }
+  };
+
+  const handleDeleteGoal = async () => {
+    if (selectedGoal && confirm(`Are you sure you want to delete "${selectedGoal.name}"?`)) {
+      await deleteGoal(selectedGoal.id);
+      setIsGoalDetailOpen(false);
+      setSelectedGoal(null);
+    }
+  };
 
   return (
     <div className="flex-1 w-full max-w-4xl mx-auto px-4 py-8 sm:px-6 md:py-12 space-y-8">
@@ -102,18 +145,16 @@ export default function Home() {
         {/* Ambient radial glow background */}
         <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-full max-w-2xl aspect-[3/1] bg-[radial-gradient(ellipse_at_top,_rgba(200,255,0,0.15),_transparent_70%)] pointer-events-none -z-10" />
 
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-            Welcome to {householdName || "Funded"}
-          </h1>
-          <p className="text-sm text-muted mt-1">
-            {"Here's your financial overview for today."}
-          </p>
-        </div>
+        <PageHeader
+          title={`Welcome to ${householdName || "Funded"}`}
+          subtitle="Here's your financial overview for today."
+          user={currentUser}
+        />
 
         {/* Household Health Section */}
-        <div className="mt-6">
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-5">
           <HouseholdHealth />
+          <HealthScore />
         </div>
       </div>
 
@@ -264,7 +305,11 @@ export default function Home() {
               return (
                 <div
                   key={fund.id}
-                  className="bg-surface border border-border rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300"
+                  onClick={() => {
+                    setSelectedGoal(fund);
+                    setIsGoalDetailOpen(true);
+                  }}
+                  className="bg-surface border border-border rounded-2xl p-5 shadow-sm hover:border-primary/30 hover:shadow-md transition-all duration-300 cursor-pointer"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
@@ -307,110 +352,114 @@ export default function Home() {
         </div>
       )}
 
-      {/* ── Upcoming Bills List Section ───────────── */}
+      {/* ── Upcoming Bills Accordion Section ──────── */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg sm:text-xl font-bold text-foreground flex items-center gap-2">
-            Upcoming Bills Details
-          </h2>
-          <Link
-            href="/bills"
-            className="text-xs font-bold text-secondary hover:text-secondary-dark transition-colors flex items-center gap-1 group"
+        <div className="bg-[#111111] border border-white/10 rounded-2xl overflow-hidden shadow-sm transition-all duration-300">
+          
+          {/* Accordion Header */}
+          <button
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="w-full px-6 py-4 flex items-center justify-between hover:bg-white/[0.02] active:bg-white/[0.04] transition-colors focus:outline-none"
           >
-            <span>View All</span>
-            <ArrowUpRight className="h-3 w-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-          </Link>
-        </div>
-
-        <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-sm divide-y divide-border">
-          {previewBills.length === 0 ? (
-            <div className="p-8 text-center">
-              <ListChecks className="h-8 w-8 mx-auto text-muted mb-2" />
-              <p className="text-sm text-muted font-medium">All bills are paid! 🎉</p>
+            <h2 className="font-heading font-bold text-base text-foreground flex items-center gap-2">
+              Upcoming Bills ({upcomingBills.length})
+            </h2>
+            <div className="text-muted p-1 hover:text-foreground transition-colors">
+              {isDropdownOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
             </div>
-          ) : (
-            previewBills.map((bill) => {
-              const days = daysUntil(bill.dueDate);
-              let timeBadge: { label: string; className: string } | null = null;
+          </button>
 
-              if (isNaN(days)) {
-                timeBadge = null; // can't parse date, skip badge
-              } else if (days < 0) {
-                timeBadge = {
-                  label: "Overdue",
-                  className:
-                    "bg-rose-500/10 text-rose-600 dark:text-rose-400",
-                };
-              } else if (days === 0) {
-                timeBadge = {
-                  label: "Due today",
-                  className:
-                    "bg-accent/10 text-accent",
-                };
-              } else if (days <= 7) {
-                timeBadge = {
-                  label: `in ${days} day${days !== 1 ? "s" : ""}`,
-                  className:
-                    "bg-accent/10 text-accent",
-                };
-              } else {
-                timeBadge = {
-                  label: `in ${days} days`,
-                  className:
-                    "bg-surface-raised text-muted",
-                };
-              }
-
-              return (
-                <div
-                  key={bill.id}
-                  className="p-4 sm:p-5 flex items-center justify-between hover:bg-surface-raised transition-colors"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={`hidden sm:flex h-10 w-10 rounded-xl items-center justify-center font-bold text-xs ${bill.categoryColor}`}>
-                      {bill.category.substring(0, 2).toUpperCase()}
-                    </div>
-                    <div>
-                      <h4 className="text-sm sm:text-base font-semibold text-foreground">
-                        {bill.name}
-                      </h4>
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <span className="text-xs text-subtle">
-                          Due: {bill.dueDate}
-                        </span>
-                        <span className="h-1 w-1 rounded-full bg-border-strong" />
-                        <span className="text-xs font-medium text-muted bg-surface-raised px-2 py-0.5 rounded-md">
-                          {bill.category}
-                        </span>
-                        {timeBadge && (
-                          <>
-                            <span className="h-1 w-1 rounded-full bg-border-strong" />
-                            <span
-                              className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${timeBadge.className}`}
-                            >
-                              {days < 0 ? (
-                                <AlertTriangle className="h-3 w-3" />
-                              ) : days <= 7 ? (
-                                <Clock className="h-3 w-3" />
-                              ) : null}
-                              {timeBadge.label}
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right shrink-0 ml-4">
-                    <span className="text-base sm:text-lg font-bold text-foreground">
-                      ${bill.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </span>
-                  </div>
+          {/* Accordion Body */}
+          {isDropdownOpen && (
+            <div className="border-t border-white/5 divide-y divide-white/5 bg-[#0a0a0a]/50">
+              {upcomingBills.length === 0 ? (
+                <div className="px-6 py-8 text-center">
+                  <p className="text-sm font-mono text-muted uppercase">No upcoming bills</p>
                 </div>
-              );
-            })
+              ) : (
+                upcomingBills.map((bill) => (
+                  <div
+                    key={bill.id}
+                    onClick={() => {
+                      setSelectedBill(bill);
+                      setIsDetailOpen(true);
+                    }}
+                    className="px-6 py-4 flex items-center justify-between hover:bg-white/[0.02] cursor-pointer transition-colors"
+                  >
+                    <div className="flex flex-col">
+                      <span className="font-heading font-semibold text-sm text-foreground">
+                        {bill.name}
+                      </span>
+                      <span className="font-mono text-[10px] text-muted uppercase mt-0.5">
+                        DUE {bill.dueDate}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-mono text-sm font-bold text-foreground">
+                        ${bill.amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           )}
+
         </div>
       </div>
+
+      {/* Bill Detail Sheet */}
+      <BillDetailSheet
+        isOpen={isDetailOpen}
+        onClose={() => {
+          setIsDetailOpen(false);
+          setSelectedBill(null);
+        }}
+        bill={selectedBill}
+        splits={selectedBill ? billSplits.filter(s => String(s.bill_id) === String(selectedBill.id)) : []}
+        householdMembers={householdMembers}
+        onEdit={() => {
+          setIsDetailOpen(false);
+          setIsEditOpen(true);
+        }}
+        onDelete={handleDeleteBill}
+      />
+
+      {/* Edit Bill Sheet */}
+      <AddBillSheet
+        isOpen={isEditOpen}
+        onClose={() => {
+          setIsEditOpen(false);
+          setSelectedBill(null);
+        }}
+        existingBill={selectedBill || undefined}
+        existingSplits={selectedBill ? billSplits.filter(s => String(s.bill_id) === String(selectedBill.id)) : []}
+      />
+
+      {/* Goal Detail Sheet */}
+      <GoalDetailSheet
+        isOpen={isGoalDetailOpen}
+        onClose={() => {
+          setIsGoalDetailOpen(false);
+          setSelectedGoal(null);
+        }}
+        goal={selectedGoal}
+        onEdit={() => {
+          setIsGoalDetailOpen(false);
+          setIsGoalEditOpen(true);
+        }}
+        onDelete={handleDeleteGoal}
+      />
+
+      {/* Edit Goal Sheet */}
+      <EditGoalSheet
+        isOpen={isGoalEditOpen}
+        onClose={() => {
+          setIsGoalEditOpen(false);
+          setSelectedGoal(null);
+        }}
+        existingGoal={selectedGoal}
+      />
     </div>
   );
 }

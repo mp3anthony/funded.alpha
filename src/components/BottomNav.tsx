@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, DollarSign, ListChecks, PiggyBank, Settings } from "lucide-react";
+import { Home, DollarSign, ListChecks, Target } from "lucide-react";
 
 export default function BottomNav() {
   const pathname = usePathname();
@@ -11,8 +11,7 @@ export default function BottomNav() {
     { name: "HOME", path: "/", icon: Home },
     { name: "PAYDAY", path: "/payday", icon: DollarSign },
     { name: "BILLS", path: "/bills", icon: ListChecks },
-    { name: "FUNDS", path: "/funds", icon: PiggyBank },
-    { name: "SETTINGS", path: "/settings", icon: Settings },
+    { name: "GOALS", path: "/funds", icon: Target },
   ];
 
   return (

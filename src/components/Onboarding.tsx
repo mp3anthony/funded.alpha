@@ -11,23 +11,28 @@ import {
   ArrowRight,
   ArrowLeft,
   Check,
+  Wallet,
 } from "lucide-react";
+import PaymentModeToggle from "@/components/PaymentModeToggle";
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 5;
 
 export default function Onboarding() {
-  const { addPayday, addBill, completeOnboarding, setHouseholdName: setGlobalHouseholdName, session } = useApp();
+  const { addPayday, addBill, completeOnboarding, setHouseholdName: setGlobalHouseholdName, updateHouseholdPaymentMode, session } = useApp();
 
   const [currentStep, setCurrentStep] = useState(1);
 
   /* Step 1 — Welcome */
   const [localHouseholdName, setLocalHouseholdName] = useState("");
 
-  /* Step 2 — Payday */
+  /* Step 2 — Payment Mode */
+  const [paymentMode, setPaymentMode] = useState(false); // false = Direct Pay, true = Joint Fund
+
+  /* Step 3 — Payday */
   const [paydayDate, setPaydayDate] = useState("");
   const [payAmount, setPayAmount] = useState("");
 
-  /* Step 3 — First Bill */
+  /* Step 4 — First Bill */
   const [billName, setBillName] = useState("");
   const [billAmount, setBillAmount] = useState("");
   const [billFrequency, setBillFrequency] = useState("Monthly");
@@ -38,7 +43,11 @@ export default function Onboarding() {
       setGlobalHouseholdName(localHouseholdName.trim(), session?.user?.id);
     }
 
-    if (currentStep === 2 && paydayDate && payAmount) {
+    if (currentStep === 2) {
+      updateHouseholdPaymentMode(paymentMode);
+    }
+
+    if (currentStep === 3 && paydayDate && payAmount) {
       addPayday({
         id: Date.now(),
         date: paydayDate,
@@ -46,7 +55,7 @@ export default function Onboarding() {
       });
     }
 
-    if (currentStep === 3 && billName && billAmount) {
+    if (currentStep === 4 && billName && billAmount) {
       addBill({
         id: Date.now(),
         name: billName,
@@ -75,13 +84,14 @@ export default function Onboarding() {
   /* ── Can proceed? ──────────────────────────── */
   function canProceed(): boolean {
     if (currentStep === 1) return localHouseholdName.trim().length > 0;
-    if (currentStep === 2) return paydayDate !== "" && payAmount !== "";
-    if (currentStep === 3) return billName.trim().length > 0 && billAmount !== "";
+    if (currentStep === 2) return true; // Payment mode has default selected
+    if (currentStep === 3) return paydayDate !== "" && payAmount !== "";
+    if (currentStep === 4) return billName.trim().length > 0 && billAmount !== "";
     return true;
   }
 
   /* ── Step icons for progress ───────────────── */
-  const stepIcons = [Home, Calendar, Receipt, Sparkles];
+  const stepIcons = [Home, Wallet, Calendar, Receipt, Sparkles];
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background px-4">
@@ -162,8 +172,18 @@ export default function Onboarding() {
               </div>
             )}
 
-            {/* ── Step 2: Payday ── */}
+            {/* ── Step 2: Payment Mode ── */}
             {currentStep === 2 && (
+              <div className="flex-1 flex flex-col justify-center space-y-6">
+                <PaymentModeToggle 
+                  currentMode={paymentMode} 
+                  onModeChange={setPaymentMode} 
+                />
+              </div>
+            )}
+
+            {/* ── Step 3: Payday ── */}
+            {currentStep === 3 && (
               <div className="flex-1 flex flex-col justify-center space-y-6">
                 <div className="text-center space-y-2">
                   <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-gradient-to-br from-secondary to-indigo-600 text-white mx-auto shadow-lg shadow-secondary/25">
@@ -217,8 +237,8 @@ export default function Onboarding() {
               </div>
             )}
 
-            {/* ── Step 3: First Bill ── */}
-            {currentStep === 3 && (
+            {/* ── Step 4: First Bill ── */}
+            {currentStep === 4 && (
               <div className="flex-1 flex flex-col justify-center space-y-6">
                 <div className="text-center space-y-2">
                   <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-gradient-to-br from-accent to-amber-500 text-white mx-auto shadow-lg shadow-accent/25">
@@ -294,8 +314,8 @@ export default function Onboarding() {
               </div>
             )}
 
-            {/* ── Step 4: Success ── */}
-            {currentStep === 4 && (
+            {/* ── Step 5: Success ── */}
+            {currentStep === 5 && (
               <div className="flex-1 flex flex-col items-center justify-center text-center space-y-6">
                 <div className="relative">
                   <div className="inline-flex items-center justify-center h-20 w-20 rounded-3xl bg-gradient-to-br from-primary to-emerald-500 text-white shadow-xl shadow-primary/30">
@@ -311,7 +331,7 @@ export default function Onboarding() {
                   </h2>
                   <p className="text-sm text-muted max-w-xs mx-auto">
                     <span className="font-bold text-foreground">{localHouseholdName || "Your household"}</span> is ready to go.
-                    Your payday and first bill are already tracked.
+                    Your payday, first bill, and payment mode are already set.
                   </p>
                 </div>
                 <button
@@ -325,8 +345,8 @@ export default function Onboarding() {
             )}
           </div>
 
-          {/* ── Footer navigation (steps 1–3) ────── */}
-          {currentStep < 4 && (
+          {/* ── Footer navigation (steps 1–4) ────── */}
+          {currentStep < 5 && (
             <div className="px-6 sm:px-8 pb-6 flex items-center justify-between">
               {currentStep > 1 ? (
                 <button
@@ -342,7 +362,7 @@ export default function Onboarding() {
               <button
                 onClick={handleNext}
                 disabled={!canProceed()}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-secondary text-secondary-fg text-sm font-bold shadow-lg shadow-secondary/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-emerald-500 text-white text-sm font-bold shadow-lg shadow-primary/25 hover:brightness-110 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
               >
                 Next
                 <ArrowRight className="h-4 w-4" />
