@@ -27,6 +27,7 @@ export interface Bill {
   invoice_date?: string | null;
   due_date?: string | null;
   notes?: string | null;
+  is_recurring?: boolean;
 }
 
 export interface Fund {
@@ -118,6 +119,7 @@ const INITIAL_BILLS: Bill[] = [
     statusColor: "text-amber-600 bg-amber-500/10 dark:text-amber-400",
     statusIcon: Clock,
     categoryColor: "bg-secondary/10 text-secondary",
+    is_recurring: true,
   },
   {
     id: 2,
@@ -130,6 +132,7 @@ const INITIAL_BILLS: Bill[] = [
     statusColor: "text-amber-600 bg-amber-500/10 dark:text-amber-400",
     statusIcon: Clock,
     categoryColor: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+    is_recurring: true,
   },
   {
     id: 3,
@@ -142,6 +145,7 @@ const INITIAL_BILLS: Bill[] = [
     statusColor: "text-amber-600 bg-amber-500/10 dark:text-amber-400",
     statusIcon: Clock,
     categoryColor: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
+    is_recurring: true,
   },
   {
     id: 4,
@@ -154,6 +158,7 @@ const INITIAL_BILLS: Bill[] = [
     statusColor: "text-emerald-600 bg-emerald-500/10 dark:text-emerald-400",
     statusIcon: CheckCircle,
     categoryColor: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+    is_recurring: true,
   },
   {
     id: 5,
@@ -166,6 +171,7 @@ const INITIAL_BILLS: Bill[] = [
     statusColor: "text-emerald-600 bg-emerald-500/10 dark:text-emerald-400",
     statusIcon: CheckCircle,
     categoryColor: "bg-rose-500/10 text-rose-600 dark:text-rose-400",
+    is_recurring: true,
   },
   {
     id: 6,
@@ -178,6 +184,7 @@ const INITIAL_BILLS: Bill[] = [
     statusColor: "text-rose-600 bg-rose-500/10 dark:text-rose-400",
     statusIcon: AlertCircle,
     categoryColor: "bg-pink-500/10 text-pink-600 dark:text-pink-400",
+    is_recurring: true,
   },
 ];
 
@@ -382,6 +389,7 @@ function mapBillFromDb(dbBill: any): Bill {
     payment_type: dbBill.payment_type ? (dbBill.payment_type.toLowerCase() as "auto" | "manual") : undefined,
     invoice_date: dbBill.invoice_date,
     due_date: dbBill.due_date,
+    is_recurring: dbBill.is_recurring !== undefined ? dbBill.is_recurring : true,
   };
 }
 
@@ -802,8 +810,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         assignee_id: billData.assignee || billData.assignee_id || null,
         category: billData.category || "Uncategorized",
         status: billData.status || "Due Soon",
-        frequency: billData.frequency || "One-time",
+        frequency: billData.frequency || "Monthly",
         notes: billData.notes || null,
+        is_recurring: true,
       };
 
       const { data: newBill, error: billError } = await supabase
@@ -879,8 +888,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         assignee_id: billData.assignee || billData.assignee_id || null,
         category: billData.category || "Uncategorized",
         status: billData.status || "Due Soon",
-        frequency: billData.frequency || "One-time",
+        frequency: billData.frequency || "Monthly",
         notes: billData.notes || null,
+        is_recurring: true,
       };
 
       console.log('updateBill - dbBillData payload:', dbBillData);

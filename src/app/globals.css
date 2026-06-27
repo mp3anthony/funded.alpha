@@ -139,3 +139,11 @@ body {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
+
+/* Custom font utilities for dashboard components */
+.font-syne {
+  font-family: var(--font-heading), sans-serif;
+}
+.font-jetbrains {
+  font-family: var(--font-mono), monospace;
+}

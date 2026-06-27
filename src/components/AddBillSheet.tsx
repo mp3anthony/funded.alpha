@@ -23,6 +23,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
   const [assignee, setAssignee] = useState("");
   const [splits, setSplits] = useState<SplitResult[]>([]);
   const [notes, setNotes] = useState("");
+  const [frequency, setFrequency] = useState("monthly");
   const [isSaving, setIsSaving] = useState(false);
 
   // Pre-fill fields if in edit mode
@@ -35,6 +36,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
       setPaymentType(existingBill.payment_type?.toLowerCase() === "auto" ? "Auto" : "Manual");
       setAssignee(existingBill.assignee_id ? existingBill.assignee_id.toString() : "");
       setNotes(existingBill.notes ? existingBill.notes : "");
+      setFrequency(existingBill.frequency ? existingBill.frequency.toLowerCase() : "monthly");
     } else if (isOpen) {
       setName("");
       setAmount("");
@@ -44,6 +46,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
       setAssignee("");
       setSplits([]);
       setNotes("");
+      setFrequency("monthly");
     }
   }, [isOpen, existingBill]);
 
@@ -75,6 +78,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
         paymentType,
         assignee,
         notes,
+        frequency,
       };
 
       if (existingBill) {
@@ -153,6 +157,44 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
                 onChange={(e) => setAmount(e.target.value)}
                 className="w-full rounded-xl border border-border bg-surface-raised pl-8 pr-4 py-3 font-mono text-foreground placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
               />
+            </div>
+          </div>
+
+          {/* Payment Frequency Selector */}
+          <div className="flex flex-col space-y-2">
+            <div className="flex flex-col">
+              <label className="font-heading text-sm font-semibold text-subtle uppercase tracking-wider">
+                Payment Frequency
+              </label>
+              <span className="text-xs text-muted">
+                How often is this bill paid?
+              </span>
+            </div>
+            <div className="grid grid-cols-4 gap-1 p-1 bg-[#111111] border border-white/10 rounded-xl">
+              {(
+                [
+                  { value: "weekly", label: "Weekly" },
+                  { value: "fortnightly", label: "Fortnightly" },
+                  { value: "monthly", label: "Monthly" },
+                  { value: "yearly", label: "Yearly" },
+                ] as const
+              ).map((opt) => {
+                const isSelected = frequency.toLowerCase() === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setFrequency(opt.value)}
+                    className={`py-2 rounded-lg text-[10px] font-heading font-bold uppercase tracking-wider transition-all duration-200 focus:outline-none cursor-pointer text-center ${
+                      isSelected
+                        ? "bg-[#c8ff00] text-black font-extrabold shadow-sm"
+                        : "text-neutral-400 hover:text-white hover:bg-white/[0.02]"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
 

@@ -1,11 +1,15 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Plus, Search, Filter, CheckCircle, Clock, AlertCircle, Trash2, X } from "lucide-react";
+import { Plus, Search, Filter, Trash2, X } from "lucide-react";
 import { useApp, useCurrentUser } from "@/context/AppContext";
 import AddBillSheet from "@/components/AddBillSheet";
 import BillCard from "@/components/BillCard";
 import PageHeader from "@/components/PageHeader";
+import FrequencyToggle from "@/components/FrequencyToggle";
+import { convertAmount } from "@/lib/utils";
+
+type FrequencyType = "weekly" | "fortnightly" | "monthly" | "yearly";
 
 export default function Bills() {
   const { bills, billSplits, members: householdMembers, togglePaid, deleteBill } = useApp();
@@ -14,13 +18,34 @@ export default function Bills() {
   const [isAddBillSheetOpen, setIsAddBillSheetOpen] = useState(false);
   const [filter, setFilter] = useState<"all" | "week" | "month" | "overdue">("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [displayFrequency, setDisplayFrequency] = useState<FrequencyType>("weekly");
 
-  // Derived summary values — reactive to context state
-  const totalBills = useMemo(() => bills.reduce((s, b) => s + b.amount, 0), [bills]);
-  const totalPaid = useMemo(
-    () => bills.filter((b) => b.status === "Paid").reduce((s, b) => s + b.amount, 0),
-    [bills],
-  );
+  // Helper to format frequency labels for UI
+  const getFrequencyLabel = (freq: FrequencyType) => {
+    switch (freq) {
+      case "weekly": return "Weekly";
+      case "fortnightly": return "Fortnightly";
+      case "monthly": return "Monthly";
+      case "yearly": return "Yearly";
+      default: return "Weekly";
+    }
+  };
+
+  // Derived summary values converted dynamically based on selected frequency
+  const totalBills = useMemo(() => {
+    return bills.reduce((sum, b) => {
+      return sum + convertAmount(b.amount, b.frequency || "monthly", displayFrequency);
+    }, 0);
+  }, [bills, displayFrequency]);
+
+  const totalPaid = useMemo(() => {
+    return bills
+      .filter((b) => b.status === "Paid")
+      .reduce((sum, b) => {
+        return sum + convertAmount(b.amount, b.frequency || "monthly", displayFrequency);
+      }, 0);
+  }, [bills, displayFrequency]);
+
   const remainingDue = totalBills - totalPaid;
 
   const filteredBills = useMemo(() => {
@@ -80,39 +105,45 @@ export default function Bills() {
         subtitle="Manage and track all household bills"
         user={currentUser}
         action={
-          <button
-            onClick={() => setIsAddBillSheetOpen(true)}
-            className="flex items-center gap-2 bg-secondary hover:bg-secondary-dark active:scale-95 text-secondary-fg text-sm font-semibold px-4 py-2.5 rounded-xl shadow-md shadow-secondary/15 transition-all duration-200"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Add Bill</span>
-          </button>
+          <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3">
+            <FrequencyToggle
+              selectedFrequency={displayFrequency}
+              onChange={setDisplayFrequency}
+            />
+            <button
+              onClick={() => setIsAddBillSheetOpen(true)}
+              className="flex items-center gap-2 bg-secondary hover:bg-secondary-dark active:scale-95 text-secondary-fg text-sm font-semibold px-4 py-2.5 rounded-xl shadow-md shadow-secondary/15 transition-all duration-200 cursor-pointer shrink-0"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Add Bill</span>
+            </button>
+          </div>
         }
       />
 
-      {/* Summary Banner Cards — reactive */}
+      {/* Summary Banner Cards — reactive to frequency */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-surface border border-border rounded-2xl p-5 shadow-sm">
           <span className="text-xs font-bold uppercase tracking-wider text-subtle">
-            Total Monthly Bills
+            Total {getFrequencyLabel(displayFrequency)} Bills
           </span>
-          <h3 className="text-2xl font-bold text-foreground mt-1 tracking-tight">
+          <h3 className="text-2xl font-bold text-foreground mt-1 tracking-tight font-jetbrains">
             ${totalBills.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </h3>
         </div>
         <div className="bg-surface border border-border rounded-2xl p-5 shadow-sm">
           <span className="text-xs font-bold uppercase tracking-wider text-subtle">
-            Remaining Due
+            Remaining Due ({getFrequencyLabel(displayFrequency)})
           </span>
-          <h3 className="text-2xl font-bold text-accent mt-1 tracking-tight">
+          <h3 className="text-2xl font-bold text-accent mt-1 tracking-tight font-jetbrains">
             ${remainingDue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </h3>
         </div>
         <div className="bg-surface border border-border rounded-2xl p-5 shadow-sm">
           <span className="text-xs font-bold uppercase tracking-wider text-subtle">
-            Total Paid
+            Total Paid ({getFrequencyLabel(displayFrequency)})
           </span>
-          <h3 className="text-2xl font-bold text-primary mt-1 tracking-tight">
+          <h3 className="text-2xl font-bold text-primary mt-1 tracking-tight font-jetbrains">
             ${totalPaid.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </h3>
         </div>
@@ -177,6 +208,7 @@ export default function Bills() {
                 bill={bill} 
                 splits={billSplits.filter(s => s.bill_id === bill.id)}
                 householdMembers={householdMembers}
+                displayFrequency={displayFrequency}
               />
             ))}
           </div>
@@ -191,3 +223,4 @@ export default function Bills() {
     </div>
   );
 }
+
