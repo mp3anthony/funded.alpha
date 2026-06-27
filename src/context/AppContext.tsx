@@ -516,6 +516,10 @@ interface AppContextValue {
   /* Auth */
   session: Session | null;
   isAuthLoading: boolean;
+
+  /* Theme */
+  theme: "light" | "dark" | "system";
+  setTheme: (theme: "light" | "dark" | "system") => void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -525,6 +529,101 @@ const AppContext = createContext<AppContextValue | null>(null);
    ═══════════════════════════════════════════════ */
 
 export function AppProvider({ children }: { children: ReactNode }) {
+  /* ── Theme State & Logic ─────────────────────── */
+  const [theme, setThemeState] = useState<"light" | "dark" | "system">("system");
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedTheme = localStorage.getItem("theme") as "light" | "dark" | "system" | null;
+      if (savedTheme) {
+        setTimeout(() => {
+          setThemeState(savedTheme);
+        }, 0);
+      }
+    }
+  }, []);
+
+  // Update theme settings on change
+  useEffect(() => {
+    const root = window.document.documentElement;
+    const body = window.document.body;
+    
+    const applyTheme = (t: "light" | "dark" | "system") => {
+      let activeTheme = t;
+      if (t === "system") {
+        const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        activeTheme = systemPrefersDark ? "dark" : "light";
+      }
+      
+      // Update HTML tag classes/dataset
+      if (!root.classList.contains(activeTheme)) {
+        root.classList.remove("light", "dark");
+        root.classList.add(activeTheme);
+      }
+      if (root.getAttribute("data-theme") !== activeTheme) {
+        root.setAttribute("data-theme", activeTheme);
+      }
+
+      // Update BODY tag classes/dataset
+      if (body) {
+        if (!body.classList.contains(activeTheme)) {
+          body.classList.remove("light", "dark");
+          body.classList.add(activeTheme);
+        }
+        if (body.getAttribute("data-theme") !== activeTheme) {
+          body.setAttribute("data-theme", activeTheme);
+        }
+      }
+      
+      console.log("[ThemeManager] applied:", activeTheme, "HTML classes:", root.className, "data-theme:", root.getAttribute("data-theme"));
+    };
+
+    applyTheme(theme);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("theme", theme);
+    }
+    
+    // Set up MutationObserver to defend against Next.js HTML tag reconciliations
+    const observer = new MutationObserver(() => {
+      applyTheme(theme);
+    });
+    
+    observer.observe(root, {
+      attributes: true,
+      attributeFilter: ["class", "data-theme"]
+    });
+
+    let bodyObserver: MutationObserver | null = null;
+    if (body) {
+      bodyObserver = new MutationObserver(() => {
+        applyTheme(theme);
+      });
+      bodyObserver.observe(body, {
+        attributes: true,
+        attributeFilter: ["class", "data-theme"]
+      });
+    }
+    
+    let cleanupSystemListener: (() => void) | undefined;
+    if (theme === "system") {
+      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+      const handleChange = () => applyTheme("system");
+      mediaQuery.addEventListener("change", handleChange);
+      cleanupSystemListener = () => mediaQuery.removeEventListener("change", handleChange);
+    }
+
+    return () => {
+      observer.disconnect();
+      if (bodyObserver) bodyObserver.disconnect();
+      if (cleanupSystemListener) cleanupSystemListener();
+    };
+  }, [theme]);
+
+  const setTheme = (newTheme: "light" | "dark" | "system") => {
+    setThemeState(newTheme);
+  };
+
   /* ── Onboarding & Household ──────────────────── */
   const [isOnboarded, setIsOnboarded] = useState(false);
   const [householdName, setHouseholdNameState] = useState("");
@@ -1895,6 +1994,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     applyRuleAllocation,
     session,
     isAuthLoading,
+    theme,
+    setTheme,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

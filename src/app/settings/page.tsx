@@ -11,6 +11,7 @@ import {
   Trash2,
   Save,
   Check,
+  SunMoon,
 } from "lucide-react";
 import { useApp, useCurrentUser } from "@/context/AppContext";
 import PaymentModeToggle from "@/components/PaymentModeToggle";
@@ -35,6 +36,8 @@ export default function SettingsPage() {
     session,
     updateMember,
     updateMemberAvatar,
+    theme,
+    setTheme,
   } = useApp();
   const currentUser = useCurrentUser();
 
@@ -290,6 +293,49 @@ export default function SettingsPage() {
                 }`}
               />
             </button>
+          </div>
+
+          {/* App Theme Mode Toggle */}
+          <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="flex h-10 w-10 rounded-xl bg-primary/10 text-primary items-center justify-center shrink-0">
+                <SunMoon className="h-5 w-5" />
+              </div>
+              <div>
+                <h4 className="text-sm sm:text-base font-bold text-foreground">
+                  App Theme
+                </h4>
+                <p className="text-xs text-muted mt-0.5">
+                  Choose between Light, Dark, or System mode.
+                </p>
+              </div>
+            </div>
+            
+            <div className="inline-flex p-1 bg-[#111111] border border-white/10 rounded-xl shrink-0">
+              {(
+                [
+                  { value: "light", label: "Light" },
+                  { value: "dark", label: "Dark" },
+                  { value: "system", label: "System" },
+                ] as const
+              ).map((opt) => {
+                const isSelected = theme === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setTheme(opt.value)}
+                    className={`px-4 py-1.5 rounded-lg text-[10px] font-heading font-bold uppercase tracking-wider transition-all duration-200 focus:outline-none cursor-pointer ${
+                      isSelected
+                        ? "bg-[#c8ff00] text-black font-extrabold shadow-sm"
+                        : "text-neutral-400 hover:text-white hover:bg-white/[0.02]"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </section>

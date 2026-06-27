@@ -47,10 +47,75 @@
 }
 
 /* ─────────────────────────────────────────────
-   Light Mode
-───────────────────────────────────────────── */
+   Dark Mode Configuration
+   ───────────────────────────────────────────── */
+.dark,
+[data-theme='dark'] {
+  --color-background: #0a0a0a;
+  --color-surface: #111111;
+  --color-surface-raised: #181818;
+  --color-surface-elevated: #202020;
+
+  --color-foreground: #f0f0f0;
+  --color-muted: #999999;
+  --color-subtle: #666666;
+
+  --color-border: rgba(255, 255, 255, 0.07);
+  --color-border-strong: rgba(255, 255, 255, 0.12);
+
+  --color-primary: #c8ff00;
+  --color-primary-light: rgba(200, 255, 0, 0.10);
+  --color-primary-mid: rgba(200, 255, 0, 0.25);
+  --color-primary-fg: #000000;
+
+  --color-secondary: #c8ff00;
+  --color-secondary-light: rgba(200, 255, 0, 0.10);
+  --color-secondary-dark: #7aaa00;
+  --color-secondary-fg: #000000;
+
+  --color-accent: #ffab00;
+  --color-accent-light: rgba(255, 171, 0, 0.12);
+  --color-accent-fg: #000000;
+
+  --color-destructive: #ff3d57;
+  --color-destructive-light: rgba(255, 61, 87, 0.12);
+  --color-destructive-fg: #ffffff;
+
+  --color-success: #00e676;
+  --color-success-light: rgba(0, 230, 118, 0.12);
+}
+
+/* ─────────────────────────────────────────────
+   Light Mode Configuration
+   ───────────────────────────────────────────── */
+.light,
+[data-theme='light'] {
+  --color-background: #f2f2ee;
+  --color-surface: #e8e8e4;
+  --color-surface-raised: #dcdcd8;
+  --color-surface-elevated: #d0d0cc;
+
+  --color-foreground: #0f0f0f;
+  --color-muted: #444444;
+  --color-subtle: #777777;
+
+  --color-border: rgba(0, 0, 0, 0.09);
+  --color-border-strong: rgba(0, 0, 0, 0.15);
+
+  --color-primary: #7aaa00;
+  --color-primary-light: rgba(100, 150, 0, 0.10);
+  --color-primary-mid: rgba(100, 150, 0, 0.22);
+
+  --color-secondary: #7aaa00;
+  --color-secondary-light: rgba(100, 150, 0, 0.10);
+
+  --color-accent: #c07800;
+  --color-destructive: #cc2233;
+  --color-success: #00994a;
+}
+
 @media (prefers-color-scheme: light) {
-  :root {
+  :root:not(.dark):not([data-theme='dark']) {
     --color-background: #f2f2ee;
     --color-surface: #e8e8e4;
     --color-surface-raised: #dcdcd8;
