@@ -156,7 +156,7 @@ export default function PaydayPage() {
 
       {/* Upcoming Pays */}
       <div className="space-y-4">
-        <h2 className="text-base font-bold text-subtle uppercase tracking-wider px-1 font-heading">
+        <h2 className="text-base font-bold text-subtle uppercase tracking-wider px-1 font-syne">
           Upcoming Pays
         </h2>
 
@@ -297,7 +297,7 @@ export default function PaydayPage() {
 
       {/* Recent Pay History */}
       <div className="space-y-4">
-        <h2 className="text-base font-bold text-subtle uppercase tracking-wider px-1 font-heading">
+        <h2 className="text-base font-bold text-subtle uppercase tracking-wider px-1 font-syne">
           Recent Pay History
         </h2>
 

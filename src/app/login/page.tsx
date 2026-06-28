@@ -51,7 +51,7 @@ export default function LoginPage() {
           <div className="h-12 w-12 bg-secondary/10 text-secondary rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Lock className="h-6 w-6" />
           </div>
-          <h1 className="text-2xl font-extrabold text-foreground tracking-tight">
+          <h1 className="font-syne text-2xl font-extrabold text-white tracking-tight">
             {isSignUp ? "Create an account" : "Welcome back"}
           </h1>
           <p className="text-sm text-muted mt-2">

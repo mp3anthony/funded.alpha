@@ -50,7 +50,7 @@ export default function EnterPayAmountModal({
       >
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h3 className="font-heading font-bold text-base text-foreground">
+          <h3 className="font-syne font-bold text-base text-foreground">
             Log Income Payment
           </h3>
           <button

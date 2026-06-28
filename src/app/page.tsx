@@ -68,7 +68,11 @@ export default function Home() {
       {/* Main Grid Layout */}
       <div className="space-y-6">
         {/* Health Score Card - Full Width */}
-        <HealthScoreCard bills={bills} funds={funds} payHistory={payHistory} />
+        <HealthScoreCard
+          bills={bills}
+          funds={funds}
+          payHistory={payHistory}
+        />
 
         {/* Two-Column Mid Row (Upcoming Bills & Active Goals) */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

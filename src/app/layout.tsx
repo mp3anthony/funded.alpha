@@ -28,7 +28,13 @@ import AppShell from "@/components/AppShell";
 
 export const metadata: Metadata = {
   title: "Funded",
-  description: "Manage your money smarter with Funded.",
+  description: "Household Finance Control Center",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Funded",
+  },
 };
 
 export default function RootLayout({
@@ -38,6 +44,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full antialiased">
+      <head>
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="theme-color" content="#c8ff00" />
+      </head>
       <body className={`${syne.variable} ${instrument.variable} ${jetbrains.variable} font-body`}>
         <AppProvider>
           <AppShell>{children}</AppShell>

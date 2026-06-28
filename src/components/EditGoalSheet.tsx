@@ -121,7 +121,7 @@ export default function EditGoalSheet({
         
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-surface/90 px-6 py-4 backdrop-blur">
-          <h2 className="font-heading text-xl font-bold text-foreground">Edit Goal</h2>
+          <h2 className="font-syne text-xl font-bold text-foreground">Edit Goal</h2>
           <button 
             type="button"
             onClick={onClose}

@@ -19,6 +19,9 @@ import ContributionSettingsSheet from "@/components/ContributionSettingsSheet";
 import RulesSettingsSheet from "@/components/RulesSettingsSheet";
 import PageHeader from "@/components/PageHeader";
 import AvatarUpload from "@/components/AvatarUpload";
+import InviteMemberModal from "@/components/InviteMemberModal";
+import RemoveMemberModal from "@/components/RemoveMemberModal";
+import { type Member } from "@/types";
 import { AlertTriangle } from "lucide-react";
 
 /* ── Page Component ──────────────────────────── */
@@ -88,9 +91,9 @@ export default function SettingsPage() {
   const [pushNotifications, setPushNotifications] = useState(true);
   const [emailAlerts, setEmailAlerts] = useState(false);
 
-  /* Invite modal */
+  /* Invite and Remove member modals */
   const [showInvite, setShowInvite] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState("");
+  const [memberToRemove, setMemberToRemove] = useState<Member | null>(null);
 
   /* ── Handlers ──────────────────────────────── */
   async function handleProfileSave() {
@@ -99,24 +102,6 @@ export default function SettingsPage() {
     }
     setProfileSaved(true);
     setTimeout(() => setProfileSaved(false), 2000);
-  }
-
-  function handleInvite() {
-    if (!inviteEmail.trim()) return;
-    const name = inviteEmail.split("@")[0];
-    addMember({
-      id: Date.now(), // placeholder, Supabase will assign real UUID
-      name: name.charAt(0).toUpperCase() + name.slice(1),
-      email: inviteEmail.trim(),
-      role: "member",
-      avatar: name.charAt(0).toUpperCase(),
-    });
-    setInviteEmail("");
-    setShowInvite(false);
-  }
-
-  function handleRemoveMember(id: string | number) {
-    removeMember(id);
   }
 
   function handleModeChangeClick(newMode: boolean) {
@@ -400,7 +385,7 @@ export default function SettingsPage() {
                                 memberAvatar
                               )}
                             </div>
-                            <span className="font-heading text-sm font-bold text-foreground truncate font-syne">
+                            <span className="font-syne text-sm font-bold text-foreground truncate">
                               {memberName}
                             </span>
                           </div>
@@ -503,7 +488,7 @@ export default function SettingsPage() {
           </button>
         </div>
 
-        <div className="bg-surface border border-border rounded-2xl shadow-sm overflow-hidden divide-y divide-border">
+        <div className="bg-surface border border-border rounded-2xl shadow-sm overflow-hidden divide-y divide-border font-sans">
           {members.length === 0 ? (
             <div className="p-8 text-center">
               <Users className="h-8 w-8 mx-auto text-muted mb-2" />
@@ -518,112 +503,81 @@ export default function SettingsPage() {
               </p>
             </div>
           ) : (
-            members.map((member) => (
-              <div
-                key={member.id}
-                className="group p-4 sm:p-5 flex items-center justify-between hover:bg-surface-raised transition-colors"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-full overflow-hidden bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-white font-bold text-sm shadow-sm shrink-0">
-                    {member.avatar_url ? (
-                      <img src={member.avatar_url} alt={member.name} className="h-full w-full object-cover" />
-                    ) : (
-                      member.avatar
-                    )}
-                  </div>
-                  <div>
-                    <h4 className="text-sm sm:text-base font-bold text-foreground">
-                      {member.name}
-                    </h4>
-                    <p className="text-xs text-muted mt-0.5">{member.email}</p>
-                  </div>
-                </div>
+            members.map((member) => {
+              const isCurrentUser = String(member.email).toLowerCase() === String(session?.user?.email).toLowerCase();
+              const isOwner = member.role === "owner";
+              const isPending = member.invitation_status === "pending";
 
-                <button
-                  onClick={() => handleRemoveMember(member.id)}
-                  aria-label={`Remove ${member.name}`}
-                  className="flex h-9 w-9 items-center justify-center rounded-xl text-muted hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer"
+              return (
+                <div
+                  key={member.id}
+                  className="group p-4 sm:p-5 flex items-center justify-between hover:bg-surface-raised transition-colors"
                 >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-            ))
+                  <div className="flex items-center gap-4">
+                    <div className="h-10 w-10 rounded-full overflow-hidden bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-white font-bold text-sm shadow-sm shrink-0">
+                      {member.avatar_url ? (
+                        <img src={member.avatar_url} alt={member.name} className="h-full w-full object-cover" />
+                      ) : (
+                        member.avatar
+                      )}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-sm sm:text-base font-bold text-foreground">
+                          {member.name}
+                        </h4>
+                        {/* Role Badges */}
+                        {isOwner ? (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#c8ff00]/10 text-[#c8ff00] border border-[#c8ff00]/20 font-syne">
+                            Owner
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/5 text-neutral-400 border border-white/10 font-syne">
+                            Member
+                          </span>
+                        )}
+                        {/* Invitation Status Badge */}
+                        {isPending && (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20 font-syne">
+                            Pending
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-neutral-400 mt-0.5">{member.email}</p>
+                    </div>
+                  </div>
+
+                  {/* Remove Button */}
+                  {!isOwner && (
+                    <button
+                      onClick={() => setMemberToRemove(member)}
+                      disabled={isCurrentUser}
+                      aria-label={`Remove ${member.name}`}
+                      className="flex h-9 w-9 items-center justify-center rounded-xl text-neutral-400 hover:text-[#ff3d57] hover:bg-[#ff3d57]/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-neutral-400 disabled:pointer-events-none cursor-pointer"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              );
+            })
           )}
         </div>
       </section>
 
 
-      {/* ── Invite Member Modal ──────────────────── */}
-      {showInvite && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4"
-          onClick={() => setShowInvite(false)}
-        >
-          <div
-            className="bg-surface border border-border rounded-3xl w-full max-w-md shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal header */}
-            <div className="flex items-center justify-between p-5 border-b border-border">
-              <h3 className="text-lg font-bold text-foreground">
-                Invite Member
-              </h3>
-              <button
-                onClick={() => setShowInvite(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-muted hover:text-foreground hover:bg-surface-raised transition-colors cursor-pointer"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
+      {/* ── Invite & Remove Member Modals ────────── */}
+      <InviteMemberModal
+        isOpen={showInvite}
+        onClose={() => setShowInvite(false)}
+      />
 
-            {/* Modal body */}
-            <div className="p-5 space-y-5">
-              <div className="space-y-2">
-                <label
-                  htmlFor="invite-email"
-                  className="block text-xs font-bold tracking-wider uppercase text-muted"
-                >
-                  Email Address
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
-                  <input
-                    id="invite-email"
-                    type="email"
-                    placeholder="name@example.com"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleInvite()}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-surface-raised border border-border text-foreground text-sm font-medium focus:ring-2 focus:ring-secondary/40 focus:border-secondary outline-none transition-all"
-                  />
-                </div>
-              </div>
-
-              <p className="text-xs text-muted">
-                They&apos;ll receive an invite to join your household and share
-                bills, goals, and budgets.
-              </p>
-            </div>
-
-            {/* Modal footer */}
-            <div className="flex items-center gap-3 p-5 border-t border-border">
-              <button
-                onClick={() => setShowInvite(false)}
-                className="flex-1 py-3 rounded-xl border border-border text-sm font-bold text-muted hover:text-foreground hover:bg-surface-raised transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleInvite}
-                disabled={!inviteEmail.trim()}
-                className="flex-1 py-3 rounded-xl bg-secondary text-secondary-fg text-sm font-bold shadow-lg shadow-secondary/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
-              >
-                Send Invite
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <RemoveMemberModal
+        isOpen={memberToRemove !== null}
+        onClose={() => setMemberToRemove(null)}
+        member={memberToRemove}
+        householdMembers={members}
+      />
 
       {/* ── Mode Change Confirmation Modal ──────────── */}
       {showConfirm && (
@@ -637,7 +591,7 @@ export default function SettingsPage() {
           >
             {/* Modal header */}
             <div className="p-5 border-b border-border">
-              <h3 className="text-lg font-bold text-foreground font-heading">
+              <h3 className="text-lg font-bold text-foreground font-syne">
                 Confirm Payment Mode Change
               </h3>
             </div>

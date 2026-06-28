@@ -144,7 +144,7 @@ export default function RulesSettingsSheet({
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-[#111111]/90 px-6 py-4 backdrop-blur">
           <div>
-            <h2 className="font-heading text-lg font-bold text-foreground flex items-center gap-1.5">
+            <h2 className="font-syne text-lg font-bold text-foreground flex items-center gap-1.5">
               <Sparkles size={18} className="text-primary animate-pulse" />
               <span>Contribution Rules</span>
             </h2>
@@ -163,7 +163,7 @@ export default function RulesSettingsSheet({
         {/* Rule Form Panel Overlay */}
         {isFormOpen ? (
           <form onSubmit={handleSave} className="flex flex-col space-y-5 px-6 py-5 border-b border-white/5 bg-[#0a0a0a]/50">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-primary font-heading">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-primary font-syne">
               {editingRule ? "Edit Automation Rule" : "Create Automation Rule"}
             </h3>
 

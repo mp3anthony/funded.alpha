@@ -53,7 +53,7 @@ export default function SurplusSuggestionModal({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-primary">
             <TrendingUp size={20} />
-            <h3 className="font-heading font-extrabold text-base text-foreground tracking-wide">
+            <h3 className="font-syne font-extrabold text-base text-foreground tracking-wide">
               Surplus Detected!
             </h3>
           </div>
@@ -67,7 +67,7 @@ export default function SurplusSuggestionModal({
 
         {/* Title details */}
         <div className="space-y-1">
-          <h4 className="font-heading font-bold text-lg text-foreground leading-tight">
+          <h4 className="font-syne font-bold text-lg text-foreground leading-tight">
             {memberName} earned <span className="text-primary font-mono">${formattedSurplus}</span> over average!
           </h4>
           <p className="text-xs text-muted font-sans">

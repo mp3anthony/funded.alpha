@@ -12,7 +12,7 @@ export default function PaymentModeToggle({ currentMode, onModeChange }: Payment
   return (
     <div className="flex flex-col space-y-4 w-full">
       <div className="flex flex-col space-y-2">
-        <h3 className="font-heading font-bold text-lg text-foreground text-center sm:text-left">
+        <h3 className="font-syne font-bold text-lg text-foreground text-center sm:text-left">
           Does your household use a joint account?
         </h3>
         <p className="text-xs text-muted text-center sm:text-left font-mono">
@@ -36,7 +36,7 @@ export default function PaymentModeToggle({ currentMode, onModeChange }: Payment
           }`}>
             <Users className="h-6 w-6" />
           </div>
-          <h4 className="font-heading font-semibold text-base text-foreground mb-1">
+          <h4 className="font-syne font-semibold text-base text-foreground mb-1">
             Direct Pay
           </h4>
           <p className="font-mono text-xs text-muted leading-relaxed text-center sm:text-left">
@@ -59,7 +59,7 @@ export default function PaymentModeToggle({ currentMode, onModeChange }: Payment
           }`}>
             <Wallet className="h-6 w-6" />
           </div>
-          <h4 className="font-heading font-semibold text-base text-foreground mb-1">
+          <h4 className="font-syne font-semibold text-base text-foreground mb-1">
             Joint Fund
           </h4>
           <p className="font-mono text-xs text-muted leading-relaxed text-center sm:text-left">

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { type Bill, type Fund, type PayHistory } from "@/context/AppContext";
+import { useApp, type Bill, type Fund, type PayHistory } from "@/context/AppContext";
 import { calculateHealthScore } from "@/lib/utils";
 
 interface HealthScoreCardProps {
@@ -15,10 +15,12 @@ export const HealthScoreCard = React.memo(function HealthScoreCard({
   funds,
   payHistory,
 }: HealthScoreCardProps) {
+  const { householdContributions, paySchedules, isJointFund, billSplits } = useApp();
+
   // Memoize health score calculation
   const score = React.useMemo(
-    () => calculateHealthScore(bills, funds, payHistory),
-    [bills, funds, payHistory]
+    () => calculateHealthScore(bills, funds, payHistory, householdContributions, paySchedules, isJointFund, billSplits),
+    [bills, funds, payHistory, householdContributions, paySchedules, isJointFund, billSplits]
   );
 
   // Determine tiers, colors, and descriptions
@@ -26,20 +28,26 @@ export const HealthScoreCard = React.memo(function HealthScoreCard({
   let statusColor = "text-[#ff3d57]"; // Red
   let statusBg = "bg-[#ff3d57]/10";
   let dialColor = "#ff3d57";
-  let description = "Your household financial health needs attention. Consider paying overdue bills or increasing contributions to your active goals.";
+  let description = isJointFund
+    ? "Your household financial health needs attention. Focus on resolving any overdue bills, establishing steady goal contributions, and ensuring your joint fund contributions cover your total bills."
+    : "Your household financial health needs attention. Focus on resolving any overdue bills, establishing steady goal contributions, and ensuring your bill assignments cover your total bills.";
 
   if (score >= 80) {
     statusText = "Excellent";
     statusColor = "text-[#c8ff00]"; // Lime Green
     statusBg = "bg-[#c8ff00]/10";
     dialColor = "#c8ff00";
-    description = "Your household finances are in great shape! Keep up the excellent work paying bills on time and tracking towards your savings goals.";
+    description = isJointFund
+      ? "Your household financial health is excellent! You're staying ahead of your bills, ensuring your joint fund contributions cover your total bills, and building consistent savings systems."
+      : "Your household financial health is excellent! You're staying ahead of your bills, maintaining complete split coverage across all bills, and building consistent savings systems.";
   } else if (score >= 60) {
     statusText = "Good";
     statusColor = "text-[#ffab00]"; // Amber
     statusBg = "bg-[#ffab00]/10";
     dialColor = "#ffab00";
-    description = "Household health is looking solid. Focus on clearing pending bills and making steady progress towards savings goals to bump your score.";
+    description = isJointFund
+      ? "Your household finances are in good shape. Keep ensuring your joint fund contributions cover your total bills, setting up goal contributions, and ensuring no bills fall overdue."
+      : "Your household finances are in good shape. Keep maintaining your split coverage, setting up goal contributions, and ensuring no bills fall overdue.";
   }
 
   // SVG Circular progress values
@@ -105,9 +113,9 @@ export const HealthScoreCard = React.memo(function HealthScoreCard({
           {description}
         </p>
         <div className="pt-1 flex flex-wrap gap-x-4 gap-y-1 justify-center md:justify-start font-mono text-[10px] text-neutral-600">
-          <span>• Bills On-Time (40%)</span>
-          <span>• Goals Progress (30%)</span>
-          <span>• Budget Adherence (30%)</span>
+          <span>• Bills Management (40%)</span>
+          <span>• Goals/Contributions (30%)</span>
+          <span>• {isJointFund ? "Joint Fund Coverage (30%)" : "Budget Adherence (30%)"}</span>
         </div>
       </div>
     </div>

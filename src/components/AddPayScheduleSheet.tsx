@@ -86,7 +86,7 @@ export default function AddPayScheduleSheet({
       >
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-[#111111]/90 px-6 py-4 backdrop-blur">
-          <h2 className="font-heading text-lg font-bold text-foreground">
+          <h2 className="font-syne text-lg font-bold text-foreground">
             {existingSchedule ? "Edit Pay Schedule" : "Add Pay Schedule"}
           </h2>
           <button

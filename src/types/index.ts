@@ -25,7 +25,8 @@ export interface Member {
   id: string | number;
   name: string;
   email: string;
-  role: string;
+  role: 'owner' | 'member';
   avatar: string;
   avatar_url?: string | null;
+  invitation_status?: 'pending' | 'accepted' | 'declined';
 }

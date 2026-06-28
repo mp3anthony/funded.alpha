@@ -14,6 +14,7 @@ import {
   Wallet,
 } from "lucide-react";
 import PaymentModeToggle from "@/components/PaymentModeToggle";
+import Logo from "./Logo";
 
 const TOTAL_STEPS = 5;
 
@@ -142,13 +143,13 @@ export default function Onboarding() {
             {/* ── Step 1: Welcome ── */}
             {currentStep === 1 && (
               <div className="flex-1 flex flex-col justify-center space-y-6">
-                <div className="text-center space-y-2">
-                  <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-gradient-to-br from-primary to-emerald-500 text-white mx-auto shadow-lg shadow-primary/25">
-                    <Home className="h-7 w-7" />
+                <div className="text-center space-y-4 flex flex-col items-center">
+                  <div className="flex justify-center h-[52px]">
+                    <Logo size="large" showWordmark={true} />
                   </div>
-                  <h2 className="text-2xl font-extrabold text-foreground tracking-tight">
-                    Welcome to Funded
-                  </h2>
+                  <span className="sr-only font-syne font-extrabold text-[52px] text-[#c8ff00] tracking-[-2px]">
+                    funded
+                  </span>
                   <p className="text-sm text-muted max-w-xs mx-auto">
                     Let&apos;s set up your household in just a few quick steps.
                   </p>

@@ -43,6 +43,7 @@ export interface Fund {
   icon: React.ComponentType<any>;
   deadline: string | null;
   status: 'not_started' | 'in_progress' | 'completed' | 'paused';
+  member_id?: string | null;
 }
 
 export interface Payday {
@@ -80,9 +81,10 @@ export interface Member {
   id: string | number;
   name: string;
   email: string;
-  role: string;
+  role: 'owner' | 'member';
   avatar: string;
   avatar_url?: string | null;
+  invitation_status?: 'pending' | 'accepted' | 'declined';
 }
 
 export interface Household {
@@ -408,6 +410,7 @@ function mapFundFromDb(dbFund: any): Fund {
     icon: fundStyle.icon,
     deadline: dbFund.deadline || null,
     status: dbFund.status || 'not_started',
+    member_id: dbFund.member_id || null,
   };
 }
 
@@ -430,6 +433,7 @@ function mapMemberFromDb(dbMember: any): Member {
     role: dbMember.role || "member",
     avatar: name.charAt(0).toUpperCase(),
     avatar_url: dbMember.avatar_url || null,
+    invitation_status: dbMember.invitation_status || "accepted",
   };
 }
 
@@ -500,7 +504,8 @@ interface AppContextValue {
   members: Member[];
   householdMembers: Member[];
   addMember: (member: Member) => void;
-  removeMember: (id: string | number) => void;
+  inviteMember: (email: string, role: string) => Promise<void>;
+  removeMember: (id: string | number, reassignBillsTo?: string, reassignGoalsTo?: string) => Promise<void>;
   updateMember: (id: string | number, data: Partial<Omit<Member, "id">>) => Promise<void>;
   updateMemberAvatar: (memberId: string | number, avatarUrl: string | null) => Promise<void>;
 
@@ -1173,6 +1178,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         target_amount: fund.targetAmount,
         deadline: fund.deadline ? parseDateForDb(fund.deadline) : null,
         status: fund.status || 'not_started',
+        member_id: fund.member_id || null,
       };
 
       const { data, error } = await supabase
@@ -1203,6 +1209,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         target_amount: goalData.targetAmount,
         deadline: goalData.deadline ? parseDateForDb(goalData.deadline) : null,
         status: goalData.status || 'not_started',
+        member_id: goalData.member_id || null,
       };
 
       const { data, error } = await supabase
@@ -1377,18 +1384,153 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  async function removeMember(id: string | number) {
+  async function inviteMember(email: string, role: string) {
     try {
+      const hId = await ensureHousehold();
+
+      // Check if email already exists in local members state to prevent duplicates
+      const exists = members.some((m) => m.email.toLowerCase() === email.toLowerCase());
+      if (exists) {
+        throw new Error("A member with this email already exists in the household.");
+      }
+
+      const dbMemberData = {
+        household_id: hId,
+        name: email.split("@")[0], // Default name to prefix of email
+        email: email,
+        role: role || "member",
+        invitation_status: "pending"
+      };
+
+      const { data, error } = await supabase
+        .from("household_members")
+        .insert(dbMemberData)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error inserting invited member:", error);
+        throw error;
+      }
+
+      if (data) {
+        setMembers((prev) => [...prev, mapMemberFromDb(data)]);
+      }
+    } catch (err) {
+      console.error("Failed to invite member:", err);
+      throw err;
+    }
+  }
+
+  async function removeMember(id: string | number, reassignBillsTo?: string, reassignGoalsTo?: string) {
+    try {
+      // 1. Handle Bill Splits
+      if (reassignBillsTo) {
+        const { error: splitErr } = await supabase
+          .from("bill_splits")
+          .update({ member_id: reassignBillsTo })
+          .eq("member_id", id);
+
+        if (splitErr) {
+          console.error("Failed to reassign bill splits:", splitErr);
+          throw splitErr;
+        }
+
+        setBillSplits((prev) =>
+          prev.map((s) => (String(s.member_id) === String(id) ? { ...s, member_id: reassignBillsTo } : s))
+        );
+      } else {
+        const { error: splitErr } = await supabase
+          .from("bill_splits")
+          .delete()
+          .eq("member_id", id);
+
+        if (splitErr) {
+          console.error("Failed to delete bill splits:", splitErr);
+          throw splitErr;
+        }
+
+        setBillSplits((prev) => prev.filter((s) => String(s.member_id) !== String(id)));
+      }
+
+      // 2. Handle Goals (Funds)
+      if (reassignGoalsTo) {
+        const { error: goalErr } = await supabase
+          .from("funds")
+          .update({ member_id: reassignGoalsTo })
+          .eq("member_id", id);
+
+        if (goalErr) {
+          console.error("Failed to reassign goals:", goalErr);
+          throw goalErr;
+        }
+
+        setFunds((prev) =>
+          prev.map((f) => (String(f.member_id) === String(id) ? { ...f, member_id: reassignGoalsTo } : f))
+        );
+      } else {
+        const { error: goalErr } = await supabase
+          .from("funds")
+          .delete()
+          .eq("member_id", id);
+
+        if (goalErr) {
+          console.error("Failed to delete goals:", goalErr);
+          throw goalErr;
+        }
+
+        setFunds((prev) => prev.filter((f) => String(f.member_id) !== String(id)));
+      }
+
+      // 3. Delete Pay Schedules
+      const { error: scheduleErr } = await supabase
+        .from("pay_schedules")
+        .delete()
+        .eq("member_id", id);
+
+      if (scheduleErr) {
+        console.error("Failed to delete pay schedules:", scheduleErr);
+        throw scheduleErr;
+      }
+
+      setPaySchedules((prev) => prev.filter((s) => String(s.member_id) !== String(id)));
+
+      // 4. Delete Household Contributions
+      const { error: contributionErr } = await supabase
+        .from("household_contributions")
+        .delete()
+        .eq("member_id", id);
+
+      if (contributionErr) {
+        console.error("Failed to delete household contributions:", contributionErr);
+      } else {
+        setHouseholdContributions((prev) => prev.filter((c) => String(c.member_id) !== String(id)));
+      }
+
+      // 5. Delete Pay History
+      const { error: historyErr } = await supabase
+        .from("pay_history")
+        .delete()
+        .eq("member_id", id);
+
+      if (historyErr) {
+        console.error("Failed to delete pay history:", historyErr);
+      } else {
+        setPayHistory((prev) => prev.filter((h) => String(h.member_id) !== String(id)));
+      }
+
+      // 6. Delete member record
       const { error } = await supabase.from("household_members").delete().eq("id", id);
 
       if (error) {
-        console.error("Error deleting member:", error);
-        return;
+        console.error("Error deleting member record:", error);
+        throw error;
       }
 
       setMembers((prev) => prev.filter((m) => m.id !== id));
     } catch (err) {
       console.error("Failed to remove member:", err);
+      throw err;
     }
   }
 
@@ -1964,6 +2106,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     members,
     householdMembers: members,
     addMember,
+    inviteMember,
     removeMember,
     updateMember,
     updateMemberAvatar,

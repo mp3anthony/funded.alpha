@@ -72,7 +72,7 @@ export default function PayScheduleDetailSheet({
         
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-[#111111]/90 px-6 py-4 backdrop-blur">
-          <h2 className="font-heading text-lg font-bold text-foreground">Schedule Details</h2>
+          <h2 className="font-syne text-lg font-bold text-foreground">Schedule Details</h2>
           <button 
             onClick={onClose}
             className="rounded-full p-2 text-muted hover:bg-white/5 hover:text-foreground transition-colors focus:outline-none"
@@ -87,7 +87,7 @@ export default function PayScheduleDetailSheet({
           {/* Member Name & Frequency */}
           <div className="flex flex-col space-y-1">
             <div className="flex items-center justify-between">
-              <h3 className="font-heading font-bold text-xl text-foreground truncate pr-4 flex items-center gap-2">
+              <h3 className="font-syne font-bold text-xl text-foreground truncate pr-4 flex items-center gap-2">
                 {member?.avatar_url ? (
                   <img src={member.avatar_url} alt={memberName} className="h-6 w-6 rounded-full object-cover shrink-0" />
                 ) : (

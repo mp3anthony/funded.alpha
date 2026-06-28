@@ -115,7 +115,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
         
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-surface/90 px-6 py-4 backdrop-blur">
-          <h2 className="font-heading text-xl font-bold text-foreground">
+          <h2 className="font-syne text-xl font-bold text-foreground">
             {existingBill ? "Edit Bill" : "Add Bill"}
           </h2>
           <button 
