@@ -19,27 +19,42 @@ export default function AddPayScheduleSheet({
   const currentUser = useCurrentUser();
 
   const [memberId, setMemberId] = useState("");
-  const [frequency, setFrequency] = useState<"weekly" | "fortnightly" | "monthly">("monthly");
+  const [frequency, setFrequency] = useState<"weekly" | "by-weekly" | "monthly">("monthly");
   const [isFixedAmount, setIsFixedAmount] = useState(true);
   const [amount, setAmount] = useState("");
   const [nextPayDate, setNextPayDate] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [hasInitialized, setHasInitialized] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isOpen && existingSchedule) {
-      setMemberId(String(existingSchedule.member_id));
-      setFrequency(existingSchedule.frequency);
-      setIsFixedAmount(existingSchedule.is_fixed_amount);
-      setAmount(existingSchedule.amount ? String(existingSchedule.amount) : "");
-      setNextPayDate(existingSchedule.next_pay_date || "");
-    } else if (isOpen) {
-      setMemberId(currentUser.id ? String(currentUser.id) : (householdMembers[0]?.id ? String(householdMembers[0].id) : ""));
-      setFrequency("monthly");
-      setIsFixedAmount(true);
-      setAmount("");
-      setNextPayDate("");
+    if (!isOpen) {
+      setHasInitialized(false);
+      setErrorMsg(null);
+      return;
     }
-  }, [isOpen, existingSchedule, householdMembers, currentUser.id]);
+
+    if (isOpen && !hasInitialized) {
+      if (existingSchedule) {
+        setMemberId(String(existingSchedule.member_id));
+        setFrequency(existingSchedule.frequency);
+        setIsFixedAmount(existingSchedule.is_fixed_amount);
+        setAmount(existingSchedule.amount ? String(existingSchedule.amount) : "");
+        setNextPayDate(existingSchedule.next_pay_date || "");
+        setHasInitialized(true);
+      } else {
+        const defaultMemberId = currentUser.id ? String(currentUser.id) : (householdMembers[0]?.id ? String(householdMembers[0].id) : "");
+        setMemberId(defaultMemberId);
+        setFrequency("monthly");
+        setIsFixedAmount(true);
+        setAmount("");
+        setNextPayDate("");
+        if (defaultMemberId) {
+          setHasInitialized(true);
+        }
+      }
+    }
+  }, [isOpen, existingSchedule, householdMembers, currentUser.id, hasInitialized]);
 
   if (!isOpen) return null;
 
@@ -53,6 +68,7 @@ export default function AddPayScheduleSheet({
     if (!isFormValid) return;
 
     setIsSaving(true);
+    setErrorMsg(null);
     try {
       const scheduleData = {
         member_id: memberId,
@@ -68,8 +84,9 @@ export default function AddPayScheduleSheet({
         await addPaySchedule(scheduleData);
       }
       onClose();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to save pay schedule:", err);
+      setErrorMsg(err?.message || "An unexpected error occurred while saving the pay schedule.");
     } finally {
       setIsSaving(false);
     }
@@ -99,7 +116,13 @@ export default function AddPayScheduleSheet({
         </div>
 
         {/* Form Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-5">
+        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+          {errorMsg && (
+            <div className="bg-red-500/10 border border-red-500/50 rounded-xl p-3 text-red-500 text-xs font-mono break-words whitespace-pre-wrap">
+              <span className="font-bold">Error:</span> {errorMsg}
+            </div>
+          )}
+
           {/* Member Dropdown */}
           <div className="flex flex-col space-y-1.5">
             <label className="font-heading text-xs font-semibold text-subtle uppercase tracking-wider">
@@ -133,7 +156,7 @@ export default function AddPayScheduleSheet({
               Frequency
             </label>
             <div className="grid grid-cols-3 gap-2 bg-[#0a0a0a] border border-white/10 rounded-xl p-1">
-              {(["weekly", "fortnightly", "monthly"] as const).map((freq) => (
+              {(["weekly", "by-weekly", "monthly"] as const).map((freq) => (
                 <button
                   key={freq}
                   type="button"
@@ -144,7 +167,7 @@ export default function AddPayScheduleSheet({
                       : "text-muted hover:text-foreground hover:bg-white/5"
                   }`}
                 >
-                  {freq === "fortnightly" ? "Fortnight" : freq === "weekly" ? "Weekly" : "Monthly"}
+                  {freq === "by-weekly" ? "By-Weekly" : freq === "weekly" ? "Weekly" : "Monthly"}
                 </button>
               ))}
             </div>

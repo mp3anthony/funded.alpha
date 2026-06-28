@@ -185,7 +185,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
               {(
                 [
                   { value: "weekly", label: "Weekly" },
-                  { value: "fortnightly", label: "Fortnightly" },
+                  { value: "by-weekly", label: "By-Weekly" },
                   { value: "monthly", label: "Monthly" },
                   { value: "yearly", label: "Yearly" },
                 ] as const

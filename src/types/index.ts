@@ -3,7 +3,7 @@ export interface HouseholdContribution {
   household_id: string;
   member_id: string;
   amount: number;
-  frequency: 'weekly' | 'fortnightly' | 'monthly';
+  frequency: 'weekly' | 'by-weekly' | 'monthly';
   created_at: string;
   updated_at: string;
 }

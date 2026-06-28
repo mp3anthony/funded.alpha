@@ -10,7 +10,7 @@ export interface BillCardProps {
   bill: Bill;
   splits?: BillSplit[];
   householdMembers: Member[];
-  displayFrequency?: "weekly" | "fortnightly" | "monthly" | "yearly";
+  displayFrequency?: "weekly" | "by-weekly" | "monthly" | "yearly";
 }
 
 export default function BillCard({

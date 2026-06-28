@@ -57,8 +57,8 @@ export default function SettingsPage() {
     .filter((c) => c.frequency === "weekly")
     .reduce((sum, c) => sum + Number(c.amount), 0);
 
-  const contributionFortnightly = householdContributions
-    .filter((c) => c.frequency === "fortnightly")
+  const contributionByWeekly = householdContributions
+    .filter((c) => c.frequency === "by-weekly")
     .reduce((sum, c) => sum + Number(c.amount), 0);
 
   const contributionMonthly = householdContributions
@@ -67,7 +67,7 @@ export default function SettingsPage() {
 
   const grandTotalMonthly =
     contributionWeekly * 4.33 +
-    contributionFortnightly * 2.16 +
+    contributionByWeekly * 2.16 +
     contributionMonthly;
 
   const hasContributions = householdContributions.length > 0;

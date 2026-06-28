@@ -87,6 +87,7 @@ serve(async (req) => {
       .from("household_members")
       .insert({
         household_id: household.id,
+        user_id: user.id,
         name: userName,
         email: userEmail,
         role: "member",

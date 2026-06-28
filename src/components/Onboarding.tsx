@@ -380,7 +380,7 @@ export default function Onboarding() {
                         className="w-full px-4 py-3 rounded-xl bg-surface-raised border border-border text-foreground text-sm font-medium focus:ring-2 focus:ring-secondary/40 focus:border-secondary outline-none transition-all appearance-none cursor-pointer"
                       >
                         <option value="Weekly">Weekly</option>
-                        <option value="Bi-Weekly">Bi-Weekly</option>
+                        <option value="By-Weekly">By-Weekly</option>
                         <option value="Monthly">Monthly</option>
                         <option value="Yearly">Yearly</option>
                       </select>

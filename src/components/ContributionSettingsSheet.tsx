@@ -27,7 +27,7 @@ export default function ContributionSettingsSheet({
     let monthlyAmount = Number(c.amount) || 0;
     if (c.frequency === "weekly") {
       monthlyAmount = monthlyAmount * 4.33;
-    } else if (c.frequency === "fortnightly") {
+    } else if (c.frequency === "by-weekly") {
       monthlyAmount = monthlyAmount * 2.16;
     }
     return sum + monthlyAmount;
@@ -106,7 +106,7 @@ export default function ContributionSettingsSheet({
 interface MemberContributionRowProps {
   member: Member;
   existing?: HouseholdContribution;
-  onSave: (amount: number, frequency: "weekly" | "fortnightly" | "monthly") => Promise<void>;
+  onSave: (amount: number, frequency: "weekly" | "by-weekly" | "monthly") => Promise<void>;
 }
 
 function MemberContributionRow({
@@ -115,7 +115,7 @@ function MemberContributionRow({
   onSave,
 }: MemberContributionRowProps) {
   const [amount, setAmount] = useState("");
-  const [frequency, setFrequency] = useState<"weekly" | "fortnightly" | "monthly">("monthly");
+  const [frequency, setFrequency] = useState<"weekly" | "by-weekly" | "monthly">("monthly");
   const [isSaved, setIsSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -143,7 +143,7 @@ function MemberContributionRow({
       w = val;
       f = val * 2;
       m = val * 4.33;
-    } else if (frequency === "fortnightly") {
+    } else if (frequency === "by-weekly") {
       w = val / 2;
       f = val;
       m = val * 2.16;
@@ -155,7 +155,7 @@ function MemberContributionRow({
 
     return {
       weekly: w,
-      fortnightly: f,
+      "by-weekly": f,
       monthly: m,
     };
   };
@@ -203,7 +203,7 @@ function MemberContributionRow({
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         {/* Frequency Segmented Control */}
         <div className="grid grid-cols-3 gap-1 bg-[#0a0a0a] border border-white/10 rounded-xl p-1 shrink-0">
-          {(["weekly", "fortnightly", "monthly"] as const).map((freq) => (
+          {(["weekly", "by-weekly", "monthly"] as const).map((freq) => (
             <button
               key={freq}
               type="button"
@@ -217,7 +217,7 @@ function MemberContributionRow({
                   : "text-muted hover:text-foreground hover:bg-white/5"
               }`}
             >
-              {freq === "fortnightly" ? "Fortnight" : freq === "weekly" ? "Week" : "Month"}
+              {freq === "by-weekly" ? "By-Week" : freq === "weekly" ? "Week" : "Month"}
             </button>
           ))}
         </div>
@@ -271,8 +271,8 @@ function MemberContributionRow({
           <span className={frequency === "weekly" ? "text-primary font-bold animate-pulse" : "text-muted"}>
             Weekly: ${conversions.weekly.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </span>
-          <span className={frequency === "fortnightly" ? "text-primary font-bold animate-pulse" : "text-muted"}>
-            Fortnightly: ${conversions.fortnightly.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          <span className={frequency === "by-weekly" ? "text-primary font-bold animate-pulse" : "text-muted"}>
+            By-Weekly: ${conversions["by-weekly"].toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </span>
           <span className={frequency === "monthly" ? "text-primary font-bold animate-pulse" : "text-muted"}>
             Monthly: ${conversions.monthly.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}

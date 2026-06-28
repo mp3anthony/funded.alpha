@@ -161,8 +161,8 @@ export function getRelativeTime(dateStr: string): string {
 }
 
 /**
- * Converts a dollar amount from one billing frequency (weekly, fortnightly, monthly, yearly) to another.
- * Uses budgeting coefficients: 4.33 weeks per month, 2.16 fortnights per month.
+ * Converts a dollar amount from one billing frequency (weekly, by-weekly, monthly, yearly) to another.
+ * Uses budgeting coefficients: 4.33 weeks per month, 2.16 by-weeks per month.
  */
 export function convertAmount(amount: number, fromFrequency: string, toFrequency: string): number {
   if (!fromFrequency || !toFrequency) return amount;
@@ -178,7 +178,8 @@ export function convertAmount(amount: number, fromFrequency: string, toFrequency
     case "weekly":
       monthly = amount * 4.33;
       break;
-    case "fortnightly":
+    case "by-weekly":
+    case "bi-weekly":
       monthly = amount * 2.16;
       break;
     case "monthly":
@@ -195,7 +196,8 @@ export function convertAmount(amount: number, fromFrequency: string, toFrequency
   switch (to) {
     case "weekly":
       return monthly / 4.33;
-    case "fortnightly":
+    case "by-weekly":
+    case "bi-weekly":
       return monthly / 2.16;
     case "monthly":
       return monthly;

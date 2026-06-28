@@ -58,7 +58,7 @@ export interface PaySchedule {
   household_id: string;
   member_id: string;
   amount: number | null;
-  frequency: "weekly" | "fortnightly" | "monthly";
+  frequency: "weekly" | "by-weekly" | "monthly";
   is_fixed_amount: boolean;
   next_pay_date: string; // YYYY-MM-DD
   created_at: string;
@@ -499,7 +499,7 @@ interface AppContextValue {
   /* Household Contributions */
   householdContributions: HouseholdContribution[];
   fetchHouseholdContributions: (householdId?: string) => Promise<void>;
-  setContribution: (memberId: string, amount: number, frequency: "weekly" | "fortnightly" | "monthly") => Promise<void>;
+  setContribution: (memberId: string, amount: number, frequency: "weekly" | "by-weekly" | "monthly") => Promise<void>;
   deleteContribution: (id: string) => Promise<void>;
 
   /* Contribution Rules */
@@ -851,6 +851,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         .from("household_members")
         .insert({
           household_id: newHousehold.id,
+          user_id: currentSession.user.id,
           name: userName,
           email: userEmail,
           role: "owner"
@@ -1900,7 +1901,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       if (error) {
         console.error("Error inserting pay schedule:", error);
-        return;
+        throw error;
       }
 
       if (newSchedule) {
@@ -1908,6 +1909,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
     } catch (err) {
       console.error("Failed to add pay schedule:", err);
+      throw err;
     }
   }
 
@@ -1930,7 +1932,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       if (error) {
         console.error("Error updating pay schedule:", error);
-        return;
+        throw error;
       }
 
       if (updated) {
@@ -1940,6 +1942,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
     } catch (err) {
       console.error("Failed to update pay schedule:", err);
+      throw err;
     }
   }
 
@@ -1948,11 +1951,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const { error } = await supabase.from("pay_schedules").delete().eq("id", id);
       if (error) {
         console.error("Error deleting pay schedule:", error);
-        return;
+        throw error;
       }
       setPaySchedules((prev) => prev.filter((s) => s.id !== id));
     } catch (err) {
       console.error("Failed to delete pay schedule:", err);
+      throw err;
     }
   }
 
@@ -1990,7 +1994,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const currentDate = new Date(schedule.next_pay_date + "T00:00:00");
       if (schedule.frequency === "weekly") {
         currentDate.setDate(currentDate.getDate() + 7);
-      } else if (schedule.frequency === "fortnightly") {
+      } else if (schedule.frequency === "by-weekly") {
         currentDate.setDate(currentDate.getDate() + 14);
       } else if (schedule.frequency === "monthly") {
         currentDate.setMonth(currentDate.getMonth() + 1);
@@ -2026,14 +2030,42 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   async function deletePayHistory(id: string) {
     try {
+      const historyItem = payHistory.find((h) => h.id === id);
+      if (!historyItem) {
+        throw new Error("Pay history item not found");
+      }
+
       const { error } = await supabase.from("pay_history").delete().eq("id", id);
       if (error) {
         console.error("Error deleting pay history:", error);
-        return;
+        throw error;
       }
       setPayHistory((prev) => prev.filter((h) => h.id !== id));
+
+      // Rollback next pay date of the associated pay schedule if linked
+      if (historyItem.pay_schedule_id) {
+        const schedule = paySchedules.find((s) => s.id === historyItem.pay_schedule_id);
+        if (schedule) {
+          const prevPayDate = historyItem.pay_date;
+          const { data: updatedSchedule, error: scheduleErr } = await supabase
+            .from("pay_schedules")
+            .update({ next_pay_date: prevPayDate })
+            .eq("id", schedule.id)
+            .select()
+            .single();
+
+          if (scheduleErr) {
+            console.error("Failed to roll back pay schedule date:", scheduleErr);
+          } else if (updatedSchedule) {
+            setPaySchedules((prev) =>
+              prev.map((s) => (s.id === schedule.id ? updatedSchedule : s))
+            );
+          }
+        }
+      }
     } catch (err) {
       console.error("Failed to delete pay history:", err);
+      throw err;
     }
   }
 
@@ -2072,7 +2104,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  async function setContribution(memberId: string, amount: number, frequency: "weekly" | "fortnightly" | "monthly") {
+  async function setContribution(memberId: string, amount: number, frequency: "weekly" | "by-weekly" | "monthly") {
     try {
       const hId = await ensureHousehold();
 
