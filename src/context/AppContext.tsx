@@ -345,6 +345,15 @@ function getFundStyle(category: string) {
   }
 }
 
+function generateRandomCode(): string {
+  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let code = "";
+  for (let i = 0; i < 6; i++) {
+    code += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  return code;
+}
+
 function parseDateForDb(dateStr: string): string {
   try {
     const parsed = Date.parse(dateStr);
@@ -449,6 +458,7 @@ interface AppContextValue {
   completeOnboarding: () => void;
   householdName: string;
   setHouseholdName: (name: string, userId?: string | null) => void;
+  createHousehold: (name: string) => Promise<string>;
   isJointFund: boolean;
   updateHouseholdPaymentMode: (isJointFund: boolean) => Promise<void>;
 
@@ -866,65 +876,84 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return newHousehold.id;
   }
 
-  /* ── Household Name Actions ─────────────────── */
-  async function setHouseholdName(name: string, userId?: string | null) {
+  /* ── Household Creation and Name Actions ────── */
+  async function createHousehold(name: string): Promise<string> {
+    try {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      const userObj = currentSession?.user || session?.user;
+      if (!userObj) {
+        throw new Error("Unauthorized: No session user found.");
+      }
+
+      const joinCode = generateRandomCode();
+      const codeExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
+      const insertData = {
+        name,
+        is_joint_fund: false,
+        user_id: userObj.id,
+        join_code: joinCode,
+        code_expires_at: codeExpiresAt
+      };
+
+      const { data: newHousehold, error: hError } = await supabase
+        .from("households")
+        .insert(insertData)
+        .select()
+        .single();
+
+      if (hError || !newHousehold) {
+        throw new Error("Failed to insert household: " + (hError?.message || "Unknown error"));
+      }
+
+      // Immediately insert creator as the first member
+      const userName = userObj.user_metadata?.full_name || userObj.email?.split("@")[0] || "Owner";
+      const userEmail = userObj.email || "";
+      const { data: newMember, error: memberErr } = await supabase
+        .from("household_members")
+        .insert({
+          household_id: newHousehold.id,
+          user_id: userObj.id,
+          name: userName,
+          email: userEmail,
+          role: "owner",
+          invitation_status: "accepted"
+        })
+        .select()
+        .single();
+
+      if (memberErr || !newMember) {
+        throw memberErr || new Error("Failed to insert owner member record.");
+      }
+
+      // Update state
+      setDbHouseholdId(newHousehold.id);
+      setHouseholdNameState(newHousehold.name);
+      setIsJointFund(false);
+      setJoinCode(newHousehold.join_code || null);
+      setCodeExpiresAt(newHousehold.code_expires_at || null);
+      setMembers([mapMemberFromDb(newMember)]);
+      setIsOnboarded(true);
+
+      return newHousehold.id;
+    } catch (err: any) {
+      console.error("createHousehold failed:", err);
+      throw err;
+    }
+  }
+
+  async function setHouseholdName(name: string) {
     setHouseholdNameState(name);
     try {
       if (dbHouseholdId) {
-        await supabase
+        const { error } = await supabase
           .from("households")
           .update({ name })
           .eq("id", dbHouseholdId);
-      } else {
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
-        const userIdToUse = userId || currentSession?.user?.id;
-        console.log('setHouseholdName - currentSession:', currentSession ? 'exists' : 'null', 'userId param:', userId, 'userIdToUse:', userIdToUse);
-
-        const insertData: any = { name, is_joint_fund: false };
-        if (userIdToUse) {
-          insertData.user_id = userIdToUse;
-        }
-
-        const { data, error } = await supabase
-          .from("households")
-          .insert(insertData)
-          .select()
-          .single();
-
-        if (error) {
-          console.error("Error creating household:", error);
-          return;
-        }
-
-        if (data) {
-          setDbHouseholdId(data.id);
-          // Auto-insert owner member immediately to avoid desync/race-conditions
-          const userObj = currentSession?.user || session?.user;
-          if (userObj) {
-            const userName = userObj.user_metadata?.full_name || userObj.email?.split("@")[0] || "Owner";
-            const userEmail = userObj.email || "";
-            const { data: newMember, error: memErr } = await supabase
-              .from("household_members")
-              .insert({
-                household_id: data.id,
-                name: userName,
-                email: userEmail,
-                role: "owner",
-                invitation_status: "accepted"
-              })
-              .select()
-              .single();
-
-            if (!memErr && newMember) {
-              setMembers([mapMemberFromDb(newMember)]);
-            } else if (memErr) {
-              console.error("setHouseholdName - failed to insert owner member:", memErr);
-            }
-          }
-        }
+        if (error) throw error;
       }
     } catch (err) {
-      console.error("Failed to update/set household name:", err);
+      console.error("Failed to update household name:", err);
     }
   }
 
@@ -2261,6 +2290,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     completeOnboarding,
     householdName,
     setHouseholdName,
+    createHousehold,
     bills,
     addBill,
     updateBill,

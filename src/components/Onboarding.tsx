@@ -20,9 +20,10 @@ import JoinHouseholdSheet from "./JoinHouseholdSheet";
 const TOTAL_STEPS = 5;
 
 export default function Onboarding() {
-  const { addPayday, addBill, completeOnboarding, setHouseholdName: setGlobalHouseholdName, updateHouseholdPaymentMode, session, joinHousehold } = useApp();
+  const { addPayday, addBill, completeOnboarding, createHousehold, updateHouseholdPaymentMode, session, joinHousehold } = useApp();
 
   const [currentStep, setCurrentStep] = useState(1);
+  const [isCreating, setIsCreating] = useState(false);
 
   /* Step 1 — Welcome & Paths */
   const [localHouseholdName, setLocalHouseholdName] = useState("");
@@ -42,9 +43,18 @@ export default function Onboarding() {
   const [billFrequency, setBillFrequency] = useState("Monthly");
 
   /* ── Navigation ─────────────────────────────── */
-  function handleNext() {
+  async function handleNext() {
     if (currentStep === 1 && localHouseholdName.trim()) {
-      setGlobalHouseholdName(localHouseholdName.trim(), session?.user?.id);
+      setIsCreating(true);
+      try {
+        await createHousehold(localHouseholdName.trim());
+      } catch (err) {
+        alert("Failed to create household. Please try again.");
+        setIsCreating(false);
+        return;
+      } finally {
+        setIsCreating(false);
+      }
     }
 
     if (currentStep === 2) {
@@ -425,6 +435,17 @@ export default function Onboarding() {
         </div>
       </div>
       <JoinHouseholdSheet isOpen={isJoinSheetOpen} onClose={() => setIsJoinSheetOpen(false)} />
+      {isCreating && (
+        <div className="fixed inset-0 z-[120] flex flex-col items-center justify-center bg-black/85 backdrop-blur-md">
+          <div className="flex flex-col items-center gap-6 animate-in fade-in duration-300">
+            <Logo size="large" showWordmark={true} />
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#c8ff00] border-t-transparent" />
+            <p className="text-sm font-bold text-white uppercase tracking-wider font-mono animate-pulse">
+              Creating your Household...
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
