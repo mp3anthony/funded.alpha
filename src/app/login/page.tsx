@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { Mail, Lock, Loader2, AlertCircle } from "lucide-react";
+import { Mail, Lock, Loader2, AlertCircle, Check } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -12,6 +12,17 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
+
+  // Check URL query parameters for validation errors
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("error") === "confirmation_failed") {
+        setErrorMsg("Email confirmation failed. The link may have expired or is invalid.");
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,22 +30,32 @@ export default function LoginPage() {
 
     setLoading(true);
     setErrorMsg("");
+    setSuccessMsg("");
 
     try {
       if (isSignUp) {
-        const { data, error } = await supabase.auth.signUp({ email, password });
-        console.log("Sign up result:", data);
-        console.log("Session after sign up:", data.session);
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
+          },
+        });
+        
         if (error) throw error;
-        console.log('Login successful - session:', data.session, 'user:', data.user);
-        router.replace("/");
+
+        // If email confirmation is required, session will be null
+        if (data.user && !data.session) {
+          setSuccessMsg("Please check your email to confirm your account before logging in.");
+          setIsSignUp(false);
+          setEmail("");
+          setPassword("");
+        } else {
+          router.replace("/");
+        }
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        console.log("Sign in result:", data);
-        console.log("Session after sign in:", data.session);
-        console.log("User ID:", data.user?.id);
         if (error) throw error;
-        console.log('Login successful - session:', data.session, 'user:', data.user);
         router.replace("/");
       }
     } catch (err: any) {
@@ -65,6 +86,13 @@ export default function LoginPage() {
           <div className="mb-6 p-4 rounded-xl bg-destructive/10 text-destructive text-sm font-medium flex items-center gap-3">
             <AlertCircle className="h-5 w-5 shrink-0" />
             <p>{errorMsg}</p>
+          </div>
+        )}
+
+        {successMsg && (
+          <div className="mb-6 p-4 rounded-xl bg-[#c8ff00]/10 border border-[#c8ff00]/20 text-[#c8ff00] text-sm font-semibold flex items-center gap-3">
+            <Check className="h-5 w-5 shrink-0" />
+            <p>{successMsg}</p>
           </div>
         )}
 
@@ -119,6 +147,7 @@ export default function LoginPage() {
             onClick={() => {
               setIsSignUp(!isSignUp);
               setErrorMsg("");
+              setSuccessMsg("");
             }}
             className="text-sm font-medium text-muted hover:text-foreground transition-colors"
           >

@@ -890,6 +890,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
         if (data) {
           setDbHouseholdId(data.id);
+          // Auto-insert owner member immediately to avoid desync/race-conditions
+          const userObj = currentSession?.user || session?.user;
+          if (userObj) {
+            const userName = userObj.user_metadata?.full_name || userObj.email?.split("@")[0] || "Owner";
+            const userEmail = userObj.email || "";
+            const { data: newMember, error: memErr } = await supabase
+              .from("household_members")
+              .insert({
+                household_id: data.id,
+                name: userName,
+                email: userEmail,
+                role: "owner",
+                invitation_status: "accepted"
+              })
+              .select()
+              .single();
+
+            if (!memErr && newMember) {
+              setMembers([mapMemberFromDb(newMember)]);
+            } else if (memErr) {
+              console.error("setHouseholdName - failed to insert owner member:", memErr);
+            }
+          }
         }
       }
     } catch (err) {

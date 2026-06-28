@@ -12,20 +12,38 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Skip all auth guards on the login page — it handles its own auth
+  // Skip auth guards on the login and email confirmation pages
   const isLoginPage = pathname === "/login";
+  const isConfirmEmailPage = pathname === "/confirm-email";
 
   console.log('AppShell render - isAuthLoading:', isAuthLoading, 'session:', session ? 'exists (user: ' + session.user?.id + ')' : 'null', 'isOnboarded:', isOnboarded, 'pathname:', pathname);
 
   useEffect(() => {
-    if (!isAuthLoading && !session && !isLoginPage) {
-      console.log('AppShell useEffect - triggering redirect to /login');
-      router.replace("/login");
-    }
-  }, [isAuthLoading, session, isLoginPage, router]);
+    if (isAuthLoading) return;
 
-  // Let the login page render without any auth guards
-  if (isLoginPage) {
+    if (!session) {
+      if (!isLoginPage && !isConfirmEmailPage) {
+        console.log('AppShell useEffect - triggering redirect to /login');
+        router.replace("/login");
+      }
+    } else {
+      const isConfirmed = !!session.user.email_confirmed_at;
+      if (!isConfirmed) {
+        if (!isConfirmEmailPage) {
+          console.log('AppShell useEffect - redirecting unconfirmed user to /confirm-email');
+          router.replace("/confirm-email");
+        }
+      } else {
+        if (isConfirmEmailPage) {
+          console.log('AppShell useEffect - redirecting confirmed user away from /confirm-email');
+          router.replace("/");
+        }
+      }
+    }
+  }, [isAuthLoading, session, isLoginPage, isConfirmEmailPage, router]);
+
+  // Let the login or email confirmation page render fullscreen
+  if (isLoginPage || isConfirmEmailPage) {
     return <>{children}</>;
   }
 
