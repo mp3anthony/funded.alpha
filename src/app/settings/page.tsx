@@ -19,7 +19,6 @@ import ContributionSettingsSheet from "@/components/ContributionSettingsSheet";
 import RulesSettingsSheet from "@/components/RulesSettingsSheet";
 import PageHeader from "@/components/PageHeader";
 import AvatarUpload from "@/components/AvatarUpload";
-import InviteMemberModal from "@/components/InviteMemberModal";
 import RemoveMemberModal from "@/components/RemoveMemberModal";
 import { type Member } from "@/types";
 import { AlertTriangle } from "lucide-react";
@@ -29,7 +28,6 @@ export default function SettingsPage() {
   /* Context */
   const {
     members,
-    addMember,
     removeMember,
     isJointFund,
     updateHouseholdPaymentMode,
@@ -41,6 +39,9 @@ export default function SettingsPage() {
     updateMemberAvatar,
     theme,
     setTheme,
+    joinCode,
+    codeExpiresAt,
+    regenerateJoinCode,
   } = useApp();
   const currentUser = useCurrentUser();
 
@@ -70,7 +71,7 @@ export default function SettingsPage() {
 
   const hasContributions = householdContributions.length > 0;
 
-  const currentMember = members.find((m) => m.email === session?.user?.email);
+  const currentMember = members.find((m) => String(m.email).toLowerCase() === String(session?.user?.email).toLowerCase());
 
   /* Profile */
   const [fullName, setFullName] = useState("");
@@ -473,19 +474,68 @@ export default function SettingsPage() {
         </div>
       </section>
 
+      {/* ── Household Join Code Section ────────────── */}
+      <section className="bg-surface border border-border rounded-2xl p-5 shadow-sm space-y-4">
+        <div className="space-y-1">
+          <h2 className="text-base font-bold text-foreground font-syne">
+            Household Join Code
+          </h2>
+          <p className="text-xs text-muted leading-relaxed font-sans">
+            Share this 6-digit code with other members of your household to invite them. The code expires in 24 hours.
+          </p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <div className="flex-1 w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 flex items-center justify-between font-mono">
+            {joinCode ? (
+              <>
+                <span className="text-[#c8ff00] text-lg font-bold tracking-widest uppercase">
+                  {joinCode}
+                </span>
+                <span className="text-[10px] text-muted font-sans">
+                  Expires {codeExpiresAt ? new Date(codeExpiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ""}
+                </span>
+              </>
+            ) : (
+              <span className="text-muted text-sm font-sans">No code generated yet</span>
+            )}
+          </div>
+          <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+            {joinCode && (
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(joinCode);
+                  alert("Join code copied to clipboard!");
+                }}
+                className="flex-1 sm:flex-none px-4 py-3 rounded-xl border border-white/10 text-xs font-bold text-white bg-white/5 hover:bg-white/10 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                Copy Code
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  await regenerateJoinCode();
+                } catch (err: any) {
+                  alert(err.message || "Failed to generate code.");
+                }
+              }}
+              className="flex-1 sm:flex-none px-4 py-3 bg-[#c8ff00] text-black rounded-xl text-xs font-bold uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5 animate-pulse hover:animate-none"
+            >
+              Regenerate
+            </button>
+          </div>
+        </div>
+      </section>
+
       {/* ── Household Members Section ────────────── */}
       <section className="space-y-3">
         <div className="flex items-center justify-between px-1">
           <h2 className="text-base font-bold text-subtle uppercase tracking-wider">
             Household Members
           </h2>
-          <button
-            onClick={() => setShowInvite(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/10 text-secondary text-xs font-bold hover:bg-secondary/20 active:scale-95 transition-all cursor-pointer"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            Invite Member
-          </button>
         </div>
 
         <div className="bg-surface border border-border rounded-2xl shadow-sm overflow-hidden divide-y divide-border font-sans">
@@ -493,13 +543,7 @@ export default function SettingsPage() {
             <div className="p-8 text-center">
               <Users className="h-8 w-8 mx-auto text-muted mb-2" />
               <p className="text-sm text-muted font-medium">
-                No household members yet.{" "}
-                <button
-                  onClick={() => setShowInvite(true)}
-                  className="text-secondary font-bold hover:underline cursor-pointer"
-                >
-                  Invite someone
-                </button>
+                No household members yet. Use the Join Code above to invite someone!
               </p>
             </div>
           ) : (
@@ -567,10 +611,6 @@ export default function SettingsPage() {
 
 
       {/* ── Invite & Remove Member Modals ────────── */}
-      <InviteMemberModal
-        isOpen={showInvite}
-        onClose={() => setShowInvite(false)}
-      />
 
       <RemoveMemberModal
         isOpen={memberToRemove !== null}

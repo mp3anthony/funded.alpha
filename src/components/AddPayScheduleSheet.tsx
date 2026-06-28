@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
-import { useApp, type PaySchedule } from "@/context/AppContext";
+import { useApp, useCurrentUser, type PaySchedule } from "@/context/AppContext";
 
 interface AddPayScheduleSheetProps {
   isOpen: boolean;
@@ -16,6 +16,7 @@ export default function AddPayScheduleSheet({
   existingSchedule,
 }: AddPayScheduleSheetProps) {
   const { householdMembers, addPaySchedule, updatePaySchedule } = useApp();
+  const currentUser = useCurrentUser();
 
   const [memberId, setMemberId] = useState("");
   const [frequency, setFrequency] = useState<"weekly" | "fortnightly" | "monthly">("monthly");
@@ -32,13 +33,13 @@ export default function AddPayScheduleSheet({
       setAmount(existingSchedule.amount ? String(existingSchedule.amount) : "");
       setNextPayDate(existingSchedule.next_pay_date || "");
     } else if (isOpen) {
-      setMemberId(householdMembers[0]?.id ? String(householdMembers[0].id) : "");
+      setMemberId(currentUser.id ? String(currentUser.id) : (householdMembers[0]?.id ? String(householdMembers[0].id) : ""));
       setFrequency("monthly");
       setIsFixedAmount(true);
       setAmount("");
       setNextPayDate("");
     }
-  }, [isOpen, existingSchedule, householdMembers]);
+  }, [isOpen, existingSchedule, householdMembers, currentUser.id]);
 
   if (!isOpen) return null;
 
@@ -75,14 +76,13 @@ export default function AddPayScheduleSheet({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center animate-in fade-in duration-200">
-      {/* Overlay to close */}
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm md:items-stretch md:justify-end md:p-0 md:bg-black/60 animate-in fade-in duration-200">
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Sheet Content */}
       <form
         onSubmit={handleSave}
-        className="relative w-full max-h-[90vh] overflow-y-auto rounded-t-2xl bg-[#111111] sm:max-w-md sm:rounded-2xl border-t sm:border border-white/10 flex flex-col shadow-2xl animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-300"
+        className="relative w-full max-w-md max-h-[90dvh] md:h-screen md:max-h-screen bg-[#111111] border border-white/10 md:border-y-0 md:border-r-0 md:border-l rounded-2xl md:rounded-none md:rounded-l-3xl flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 md:zoom-in-100 md:slide-in-from-right duration-250"
       >
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-[#111111]/90 px-6 py-4 backdrop-blur">
@@ -92,14 +92,14 @@ export default function AddPayScheduleSheet({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full p-2 text-muted hover:bg-white/5 hover:text-foreground transition-colors"
+            className="rounded-full p-2 text-muted hover:bg-white/5 hover:text-foreground transition-colors focus:outline-none"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Form Body */}
-        <div className="flex flex-col space-y-5 px-6 py-5">
+        <div className="flex-1 overflow-y-auto px-6 py-5">
           {/* Member Dropdown */}
           <div className="flex flex-col space-y-1.5">
             <label className="font-heading text-xs font-semibold text-subtle uppercase tracking-wider">
@@ -211,13 +211,20 @@ export default function AddPayScheduleSheet({
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 border-t border-white/10 bg-[#111111]/90 px-6 py-4 backdrop-blur">
+        <div className="sticky bottom-0 z-10 border-t border-white/10 bg-[#111111]/95 px-6 py-4 backdrop-blur flex items-center gap-3 shrink-0">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 py-4 rounded-xl border border-white/10 text-sm font-bold text-muted hover:text-foreground hover:bg-white/5 transition-all cursor-pointer"
+          >
+            Cancel
+          </button>
           <button
             type="submit"
             disabled={!isFormValid || isSaving}
-            className={`w-full rounded-xl py-3.5 font-heading text-sm font-bold uppercase tracking-wider transition-all ${
+            className={`flex-1 rounded-xl py-4 text-sm font-bold uppercase tracking-wider transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:ring-primary cursor-pointer ${
               isFormValid && !isSaving
-                ? "bg-primary text-primary-fg hover:brightness-110 active:scale-[0.98] cursor-pointer"
+                ? "bg-primary text-primary-fg hover:brightness-110 active:scale-[0.98]"
                 : "bg-zinc-800 text-zinc-500 cursor-not-allowed"
             }`}
           >

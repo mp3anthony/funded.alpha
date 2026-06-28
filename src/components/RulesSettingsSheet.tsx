@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { X, Plus, Sparkles, AlertCircle } from "lucide-react";
-import { useApp, type Member } from "@/context/AppContext";
+import { useApp, useCurrentUser, type Member } from "@/context/AppContext";
 import { type ContributionRule, type HouseholdContribution } from "@/types";
 import RuleCard from "./RuleCard";
 
@@ -24,6 +24,7 @@ export default function RulesSettingsSheet({
   contributions,
 }: RulesSettingsSheetProps) {
   const { addRule, updateRule, deleteRule, toggleRuleActive } = useApp();
+  const currentUser = useCurrentUser();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<ContributionRule | null>(null);
@@ -46,14 +47,14 @@ export default function RulesSettingsSheet({
       setAmountType(editingRule.amount_type || "fixed");
       setIsFormOpen(true);
     } else {
-      setMemberId(householdMembers[0]?.id ? String(householdMembers[0].id) : "");
+      setMemberId(currentUser.id ? String(currentUser.id) : (householdMembers[0]?.id ? String(householdMembers[0].id) : ""));
       setThreshold("");
       setActionType("goal");
       setActionTargetId(goals[0]?.id ? String(goals[0].id) : "");
       setAmountToAdd("");
       setAmountType("fixed");
     }
-  }, [editingRule, isOpen, householdMembers, goals]);
+  }, [editingRule, isOpen, householdMembers, goals, currentUser.id]);
 
   useEffect(() => {
     if (!editingRule) {
@@ -134,12 +135,12 @@ export default function RulesSettingsSheet({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm md:items-stretch md:justify-end md:p-0 md:bg-black/60 animate-in fade-in duration-200">
       {/* Overlay to close */}
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Sheet Content */}
-      <div className="relative w-full max-h-[90vh] overflow-y-auto rounded-t-2xl bg-[#111111] sm:max-w-lg sm:rounded-2xl border-t sm:border border-white/10 flex flex-col shadow-2xl animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-300">
+      <div className="relative w-full max-w-md max-h-[90dvh] md:h-screen md:max-h-screen bg-[#111111] border border-white/10 md:border-y-0 md:border-r-0 md:border-l rounded-2xl md:rounded-none md:rounded-l-3xl flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 md:zoom-in-100 md:slide-in-from-right duration-250">
         
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-[#111111]/90 px-6 py-4 backdrop-blur">
@@ -160,8 +161,9 @@ export default function RulesSettingsSheet({
           </button>
         </div>
 
-        {/* Rule Form Panel Overlay */}
-        {isFormOpen ? (
+        <div className="flex-1 overflow-y-auto">
+          {/* Rule Form Panel Overlay */}
+          {isFormOpen ? (
           <form onSubmit={handleSave} className="flex flex-col space-y-5 px-6 py-5 border-b border-white/5 bg-[#0a0a0a]/50">
             <h3 className="text-xs font-bold uppercase tracking-wider text-primary font-syne">
               {editingRule ? "Edit Automation Rule" : "Create Automation Rule"}
@@ -357,7 +359,7 @@ export default function RulesSettingsSheet({
         ) : null}
 
         {/* Existing Rules List */}
-        <div className="flex flex-col space-y-3 px-6 py-5 max-h-[50vh] overflow-y-auto">
+        <div className="flex flex-col space-y-3 px-6 py-5">
           <span className="text-[10px] font-bold text-subtle uppercase tracking-wider block font-mono">
             Active Rules
           </span>
@@ -394,6 +396,7 @@ export default function RulesSettingsSheet({
               })}
             </div>
           )}
+        </div>
         </div>
 
         {/* Footer Trigger to Add Rule */}

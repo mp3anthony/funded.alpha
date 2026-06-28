@@ -109,30 +109,30 @@ export default function EditGoalSheet({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm md:items-stretch md:justify-end md:p-0 md:bg-black/60 animate-in fade-in duration-200">
       {/* Overlay to close */}
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Sheet Content */}
       <form 
         onSubmit={handleSave}
-        className="relative w-full max-h-[90vh] overflow-y-auto rounded-t-2xl bg-surface sm:max-w-lg sm:rounded-2xl flex flex-col shadow-2xl animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-300"
+        className="relative w-full max-w-md max-h-[90dvh] md:h-screen md:max-h-screen bg-[#111111] border border-white/10 md:border-y-0 md:border-r-0 md:border-l rounded-2xl md:rounded-none md:rounded-l-3xl flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 md:zoom-in-100 md:slide-in-from-right duration-250"
       >
         
         {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-surface/90 px-6 py-4 backdrop-blur">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-[#111111]/90 px-6 py-4 backdrop-blur">
           <h2 className="font-syne text-xl font-bold text-foreground">Edit Goal</h2>
           <button 
             type="button"
             onClick={onClose}
-            className="rounded-full p-2 text-muted hover:bg-surface-raised hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
+            className="rounded-full p-2 text-muted hover:bg-white/5 hover:text-foreground transition-colors focus:outline-none"
           >
             <X size={20} />
           </button>
         </div>
 
         {/* Form Body */}
-        <div className="flex flex-col space-y-6 px-6 py-6">
+        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
           
           {/* Goal Name */}
           <div className="flex flex-col space-y-2">
@@ -256,11 +256,18 @@ export default function EditGoalSheet({
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 border-t border-border bg-surface/90 px-6 py-4 backdrop-blur">
+        <div className="sticky bottom-0 z-10 border-t border-white/10 bg-[#111111]/95 px-6 py-4 backdrop-blur flex items-center gap-3 shrink-0">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 py-4 rounded-xl border border-white/10 text-sm font-bold text-muted hover:text-foreground hover:bg-white/5 transition-all cursor-pointer"
+          >
+            Cancel
+          </button>
           <button
             type="submit"
             disabled={!isFormValid || isSaving}
-            className={`w-full rounded-xl py-4 font-heading font-bold uppercase tracking-wider transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:ring-primary ${
+            className={`flex-1 rounded-xl py-4 text-sm font-bold uppercase tracking-wider transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:ring-primary cursor-pointer ${
               isFormValid && !isSaving
                 ? "bg-primary text-primary-fg hover:brightness-110 active:scale-[0.98]" 
                 : "bg-surface-raised text-muted cursor-not-allowed"

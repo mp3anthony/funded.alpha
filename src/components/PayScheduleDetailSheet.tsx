@@ -63,12 +63,11 @@ export default function PayScheduleDetailSheet({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center animate-in fade-in duration-200">
-      {/* Backdrop overlay */}
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm md:items-stretch md:justify-end md:p-0 md:bg-black/60 animate-in fade-in duration-200">
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Sheet Content */}
-      <div className="relative w-full max-h-[90vh] overflow-y-auto rounded-t-2xl bg-[#111111] sm:max-w-md sm:rounded-2xl border-t sm:border border-white/10 flex flex-col shadow-2xl animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-300">
+      <div className="relative w-full max-w-md max-h-[90dvh] md:h-screen md:max-h-screen bg-[#111111] border border-white/10 md:border-y-0 md:border-r-0 md:border-l rounded-2xl md:rounded-none md:rounded-l-3xl flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 md:zoom-in-100 md:slide-in-from-right duration-250">
         
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-[#111111]/90 px-6 py-4 backdrop-blur">
@@ -82,7 +81,7 @@ export default function PayScheduleDetailSheet({
         </div>
 
         {/* Content Body */}
-        <div className="flex flex-col space-y-5 px-6 py-5">
+        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
           
           {/* Member Name & Frequency */}
           <div className="flex flex-col space-y-1">
@@ -133,7 +132,7 @@ export default function PayScheduleDetailSheet({
         </div>
 
         {/* Footer Actions */}
-        <div className="sticky bottom-0 border-t border-white/5 bg-[#111111]/90 px-6 py-4 backdrop-blur flex space-x-3">
+        <div className="sticky bottom-0 z-10 border-t border-white/10 bg-[#111111]/95 px-6 py-4 backdrop-blur flex space-x-3 shrink-0">
           <button
             onClick={onDelete}
             className="flex-1 py-3 bg-destructive/15 text-destructive border border-destructive/20 rounded-xl font-heading font-bold uppercase tracking-wider text-xs hover:bg-destructive hover:text-white transition-all active:scale-[0.98] cursor-pointer"

@@ -44,6 +44,7 @@ export interface Fund {
   deadline: string | null;
   status: 'not_started' | 'in_progress' | 'completed' | 'paused';
   member_id?: string | null;
+  owner_id?: string | null;
 }
 
 export interface Payday {
@@ -411,6 +412,7 @@ function mapFundFromDb(dbFund: any): Fund {
     deadline: dbFund.deadline || null,
     status: dbFund.status || 'not_started',
     member_id: dbFund.member_id || null,
+    owner_id: dbFund.owner_id || null,
   };
 }
 
@@ -504,10 +506,13 @@ interface AppContextValue {
   members: Member[];
   householdMembers: Member[];
   addMember: (member: Member) => void;
-  inviteMember: (email: string, role: string) => Promise<void>;
   removeMember: (id: string | number, reassignBillsTo?: string, reassignGoalsTo?: string) => Promise<void>;
   updateMember: (id: string | number, data: Partial<Omit<Member, "id">>) => Promise<void>;
   updateMemberAvatar: (memberId: string | number, avatarUrl: string | null) => Promise<void>;
+  joinCode: string | null;
+  codeExpiresAt: string | null;
+  regenerateJoinCode: () => Promise<void>;
+  joinHousehold: (code: string) => Promise<void>;
 
   /* Bill Splits */
   billSplits: BillSplit[];
@@ -634,6 +639,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [householdName, setHouseholdNameState] = useState("");
   const [dbHouseholdId, setDbHouseholdId] = useState<string | null>(null);
   const [isJointFund, setIsJointFund] = useState(false);
+  const [joinCode, setJoinCode] = useState<string | null>(null);
+  const [codeExpiresAt, setCodeExpiresAt] = useState<string | null>(null);
 
   /* ── Auth ────────────────────────────────── */
   const [session, setSession] = useState<Session | null>(null);
@@ -676,102 +683,103 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Only load data AFTER auth has resolved and we have a valid session.
   // This prevents a race condition where RLS returns empty results
   // (because no auth token is set yet), causing the app to show onboarding.
-  useEffect(() => {
+  async function loadData() {
     if (isAuthLoading || !session) {
       console.log('loadData skipped - isAuthLoading:', isAuthLoading, 'session:', session ? 'exists' : 'null');
       return;
     }
+    console.log('loadData running with authenticated session, user:', session?.user?.id);
+    try {
+      const { data: households, error: hError } = await supabase
+        .from("households")
+        .select("*")
+        .limit(1);
 
-    async function loadData() {
-      console.log('loadData running with authenticated session, user:', session?.user?.id);
-      try {
-        const { data: households, error: hError } = await supabase
-          .from("households")
-          .select("*")
-          .limit(1);
-
-        if (hError) {
-          console.error("Error fetching household:", hError);
-          return;
-        }
-
-        if (households && households.length > 0) {
-          const household = households[0];
-          console.log('loadData - found household:', household.id, household.name, household.is_joint_fund);
-          setDbHouseholdId(household.id);
-          setHouseholdNameState(household.name);
-          setIsJointFund(!!household.is_joint_fund);
-          setIsOnboarded(true);
-
-          // Fetch related data
-          const [billsRes, fundsRes, paydaysRes, membersRes, billSplitsRes] = await Promise.all([
-            supabase.from("bills").select("*"),
-            supabase.from("funds").select("*"),
-            supabase.from("paydays").select("*"),
-            supabase.from("household_members").select("*"),
-            supabase.from("bill_splits").select("*"),
-          ]);
-
-          if (billsRes.data) {
-            setBills(billsRes.data.map(mapBillFromDb));
-          }
-          if (fundsRes.data) {
-            setFunds(fundsRes.data.map(mapFundFromDb));
-          }
-          if (paydaysRes.data) {
-            setPaydays(paydaysRes.data.map(mapPaydayFromDb));
-          }
-          let loadedMembers: Member[] = [];
-          if (membersRes.data) {
-            loadedMembers = membersRes.data.map(mapMemberFromDb);
-          }
-          console.log("loadData - loaded members:", loadedMembers);
-
-          // Fallback: If household_members is empty, auto-insert the current logged-in user
-          if (loadedMembers.length === 0 && session?.user) {
-            console.log("loadData - household_members empty, auto-inserting owner:", session.user.email);
-            const userName = session.user.user_metadata?.full_name || session.user.email?.split("@")[0] || "Owner";
-            const userEmail = session.user.email || "";
-            const { data: newMember, error: insertMemErr } = await supabase
-              .from("household_members")
-              .insert({
-                household_id: household.id,
-                name: userName,
-                email: userEmail,
-                role: "owner"
-              })
-              .select()
-              .single();
-
-            if (insertMemErr) {
-              console.error("loadData - failed to auto-insert owner:", insertMemErr);
-            }
-            if (newMember) {
-              loadedMembers = [mapMemberFromDb(newMember)];
-            }
-          }
-          setMembers(loadedMembers);
-
-          if (billSplitsRes.data) {
-            setBillSplits(billSplitsRes.data);
-          }
-
-          // Fetch payday schedule, history, contributions, and rules
-          await Promise.all([
-            fetchPayData(household.id),
-            fetchHouseholdContributions(household.id),
-            fetchContributionRules(household.id)
-          ]);
-        } else {
-          // No household, user needs to onboard
-          console.log('loadData - no household found, user needs onboarding');
-          setIsOnboarded(false);
-        }
-      } catch (err) {
-        console.error("Failed to load initial data from Supabase:", err);
+      if (hError) {
+        console.error("Error fetching household:", hError);
+        return;
       }
-    }
 
+      if (households && households.length > 0) {
+        const household = households[0];
+        console.log('loadData - found household:', household.id, household.name, household.is_joint_fund);
+        setDbHouseholdId(household.id);
+        setHouseholdNameState(household.name);
+        setIsJointFund(!!household.is_joint_fund);
+        setJoinCode(household.join_code || null);
+        setCodeExpiresAt(household.code_expires_at || null);
+        setIsOnboarded(true);
+
+        // Fetch related data
+        const [billsRes, fundsRes, paydaysRes, membersRes, billSplitsRes] = await Promise.all([
+          supabase.from("bills").select("*"),
+          supabase.from("funds").select("*"),
+          supabase.from("paydays").select("*"),
+          supabase.from("household_members").select("*"),
+          supabase.from("bill_splits").select("*"),
+        ]);
+
+        if (billsRes.data) {
+          setBills(billsRes.data.map(mapBillFromDb));
+        }
+        if (fundsRes.data) {
+          setFunds(fundsRes.data.map(mapFundFromDb));
+        }
+        if (paydaysRes.data) {
+          setPaydays(paydaysRes.data.map(mapPaydayFromDb));
+        }
+        let loadedMembers: Member[] = [];
+        if (membersRes.data) {
+          loadedMembers = membersRes.data.map(mapMemberFromDb);
+        }
+        console.log("loadData - loaded members:", loadedMembers);
+
+        // Fallback: If household_members is empty, auto-insert the current logged-in user
+        if (loadedMembers.length === 0 && session?.user) {
+          console.log("loadData - household_members empty, auto-inserting owner:", session.user.email);
+          const userName = session.user.user_metadata?.full_name || session.user.email?.split("@")[0] || "Owner";
+          const userEmail = session.user.email || "";
+          const { data: newMember, error: insertMemErr } = await supabase
+            .from("household_members")
+            .insert({
+              household_id: household.id,
+              name: userName,
+              email: userEmail,
+              role: "owner"
+            })
+            .select()
+            .single();
+
+          if (insertMemErr) {
+            console.error("loadData - failed to auto-insert owner:", insertMemErr);
+          }
+          if (newMember) {
+            loadedMembers = [mapMemberFromDb(newMember)];
+          }
+        }
+        setMembers(loadedMembers);
+
+        if (billSplitsRes.data) {
+          setBillSplits(billSplitsRes.data);
+        }
+
+        // Fetch payday schedule, history, contributions, and rules
+        await Promise.all([
+          fetchPayData(household.id),
+          fetchHouseholdContributions(household.id),
+          fetchContributionRules(household.id)
+        ]);
+      } else {
+        // No household, user needs to onboard
+        console.log('loadData - no household found, user needs onboarding');
+        setIsOnboarded(false);
+      }
+    } catch (err) {
+      console.error("Failed to load initial data from Supabase:", err);
+    }
+  }
+
+  useEffect(() => {
     loadData();
   }, [isAuthLoading, session]);
 
@@ -1202,6 +1210,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         deadline: fund.deadline ? parseDateForDb(fund.deadline) : null,
         status: fund.status || 'not_started',
         member_id: fund.member_id || null,
+        owner_id: session?.user?.id || null,
       };
 
       const { data, error } = await supabase
@@ -1233,6 +1242,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         deadline: goalData.deadline ? parseDateForDb(goalData.deadline) : null,
         status: goalData.status || 'not_started',
         member_id: goalData.member_id || null,
+        owner_id: session?.user?.id || null,
       };
 
       const { data, error } = await supabase
@@ -1407,41 +1417,113 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  async function inviteMember(email: string, role: string) {
+  async function regenerateJoinCode() {
+    if (!dbHouseholdId) return;
     try {
-      const hId = await ensureHousehold();
-
-      // Check if email already exists in local members state to prevent duplicates
-      const exists = members.some((m) => m.email.toLowerCase() === email.toLowerCase());
-      if (exists) {
-        throw new Error("A member with this email already exists in the household.");
+      const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      let newCode = "";
+      for (let i = 0; i < 6; i++) {
+        newCode += characters.charAt(Math.floor(Math.random() * characters.length));
       }
 
-      const dbMemberData = {
-        household_id: hId,
-        name: email.split("@")[0], // Default name to prefix of email
-        email: email,
-        role: role || "member",
-        invitation_status: "pending"
-      };
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
-      const { data, error } = await supabase
-        .from("household_members")
-        .insert(dbMemberData)
-        .select()
-        .single();
+      const { error } = await supabase
+        .from("households")
+        .update({
+          join_code: newCode,
+          code_expires_at: expiresAt,
+        })
+        .eq("id", dbHouseholdId);
 
+      if (error) throw error;
+
+      setJoinCode(newCode);
+      setCodeExpiresAt(expiresAt);
+    } catch (err) {
+      console.error("Failed to regenerate join code:", err);
+      throw err;
+    }
+  }
+
+  async function joinHousehold(code: string) {
+    const sanitizedCode = code.trim().toUpperCase();
+    try {
+      // 1. Attempt to invoke the join-household Supabase Edge Function
+      const { data, error } = await supabase.functions.invoke("join-household", {
+        body: { code: sanitizedCode },
+      });
+
+      if (!error && data && !data.error) {
+        // Success: Trigger reload of app context data
+        await loadData();
+        return;
+      }
+      if (data?.error) {
+        throw new Error(data.error);
+      }
       if (error) {
-        console.error("Error inserting invited member:", error);
         throw error;
       }
+    } catch (edgeErr: any) {
+      console.warn("Edge function invocation failed or not deployed, running fallback database logic:", edgeErr);
 
-      if (data) {
-        setMembers((prev) => [...prev, mapMemberFromDb(data)]);
+      // Fallback: Perform validation queries directly on client database
+      // 1. Fetch household by join code
+      const { data: household, error: hError } = await supabase
+        .from("households")
+        .select("id, code_expires_at")
+        .eq("join_code", sanitizedCode)
+        .single();
+
+      if (hError || !household) {
+        throw new Error("Invalid join code.");
       }
-    } catch (err) {
-      console.error("Failed to invite member:", err);
-      throw err;
+
+      // 2. Verify join code expiry
+      if (new Date(household.code_expires_at) < new Date()) {
+        throw new Error("Join code has expired.");
+      }
+
+      // 3. Authenticate current user email
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      const userObj = currentSession?.user || session?.user;
+      if (!userObj) {
+        throw new Error("Unauthorized.");
+      }
+
+      const userName = userObj.user_metadata?.full_name || userObj.email?.split("@")[0] || "Member";
+      const userEmail = userObj.email || "";
+
+      // 4. Ensure user is not already a member
+      const { data: existingMember } = await supabase
+        .from("household_members")
+        .select("id")
+        .eq("household_id", household.id)
+        .eq("email", userEmail)
+        .maybeSingle();
+
+      if (existingMember) {
+        throw new Error("You are already a member of this household.");
+      }
+
+      // 5. Insert new member row
+      const { error: insertErr } = await supabase
+        .from("household_members")
+        .insert({
+          household_id: household.id,
+          name: userName,
+          email: userEmail,
+          role: "member",
+          invitation_status: "accepted"
+        });
+
+      if (insertErr) {
+        throw new Error("Failed to join household: " + insertErr.message);
+      }
+
+      // 6. Reload entire dataset
+      await loadData();
     }
   }
 
@@ -2129,10 +2211,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     members,
     householdMembers: members,
     addMember,
-    inviteMember,
     removeMember,
     updateMember,
     updateMemberAvatar,
+    joinCode,
+    codeExpiresAt,
+    regenerateJoinCode,
+    joinHousehold,
     billSplits,
     setBillSplits,
     addBillSplit,
@@ -2182,8 +2267,9 @@ export function useApp(): AppContextValue {
 export function useCurrentUser() {
   const { session, members } = useApp();
   const email = session?.user?.email || "";
-  const currentMember = members.find((m) => m.email === email);
+  const currentMember = members.find((m) => String(m.email).toLowerCase() === String(email).toLowerCase());
   return {
+    id: currentMember?.id || "",
     name: currentMember?.name || email.split("@")[0] || "User",
     email: email,
     avatar: (currentMember?.name || email || "U").charAt(0).toUpperCase(),

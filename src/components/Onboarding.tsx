@@ -19,12 +19,16 @@ import Logo from "./Logo";
 const TOTAL_STEPS = 5;
 
 export default function Onboarding() {
-  const { addPayday, addBill, completeOnboarding, setHouseholdName: setGlobalHouseholdName, updateHouseholdPaymentMode, session } = useApp();
+  const { addPayday, addBill, completeOnboarding, setHouseholdName: setGlobalHouseholdName, updateHouseholdPaymentMode, session, joinHousehold } = useApp();
 
   const [currentStep, setCurrentStep] = useState(1);
 
-  /* Step 1 — Welcome */
+  /* Step 1 — Welcome & Paths */
   const [localHouseholdName, setLocalHouseholdName] = useState("");
+  const [flowMode, setFlowMode] = useState<"choose" | "create" | "join">("choose");
+  const [joinCodeInput, setJoinCodeInput] = useState("");
+  const [isJoining, setIsJoining] = useState(false);
+  const [joinError, setJoinError] = useState("");
 
   /* Step 2 — Payment Mode */
   const [paymentMode, setPaymentMode] = useState(false); // false = Direct Pay, true = Joint Fund
@@ -84,7 +88,7 @@ export default function Onboarding() {
 
   /* ── Can proceed? ──────────────────────────── */
   function canProceed(): boolean {
-    if (currentStep === 1) return localHouseholdName.trim().length > 0;
+    if (currentStep === 1) return flowMode === "create" && localHouseholdName.trim().length > 0;
     if (currentStep === 2) return true; // Payment mode has default selected
     if (currentStep === 3) return paydayDate !== "" && payAmount !== "";
     if (currentStep === 4) return billName.trim().length > 0 && billAmount !== "";
@@ -143,33 +147,153 @@ export default function Onboarding() {
             {/* ── Step 1: Welcome ── */}
             {currentStep === 1 && (
               <div className="flex-1 flex flex-col justify-center space-y-6">
-                <div className="text-center space-y-4 flex flex-col items-center">
-                  <div className="flex justify-center h-[52px]">
-                    <Logo size="large" showWordmark={true} />
-                  </div>
-                  <span className="sr-only font-syne font-extrabold text-[52px] text-[#c8ff00] tracking-[-2px]">
-                    funded
-                  </span>
-                  <p className="text-sm text-muted max-w-xs mx-auto">
-                    Let&apos;s set up your household in just a few quick steps.
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <label
-                    htmlFor="ob-household"
-                    className="block text-xs font-bold tracking-wider uppercase text-muted"
-                  >
-                    Household Name
-                  </label>
-                  <input
-                    id="ob-household"
-                    type="text"
-                    placeholder="e.g. The Smiths"
-                    value={localHouseholdName}
-                    onChange={(e) => setLocalHouseholdName(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl bg-surface-raised border border-border text-foreground text-sm font-medium focus:ring-2 focus:ring-secondary/40 focus:border-secondary outline-none transition-all"
-                  />
-                </div>
+                {flowMode === "choose" && (
+                  <>
+                    <div className="text-center space-y-4 flex flex-col items-center">
+                      <div className="flex justify-center h-[52px]">
+                        <Logo size="large" showWordmark={true} />
+                      </div>
+                      <p className="text-sm text-muted max-w-xs mx-auto">
+                        Choose how you want to get started with Funded.
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-1 gap-3 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setFlowMode("create")}
+                        className="flex flex-col items-center justify-center p-5 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-primary/50 transition-all text-center cursor-pointer group"
+                      >
+                        <span className="font-syne font-bold text-sm text-foreground group-hover:text-primary transition-colors">
+                          Create a Household
+                        </span>
+                        <span className="text-[10px] text-muted mt-1 font-mono">
+                          Start fresh, configure payday schedules & add bills
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setFlowMode("join")}
+                        className="flex flex-col items-center justify-center p-5 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-primary/50 transition-all text-center cursor-pointer group"
+                      >
+                        <span className="font-syne font-bold text-sm text-foreground group-hover:text-primary transition-colors">
+                          Join via Code
+                        </span>
+                        <span className="text-[10px] text-muted mt-1 font-mono">
+                          Join an existing household using a 6-digit code
+                        </span>
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                {flowMode === "create" && (
+                  <>
+                    <div className="text-center space-y-2 flex flex-col items-center">
+                      <div className="flex justify-center h-[40px]">
+                        <Logo size="medium" showWordmark={true} />
+                      </div>
+                      <h2 className="font-syne font-bold text-lg text-white">Create your Household</h2>
+                    </div>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <label
+                          htmlFor="ob-household"
+                          className="block text-[10px] font-bold tracking-wider uppercase text-muted font-mono"
+                        >
+                          Household Name
+                        </label>
+                        <input
+                          id="ob-household"
+                          type="text"
+                          placeholder="e.g. The Smiths"
+                          value={localHouseholdName}
+                          onChange={(e) => setLocalHouseholdName(e.target.value)}
+                          className="w-full px-4 py-3 rounded-xl bg-surface-raised border border-border text-foreground text-sm font-medium focus:ring-2 focus:ring-secondary/40 focus:border-secondary outline-none transition-all"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setFlowMode("choose")}
+                        className="text-xs text-muted hover:text-white transition-colors underline block mx-auto pt-2 cursor-pointer"
+                      >
+                        Back to selection
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                {flowMode === "join" && (
+                  <>
+                    <div className="text-center space-y-2 flex flex-col items-center">
+                      <div className="flex justify-center h-[40px]">
+                        <Logo size="medium" showWordmark={true} />
+                      </div>
+                      <h2 className="font-syne font-bold text-lg text-white">Join a Household</h2>
+                    </div>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <label
+                          htmlFor="ob-joincode"
+                          className="block text-[10px] font-bold tracking-wider uppercase text-muted font-mono"
+                        >
+                          6-Digit Join Code
+                        </label>
+                        <input
+                          id="ob-joincode"
+                          type="text"
+                          maxLength={6}
+                          placeholder="ABC123"
+                          value={joinCodeInput}
+                          onChange={(e) => {
+                            setJoinCodeInput(e.target.value.toUpperCase());
+                            setJoinError("");
+                          }}
+                          className="w-full px-4 py-3 rounded-xl bg-surface-raised border border-border text-center font-mono text-lg font-bold tracking-widest text-[#c8ff00] focus:ring-2 focus:ring-secondary/40 focus:border-secondary outline-none transition-all uppercase"
+                        />
+                      </div>
+
+                      {joinError && (
+                        <div className="text-xs font-semibold text-red-500 text-center font-mono uppercase bg-red-500/10 p-2.5 rounded-lg border border-red-500/20">
+                          {joinError}
+                        </div>
+                      )}
+
+                      <div className="space-y-2">
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (!joinCodeInput.trim() || joinCodeInput.trim().length !== 6) {
+                              setJoinError("Join code must be 6 characters.");
+                              return;
+                            }
+                            setIsJoining(true);
+                            setJoinError("");
+                            try {
+                              await joinHousehold(joinCodeInput);
+                              completeOnboarding();
+                            } catch (err: any) {
+                              setJoinError(err.message || "Failed to join. Please verify code.");
+                            } finally {
+                              setIsJoining(false);
+                            }
+                          }}
+                          disabled={isJoining || joinCodeInput.trim().length !== 6}
+                          className="w-full py-3 bg-[#c8ff00] text-black font-bold rounded-xl text-xs uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer flex items-center justify-center gap-1.5"
+                        >
+                          {isJoining ? "Joining..." : "Join Household"}
+                          <ArrowRight size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setFlowMode("choose")}
+                          className="text-xs text-muted hover:text-white transition-colors underline block mx-auto pt-2 cursor-pointer"
+                        >
+                          Back to selection
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             )}
 
@@ -360,14 +484,16 @@ export default function Onboarding() {
               ) : (
                 <div /> /* spacer */
               )}
-              <button
-                onClick={handleNext}
-                disabled={!canProceed()}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-emerald-500 text-white text-sm font-bold shadow-lg shadow-primary/25 hover:brightness-110 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
-              >
-                Next
-                <ArrowRight className="h-4 w-4" />
-              </button>
+              {(currentStep > 1 || flowMode === "create") && (
+                <button
+                  onClick={handleNext}
+                  disabled={!canProceed()}
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-emerald-500 text-white text-sm font-bold shadow-lg shadow-primary/25 hover:brightness-110 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+                >
+                  Next
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              )}
             </div>
           )}
         </div>
