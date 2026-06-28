@@ -65,10 +65,14 @@ export default function BillCard({
     }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (confirm(`Are you sure you want to delete "${bill.name}"?`)) {
-      deleteBill(bill.id);
-      setIsDetailOpen(false);
+      try {
+        await deleteBill(bill.id);
+        setIsDetailOpen(false);
+      } catch (err: any) {
+        alert("Failed to delete bill: " + (err?.message || "Unknown error"));
+      }
     }
   };
 

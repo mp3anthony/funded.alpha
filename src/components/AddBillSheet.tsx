@@ -26,6 +26,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
   const [notes, setNotes] = useState("");
   const [frequency, setFrequency] = useState("monthly");
   const [isSaving, setIsSaving] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Pre-fill fields if in edit mode
   React.useEffect(() => {
@@ -70,6 +71,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
 
   const handleSave = async () => {
     setIsSaving(true);
+    setErrorMsg(null);
     try {
       const billData = {
         name,
@@ -99,8 +101,9 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
       setNotes("");
       
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to save bill:", error);
+      setErrorMsg(error?.message || "Failed to save bill. Please verify details and permissions.");
     } finally {
       setIsSaving(false);
     }
@@ -130,6 +133,12 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
 
         {/* Form Body */}
         <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+          {errorMsg && (
+            <div className="bg-red-500/10 border border-red-500/50 rounded-xl p-3 text-red-500 text-xs font-mono break-words whitespace-pre-wrap">
+              <span className="font-bold">Failed to save bill:</span><br/>
+              {errorMsg}
+            </div>
+          )}
           
           {/* 1. Bill Name */}
           <div className="flex flex-col space-y-2">

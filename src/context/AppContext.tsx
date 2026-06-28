@@ -1001,7 +1001,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       if (billError || !newBill) {
         console.error("Error inserting bill:", billError);
-        return;
+        throw billError || new Error("Failed to insert bill record.");
       }
 
       let newSplits = [];
@@ -1024,6 +1024,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
         if (splitsError) {
           console.error("Error inserting bill splits (bill saved successfully):", splitsError);
+          throw splitsError;
         }
         if (data) {
           newSplits = data;
@@ -1038,6 +1039,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
     } catch (err) {
       console.error("Failed to add bill:", err);
+      throw err;
     }
   }
 
@@ -1052,8 +1054,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       console.log('updateBill - householdId resolved:', hId);
 
       if (!billId) {
-        console.error("updateBill - Error: billId is undefined or empty!");
-        return;
+        throw new Error("updateBill - Error: billId is undefined or empty!");
       }
 
       // Step 1: Update Bill in Supabase
@@ -1082,6 +1083,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       if (billError || !updatedBill) {
         console.error("updateBill - Error updating bills row:", billError);
+        throw billError || new Error("Failed to update bill record.");
       } else {
         console.log('updateBill - successfully updated bills table row:', updatedBill);
       }
@@ -1095,6 +1097,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       if (deleteError) {
         console.error("updateBill - Error deleting existing bill splits:", deleteError);
+        throw deleteError;
       } else {
         console.log('updateBill - splits deleted successfully');
       }
@@ -1125,6 +1128,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
         if (splitsError) {
           console.error("updateBill - Error inserting new bill splits:", splitsError);
+          throw splitsError;
         } else {
           console.log('updateBill - splits inserted successfully:', data);
         }
@@ -1147,6 +1151,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     } catch (err) {
       console.error("updateBill - Fatal error during execution:", err);
+      throw err;
     }
   }
 
@@ -1226,16 +1231,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   async function deleteBill(id: string | number) {
     try {
+      // Delete associated splits first to be safe
+      const { error: splitErr } = await supabase.from("bill_splits").delete().eq("bill_id", id);
+      if (splitErr) {
+        console.error("Error deleting bill splits:", splitErr);
+        throw splitErr;
+      }
+
       const { error } = await supabase.from("bills").delete().eq("id", id);
 
       if (error) {
         console.error("Error deleting bill:", error);
-        return;
+        throw error;
       }
 
       setBills((prev) => prev.filter((b) => b.id !== id));
+      setBillSplits((prev) => prev.filter((s) => s.bill_id !== id));
     } catch (err) {
       console.error("Failed to delete bill:", err);
+      throw err;
     }
   }
 

@@ -36,11 +36,15 @@ export default function Home() {
   const [isGoalEditOpen, setIsGoalEditOpen] = useState(false);
 
   /* ── Sheet Deletion Handlers ─────────────────── */
-  const handleDeleteBill = () => {
+  const handleDeleteBill = async () => {
     if (selectedBill && confirm(`Are you sure you want to delete "${selectedBill.name}"?`)) {
-      deleteBill(selectedBill.id);
-      setIsDetailOpen(false);
-      setSelectedBill(null);
+      try {
+        await deleteBill(selectedBill.id);
+        setIsDetailOpen(false);
+        setSelectedBill(null);
+      } catch (err: any) {
+        alert("Failed to delete bill: " + (err?.message || "Unknown error"));
+      }
     }
   };
 
