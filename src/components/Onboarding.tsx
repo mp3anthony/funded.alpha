@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import PaymentModeToggle from "@/components/PaymentModeToggle";
 import Logo from "./Logo";
+import JoinHouseholdSheet from "./JoinHouseholdSheet";
 
 const TOTAL_STEPS = 5;
 
@@ -25,10 +26,8 @@ export default function Onboarding() {
 
   /* Step 1 — Welcome & Paths */
   const [localHouseholdName, setLocalHouseholdName] = useState("");
-  const [flowMode, setFlowMode] = useState<"choose" | "create" | "join">("choose");
-  const [joinCodeInput, setJoinCodeInput] = useState("");
-  const [isJoining, setIsJoining] = useState(false);
-  const [joinError, setJoinError] = useState("");
+  const [flowMode, setFlowMode] = useState<"choose" | "create">("choose");
+  const [isJoinSheetOpen, setIsJoinSheetOpen] = useState(false);
 
   /* Step 2 — Payment Mode */
   const [paymentMode, setPaymentMode] = useState(false); // false = Direct Pay, true = Joint Fund
@@ -172,7 +171,7 @@ export default function Onboarding() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => setFlowMode("join")}
+                        onClick={() => setIsJoinSheetOpen(true)}
                         className="flex flex-col items-center justify-center p-5 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-primary/50 transition-all text-center cursor-pointer group"
                       >
                         <span className="font-syne font-bold text-sm text-foreground group-hover:text-primary transition-colors">
@@ -218,79 +217,6 @@ export default function Onboarding() {
                       >
                         Back to selection
                       </button>
-                    </div>
-                  </>
-                )}
-
-                {flowMode === "join" && (
-                  <>
-                    <div className="text-center space-y-2 flex flex-col items-center">
-                      <div className="flex justify-center h-[40px]">
-                        <Logo size="medium" showWordmark={true} />
-                      </div>
-                      <h2 className="font-syne font-bold text-lg text-white">Join a Household</h2>
-                    </div>
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <label
-                          htmlFor="ob-joincode"
-                          className="block text-[10px] font-bold tracking-wider uppercase text-muted font-mono"
-                        >
-                          6-Digit Join Code
-                        </label>
-                        <input
-                          id="ob-joincode"
-                          type="text"
-                          maxLength={6}
-                          placeholder="ABC123"
-                          value={joinCodeInput}
-                          onChange={(e) => {
-                            setJoinCodeInput(e.target.value.toUpperCase());
-                            setJoinError("");
-                          }}
-                          className="w-full px-4 py-3 rounded-xl bg-surface-raised border border-border text-center font-mono text-lg font-bold tracking-widest text-[#c8ff00] focus:ring-2 focus:ring-secondary/40 focus:border-secondary outline-none transition-all uppercase"
-                        />
-                      </div>
-
-                      {joinError && (
-                        <div className="text-xs font-semibold text-red-500 text-center font-mono uppercase bg-red-500/10 p-2.5 rounded-lg border border-red-500/20">
-                          {joinError}
-                        </div>
-                      )}
-
-                      <div className="space-y-2">
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            if (!joinCodeInput.trim() || joinCodeInput.trim().length !== 6) {
-                              setJoinError("Join code must be 6 characters.");
-                              return;
-                            }
-                            setIsJoining(true);
-                            setJoinError("");
-                            try {
-                              await joinHousehold(joinCodeInput);
-                              completeOnboarding();
-                            } catch (err: any) {
-                              setJoinError(err.message || "Failed to join. Please verify code.");
-                            } finally {
-                              setIsJoining(false);
-                            }
-                          }}
-                          disabled={isJoining || joinCodeInput.trim().length !== 6}
-                          className="w-full py-3 bg-[#c8ff00] text-black font-bold rounded-xl text-xs uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer flex items-center justify-center gap-1.5"
-                        >
-                          {isJoining ? "Joining..." : "Join Household"}
-                          <ArrowRight size={14} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setFlowMode("choose")}
-                          className="text-xs text-muted hover:text-white transition-colors underline block mx-auto pt-2 cursor-pointer"
-                        >
-                          Back to selection
-                        </button>
-                      </div>
                     </div>
                   </>
                 )}
@@ -498,6 +424,7 @@ export default function Onboarding() {
           )}
         </div>
       </div>
+      <JoinHouseholdSheet isOpen={isJoinSheetOpen} onClose={() => setIsJoinSheetOpen(false)} />
     </div>
   );
 }

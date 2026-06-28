@@ -1448,82 +1448,153 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   async function joinHousehold(code: string) {
     const sanitizedCode = code.trim().toUpperCase();
+    
+    // Cache backup state for potential rollback on failure
+    const backupState = {
+      dbHouseholdId,
+      householdName,
+      isJointFund,
+      bills,
+      funds,
+      paydays,
+      members,
+      billSplits,
+      paySchedules,
+      payHistory,
+      householdContributions,
+      contributionRules,
+    };
+
     try {
       // 1. Attempt to invoke the join-household Supabase Edge Function
       const { data, error } = await supabase.functions.invoke("join-household", {
         body: { code: sanitizedCode },
       });
 
+      let newHouseholdId = "";
+
       if (!error && data && !data.error) {
-        // Success: Trigger reload of app context data
-        await loadData();
-        return;
+        newHouseholdId = data.householdId;
+      } else {
+        if (data?.error) {
+          throw new Error(data.error);
+        }
+        if (error) {
+          throw error;
+        }
+
+        // Fallback: Perform validation queries directly on client database
+        console.warn("Edge function invocation failed or not deployed, running fallback database logic");
+
+        // 1.1 Fetch household by join code
+        const { data: household, error: hError } = await supabase
+          .from("households")
+          .select("id, code_expires_at")
+          .eq("join_code", sanitizedCode)
+          .single();
+
+        if (hError || !household) {
+          throw new Error("Invalid join code.");
+        }
+
+        // 1.2 Verify join code expiry
+        if (new Date(household.code_expires_at) < new Date()) {
+          throw new Error("Join code has expired.");
+        }
+
+        // 1.3 Authenticate current user email
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        const userObj = currentSession?.user || session?.user;
+        if (!userObj) {
+          throw new Error("Unauthorized.");
+        }
+
+        const userName = userObj.user_metadata?.full_name || userObj.email?.split("@")[0] || "Member";
+        const userEmail = userObj.email || "";
+
+        // 1.4 Ensure user is not already a member
+        const { data: existingMember } = await supabase
+          .from("household_members")
+          .select("id")
+          .eq("household_id", household.id)
+          .eq("email", userEmail)
+          .maybeSingle();
+
+        if (existingMember) {
+          throw new Error("You are already a member of this household.");
+        }
+
+        // 1.5 Insert new member row
+        const { error: insertErr } = await supabase
+          .from("household_members")
+          .insert({
+            household_id: household.id,
+            name: userName,
+            email: userEmail,
+            role: "member",
+            invitation_status: "accepted"
+          });
+
+        if (insertErr) {
+          throw new Error("Failed to join household: " + insertErr.message);
+        }
+        newHouseholdId = household.id;
       }
-      if (data?.error) {
-        throw new Error(data.error);
-      }
-      if (error) {
-        throw error;
-      }
-    } catch (edgeErr: any) {
-      console.warn("Edge function invocation failed or not deployed, running fallback database logic:", edgeErr);
 
-      // Fallback: Perform validation queries directly on client database
-      // 1. Fetch household by join code
-      const { data: household, error: hError } = await supabase
-        .from("households")
-        .select("id, code_expires_at")
-        .eq("join_code", sanitizedCode)
-        .single();
+      // 2. WIPE CURRENT USER DATA IN DATABASE FIRST
+      if (backupState.dbHouseholdId && backupState.dbHouseholdId !== newHouseholdId) {
+        const currentUserInOldHousehold = backupState.members.find(
+          (m) => String(m.email).toLowerCase() === String(session?.user?.email).toLowerCase()
+        );
 
-      if (hError || !household) {
-        throw new Error("Invalid join code.");
-      }
-
-      // 2. Verify join code expiry
-      if (new Date(household.code_expires_at) < new Date()) {
-        throw new Error("Join code has expired.");
-      }
-
-      // 3. Authenticate current user email
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      const userObj = currentSession?.user || session?.user;
-      if (!userObj) {
-        throw new Error("Unauthorized.");
+        if (currentUserInOldHousehold && currentUserInOldHousehold.role === "owner") {
+          // Cascade delete current household from database
+          const { error: deleteError } = await supabase
+            .from("households")
+            .delete()
+            .eq("id", backupState.dbHouseholdId);
+          if (deleteError) {
+            console.error("Error deleting old household:", deleteError);
+          }
+        } else if (currentUserInOldHousehold) {
+          // Delete old membership record
+          await supabase
+            .from("household_members")
+            .delete()
+            .eq("id", currentUserInOldHousehold.id);
+        }
       }
 
-      const userName = userObj.user_metadata?.full_name || userObj.email?.split("@")[0] || "Member";
-      const userEmail = userObj.email || "";
+      // 3. WIPE local state variables
+      setBills([]);
+      setFunds([]);
+      setPaydays([]);
+      setMembers([]);
+      setBillSplits([]);
+      setPaySchedules([]);
+      setPayHistory([]);
+      setHouseholdContributions([]);
+      setContributionRules([]);
 
-      // 4. Ensure user is not already a member
-      const { data: existingMember } = await supabase
-        .from("household_members")
-        .select("id")
-        .eq("household_id", household.id)
-        .eq("email", userEmail)
-        .maybeSingle();
-
-      if (existingMember) {
-        throw new Error("You are already a member of this household.");
-      }
-
-      // 5. Insert new member row
-      const { error: insertErr } = await supabase
-        .from("household_members")
-        .insert({
-          household_id: household.id,
-          name: userName,
-          email: userEmail,
-          role: "member",
-          invitation_status: "accepted"
-        });
-
-      if (insertErr) {
-        throw new Error("Failed to join household: " + insertErr.message);
-      }
-
-      // 6. Reload entire dataset
+      // 4. Fetch fresh data for the new household
+      setDbHouseholdId(newHouseholdId);
       await loadData();
+    } catch (err: any) {
+      console.error("Failed to join household, rolling back state:", err);
+      // Rollback React states to cached values
+      setDbHouseholdId(backupState.dbHouseholdId);
+      setHouseholdNameState(backupState.householdName);
+      setIsJointFund(backupState.isJointFund);
+      setBills(backupState.bills);
+      setFunds(backupState.funds);
+      setPaydays(backupState.paydays);
+      setMembers(backupState.members);
+      setBillSplits(backupState.billSplits);
+      setPaySchedules(backupState.paySchedules);
+      setPayHistory(backupState.payHistory);
+      setHouseholdContributions(backupState.householdContributions);
+      setContributionRules(backupState.contributionRules);
+      throw err;
     }
   }
 

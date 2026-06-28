@@ -20,6 +20,7 @@ import RulesSettingsSheet from "@/components/RulesSettingsSheet";
 import PageHeader from "@/components/PageHeader";
 import AvatarUpload from "@/components/AvatarUpload";
 import RemoveMemberModal from "@/components/RemoveMemberModal";
+import JoinHouseholdSheet from "@/components/JoinHouseholdSheet";
 import { type Member } from "@/types";
 import { AlertTriangle } from "lucide-react";
 
@@ -95,6 +96,7 @@ export default function SettingsPage() {
   /* Invite and Remove member modals */
   const [showInvite, setShowInvite] = useState(false);
   const [memberToRemove, setMemberToRemove] = useState<Member | null>(null);
+  const [isJoinSheetOpen, setIsJoinSheetOpen] = useState(false);
 
   /* ── Handlers ──────────────────────────────── */
   async function handleProfileSave() {
@@ -609,6 +611,40 @@ export default function SettingsPage() {
         </div>
       </section>
 
+      {/* ── Danger Zone Section ────────────── */}
+      <section className="bg-surface border border-red-500/20 rounded-2xl p-5 shadow-sm space-y-4">
+        <div className="space-y-1">
+          <h2 className="text-base font-bold text-[#ff3d57] font-syne">
+            Danger Zone
+          </h2>
+          <p className="text-xs text-muted leading-relaxed font-sans">
+            Irreversible actions for your household configuration.
+          </p>
+        </div>
+
+        <div className="pt-2 border-t border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-0.5">
+            <h4 className="text-sm font-bold text-foreground font-syne">
+              Leave &amp; Join New Household
+            </h4>
+            <p className="text-xs text-muted max-w-sm font-sans">
+              Leave your current household and join another one using a 6-digit code.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              if (confirm("WARNING: This will permanently delete your current household data (if you are the owner) or remove your membership (if you are a member). You cannot undo this. Are you sure you want to continue?")) {
+                setIsJoinSheetOpen(true);
+              }
+            }}
+            className="px-4 py-2.5 bg-red-500/10 hover:bg-red-500 text-[#ff3d57] hover:text-white border border-red-500/20 text-xs font-bold rounded-xl transition-all cursor-pointer font-heading uppercase tracking-wider shrink-0"
+          >
+            Switch Households
+          </button>
+        </div>
+      </section>
+
 
       {/* ── Invite & Remove Member Modals ────────── */}
 
@@ -681,6 +717,12 @@ export default function SettingsPage() {
         rules={contributionRules}
         goals={funds}
         contributions={householdContributions}
+      />
+
+      {/* Join Household Sheet */}
+      <JoinHouseholdSheet
+        isOpen={isJoinSheetOpen}
+        onClose={() => setIsJoinSheetOpen(false)}
       />
     </div>
   );
