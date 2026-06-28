@@ -63,7 +63,7 @@ export default function Funds() {
             Total Accumulated Savings
           </span>
           <div className="flex items-baseline gap-2">
-            <h3 className="text-3xl sm:text-4xl font-black text-foreground tracking-tight">
+            <h3 className="text-[clamp(1.75rem,5vw,2.25rem)] font-black text-foreground tracking-tight">
               ${totalSaved.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </h3>
             <span className="text-xs font-semibold text-primary flex items-center gap-0.5">

@@ -76,7 +76,10 @@ export default function ContributionSettingsSheet({
         </div>
 
         {/* Bottom Total monthly summary */}
-        <div className="sticky bottom-0 border-t border-white/10 bg-[#111111]/95 px-6 py-5 backdrop-blur flex items-center justify-between">
+        <div 
+          style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1.25rem)" }}
+          className="sticky bottom-0 border-t border-white/10 bg-[#111111]/95 px-6 pt-5 pb-5 backdrop-blur flex items-center justify-between"
+        >
           <div className="space-y-0.5">
             <span className="text-[10px] font-bold text-subtle uppercase tracking-wider block font-mono">
               Total Household Budget

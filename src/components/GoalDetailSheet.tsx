@@ -153,7 +153,10 @@ export default function GoalDetailSheet({
         </div>
 
         {/* Footer Actions */}
-        <div className="sticky bottom-0 z-10 border-t border-white/10 bg-[#111111]/95 px-6 py-4 backdrop-blur flex space-x-3 shrink-0">
+        <div 
+          style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1rem)" }}
+          className="sticky bottom-0 z-10 border-t border-white/10 bg-[#111111]/95 px-6 pt-4 pb-4 backdrop-blur flex space-x-3 shrink-0"
+        >
           <button
             onClick={onDelete}
             className="flex-1 rounded-xl py-3.5 bg-destructive/15 text-destructive border border-destructive/20 font-heading font-bold uppercase tracking-wider text-xs hover:bg-destructive hover:text-white transition-all active:scale-[0.98] cursor-pointer"

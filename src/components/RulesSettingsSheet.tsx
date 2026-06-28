@@ -401,7 +401,10 @@ export default function RulesSettingsSheet({
 
         {/* Footer Trigger to Add Rule */}
         {!isFormOpen && (
-          <div className="sticky bottom-0 border-t border-white/10 bg-[#111111]/95 px-6 py-4 backdrop-blur">
+          <div 
+            style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1rem)" }}
+            className="sticky bottom-0 border-t border-white/10 bg-[#111111]/95 px-6 pt-4 pb-4 backdrop-blur"
+          >
             <button
               onClick={() => setIsFormOpen(true)}
               className="w-full py-3.5 bg-primary text-primary-fg rounded-xl font-heading text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer hover:brightness-110 active:scale-[0.98]"

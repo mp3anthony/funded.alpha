@@ -281,7 +281,10 @@ export default function AddGoalSheet({
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 z-10 border-t border-white/10 bg-[#111111]/95 px-6 py-4 backdrop-blur flex items-center gap-3 shrink-0">
+        <div 
+          style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1rem)" }}
+          className="sticky bottom-0 z-10 border-t border-white/10 bg-[#111111]/95 px-6 pt-4 pb-4 backdrop-blur flex items-center gap-3 shrink-0"
+        >
           <button
             type="button"
             onClick={onClose}

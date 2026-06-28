@@ -78,7 +78,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="relative min-h-screen">
-      <main className="flex-1 w-full pt-14 pb-16 flex flex-col">
+      <main 
+        style={{ 
+          paddingTop: "calc(env(safe-area-inset-top) + 3.5rem)", 
+          paddingBottom: "calc(env(safe-area-inset-bottom) + 4rem)" 
+        }}
+        className="flex-1 w-full flex flex-col"
+      >
         {children}
       </main>
       <BottomNav />
