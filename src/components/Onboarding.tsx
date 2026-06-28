@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useApp } from "@/context/AppContext";
+import { supabase } from "@/lib/supabase";
 import { Clock } from "lucide-react";
 import {
   Home,
@@ -24,6 +25,7 @@ export default function Onboarding() {
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isCreating, setIsCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   /* Step 1 — Welcome & Paths */
   const [localHouseholdName, setLocalHouseholdName] = useState("");
@@ -46,10 +48,11 @@ export default function Onboarding() {
   async function handleNext() {
     if (currentStep === 1 && localHouseholdName.trim()) {
       setIsCreating(true);
+      setCreateError(null);
       try {
         await createHousehold(localHouseholdName.trim());
-      } catch (err) {
-        alert("Failed to create household. Please try again.");
+      } catch (err: any) {
+        setCreateError(err.message || String(err));
         setIsCreating(false);
         return;
       } finally {
@@ -114,6 +117,12 @@ export default function Onboarding() {
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-secondary/5 rounded-full blur-3xl translate-x-1/3 translate-y-1/3" />
 
       <div className="relative w-full max-w-lg">
+        <button
+          onClick={() => supabase.auth.signOut()}
+          className="absolute -top-10 right-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-surface text-[10px] font-bold text-muted hover:text-foreground hover:bg-surface-raised transition-colors cursor-pointer font-mono uppercase tracking-wider z-10"
+        >
+          Sign Out
+        </button>
         {/* Card */}
         <div className="bg-surface border border-border rounded-3xl shadow-2xl overflow-hidden">
           {/* Progress bar */}
@@ -203,6 +212,12 @@ export default function Onboarding() {
                       </div>
                       <h2 className="font-syne font-bold text-lg text-white">Create your Household</h2>
                     </div>
+                    {createError && (
+                      <div className="bg-red-500/10 border border-red-500/50 rounded-xl p-3 text-red-500 text-xs font-mono break-words whitespace-pre-wrap">
+                        <span className="font-bold">Failed to create household:</span><br/>
+                        {createError}
+                      </div>
+                    )}
                     <div className="space-y-4">
                       <div className="space-y-2">
                         <label

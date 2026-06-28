@@ -694,98 +694,87 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // This prevents a race condition where RLS returns empty results
   // (because no auth token is set yet), causing the app to show onboarding.
   async function loadData() {
-    if (isAuthLoading || !session) {
+    if (isAuthLoading || !session?.user) {
       console.log('loadData skipped - isAuthLoading:', isAuthLoading, 'session:', session ? 'exists' : 'null');
+      setIsOnboarded(false);
       return;
     }
-    console.log('loadData running with authenticated session, user:', session?.user?.id);
+    console.log('loadData running with authenticated session, user:', session.user.id);
     try {
-      const { data: households, error: hError } = await supabase
-        .from("households")
-        .select("*")
-        .limit(1);
+      // STEP 1: Get ONLY the household_id from membership (no nested join!)
+      const { data: membership, error: memError } = await supabase
+        .from('household_members')
+        .select('household_id')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
 
-      if (hError) {
-        console.error("Error fetching household:", hError);
+      if (memError || !membership?.household_id) {
+        console.log('[loadData] No active household membership or user has no household yet');
+        setIsOnboarded(false);
         return;
       }
 
-      if (households && households.length > 0) {
-        const household = households[0];
-        console.log('loadData - found household:', household.id, household.name, household.is_joint_fund);
-        setDbHouseholdId(household.id);
-        setHouseholdNameState(household.name);
-        setIsJointFund(!!household.is_joint_fund);
-        setJoinCode(household.join_code || null);
-        setCodeExpiresAt(household.code_expires_at || null);
-        setIsOnboarded(true);
+      // STEP 2: Fetch household details by ID (separate request, no recursion)
+      const { data: household, error: hhError } = await supabase
+        .from('households')
+        .select('id, name, join_code, code_expires_at, is_joint_fund')
+        .eq('id', membership.household_id)
+        .single();
 
-        // Fetch related data
-        const [billsRes, fundsRes, paydaysRes, membersRes, billSplitsRes] = await Promise.all([
-          supabase.from("bills").select("*"),
-          supabase.from("funds").select("*"),
-          supabase.from("paydays").select("*"),
-          supabase.from("household_members").select("*"),
-          supabase.from("bill_splits").select("*"),
-        ]);
-
-        if (billsRes.data) {
-          setBills(billsRes.data.map(mapBillFromDb));
-        }
-        if (fundsRes.data) {
-          setFunds(fundsRes.data.map(mapFundFromDb));
-        }
-        if (paydaysRes.data) {
-          setPaydays(paydaysRes.data.map(mapPaydayFromDb));
-        }
-        let loadedMembers: Member[] = [];
-        if (membersRes.data) {
-          loadedMembers = membersRes.data.map(mapMemberFromDb);
-        }
-        console.log("loadData - loaded members:", loadedMembers);
-
-        // Fallback: If household_members is empty, auto-insert the current logged-in user
-        if (loadedMembers.length === 0 && session?.user) {
-          console.log("loadData - household_members empty, auto-inserting owner:", session.user.email);
-          const userName = session.user.user_metadata?.full_name || session.user.email?.split("@")[0] || "Owner";
-          const userEmail = session.user.email || "";
-          const { data: newMember, error: insertMemErr } = await supabase
-            .from("household_members")
-            .insert({
-              household_id: household.id,
-              name: userName,
-              email: userEmail,
-              role: "owner"
-            })
-            .select()
-            .single();
-
-          if (insertMemErr) {
-            console.error("loadData - failed to auto-insert owner:", insertMemErr);
-          }
-          if (newMember) {
-            loadedMembers = [mapMemberFromDb(newMember)];
-          }
-        }
-        setMembers(loadedMembers);
-
-        if (billSplitsRes.data) {
-          setBillSplits(billSplitsRes.data);
-        }
-
-        // Fetch payday schedule, history, contributions, and rules
-        await Promise.all([
-          fetchPayData(household.id),
-          fetchHouseholdContributions(household.id),
-          fetchContributionRules(household.id)
-        ]);
-      } else {
-        // No household, user needs to onboard
-        console.log('loadData - no household found, user needs onboarding');
+      if (hhError || !household) {
+        console.error('[loadData] Failed to fetch household details:', hhError);
         setIsOnboarded(false);
+        return;
       }
+
+      console.log('loadData - found household:', household.id, household.name, household.is_joint_fund);
+      setDbHouseholdId(household.id);
+      setHouseholdNameState(household.name);
+      setIsJointFund(!!household.is_joint_fund);
+      setJoinCode(household.join_code || null);
+      setCodeExpiresAt(household.code_expires_at || null);
+      setIsOnboarded(true);
+
+      // Fetch related data
+      const [billsRes, fundsRes, paydaysRes, membersRes, billSplitsRes] = await Promise.all([
+        supabase.from("bills").select("*").eq("household_id", household.id),
+        supabase.from("funds").select("*").eq("household_id", household.id),
+        supabase.from("paydays").select("*").eq("household_id", household.id),
+        supabase.from("household_members").select("*").eq("household_id", household.id),
+        supabase.from("bill_splits").select("*"),
+      ]);
+
+      if (billsRes.data) {
+        setBills(billsRes.data.map(mapBillFromDb));
+      }
+      if (fundsRes.data) {
+        setFunds(fundsRes.data.map(mapFundFromDb));
+      }
+      if (paydaysRes.data) {
+        setPaydays(paydaysRes.data.map(mapPaydayFromDb));
+      }
+      
+      let loadedMembers: Member[] = [];
+      if (membersRes.data) {
+        loadedMembers = membersRes.data.map(mapMemberFromDb);
+      }
+      setMembers(loadedMembers);
+
+      if (billSplitsRes.data) {
+        // Filter bill splits locally to only load splits for current household's bills
+        const billIds = new Set((billsRes.data || []).map(b => b.id));
+        setBillSplits(billSplitsRes.data.filter((split: any) => billIds.has(split.bill_id)));
+      }
+
+      // Fetch payday schedule, history, contributions, and rules
+      await Promise.all([
+        fetchPayData(household.id),
+        fetchHouseholdContributions(household.id),
+        fetchContributionRules(household.id)
+      ]);
     } catch (err) {
-      console.error("Failed to load initial data from Supabase:", err);
+      console.error('[loadData] Failed to load initial data from Supabase for user:', session.user.id, err);
+      setIsOnboarded(false);
     }
   }
 
@@ -879,65 +868,90 @@ export function AppProvider({ children }: { children: ReactNode }) {
   /* ── Household Creation and Name Actions ────── */
   async function createHousehold(name: string): Promise<string> {
     try {
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      const userObj = currentSession?.user || session?.user;
-      if (!userObj) {
-        throw new Error("Unauthorized: No session user found.");
+      const { data: { session: currentSession }, error: authError } = await supabase.auth.getSession();
+      const activeUser = currentSession?.user || session?.user;
+      
+      if (authError) {
+        console.error('[createHousehold] Auth session error:', JSON.stringify(authError, null, 2));
+      }
+      
+      if (!activeUser?.id) {
+        throw new Error('Pre-insert validation failed: No active user session found.');
+      }
+      
+      if (!name || name.trim() === '') {
+        throw new Error('Pre-insert validation failed: Household name is required.');
       }
 
-      const joinCode = generateRandomCode();
-      const codeExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-
-      const insertData = {
-        name,
-        is_joint_fund: false,
-        user_id: userObj.id,
-        join_code: joinCode,
-        code_expires_at: codeExpiresAt
-      };
-
-      const { data: newHousehold, error: hError } = await supabase
-        .from("households")
-        .insert(insertData)
-        .select()
-        .single();
-
-      if (hError || !newHousehold) {
-        throw new Error("Failed to insert household: " + (hError?.message || "Unknown error"));
+      // Verify the session user actually exists in auth.users via standard auth service
+      const { data: { user: dbUser }, error: getUserError } = await supabase.auth.getUser();
+      if (getUserError || !dbUser) {
+        throw new Error('Session invalid: User no longer exists. Please sign out and sign up again.');
       }
 
-      // Immediately insert creator as the first member
-      const userName = userObj.user_metadata?.full_name || userObj.email?.split("@")[0] || "Owner";
-      const userEmail = userObj.email || "";
-      const { data: newMember, error: memberErr } = await supabase
-        .from("household_members")
+      const joinCodeValue = Math.random().toString(36).substring(2, 8).toUpperCase();
+      
+      console.log('[createHousehold] Attempting insert:', { name, joinCode: joinCodeValue, userId: activeUser.id });
+      
+      const { data: household, error: hhError } = await supabase
+        .from('households')
         .insert({
-          household_id: newHousehold.id,
-          user_id: userObj.id,
-          name: userName,
-          email: userEmail,
-          role: "owner",
-          invitation_status: "accepted"
+          name,
+          join_code: joinCodeValue,
+          code_expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
         })
         .select()
         .single();
-
-      if (memberErr || !newMember) {
-        throw memberErr || new Error("Failed to insert owner member record.");
+        
+      // LOG THE ACTUAL ERROR OBJECT
+      if (hhError) {
+        console.error('[createHousehold] SUPABASE ERROR:', JSON.stringify(hhError, null, 2));
+        throw new Error(`Household insert failed: ${hhError.message} | Code: ${hhError.code}`);
       }
-
+      
+      if (!household) {
+        console.error('[createHousehold] No data returned despite no error');
+        throw new Error('Household created but no data returned');
+      }
+      
+      console.log('[createHousehold] Household created successfully:', household.id);
+      
+      // Insert member...
+      const userName = activeUser.user_metadata?.full_name || activeUser.email?.split('@')[0] || 'Owner';
+      const userEmail = activeUser.email || "";
+      const { data: newMember, error: memberError } = await supabase
+        .from('household_members')
+        .insert({
+          household_id: household.id,
+          user_id: activeUser.id,
+          name: userName,
+          email: userEmail,
+          role: 'owner',
+          invitation_status: 'accepted'
+        })
+        .select()
+        .single();
+        
+      if (memberError) {
+        console.error('[createHousehold] MEMBER INSERT ERROR:', JSON.stringify(memberError, null, 2));
+        throw new Error(`Member insert failed: ${memberError.message}`);
+      }
+      
       // Update state
-      setDbHouseholdId(newHousehold.id);
-      setHouseholdNameState(newHousehold.name);
+      setDbHouseholdId(household.id);
+      setHouseholdNameState(household.name);
       setIsJointFund(false);
-      setJoinCode(newHousehold.join_code || null);
-      setCodeExpiresAt(newHousehold.code_expires_at || null);
-      setMembers([mapMemberFromDb(newMember)]);
+      setJoinCode(household.join_code || null);
+      setCodeExpiresAt(household.code_expires_at || null);
+      if (newMember) {
+        setMembers([mapMemberFromDb(newMember)]);
+      }
       setIsOnboarded(true);
 
-      return newHousehold.id;
-    } catch (err: any) {
-      console.error("createHousehold failed:", err);
+      return household.id;
+      
+    } catch (err) {
+      console.error('[createHousehold] CAUGHT EXCEPTION:', err);
       throw err;
     }
   }
