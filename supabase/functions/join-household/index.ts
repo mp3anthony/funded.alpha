@@ -70,35 +70,58 @@ serve(async (req) => {
     // 6. Check if user is already a member of this household
     const { data: existingMember } = await supabaseClient
       .from("household_members")
-      .select("id")
+      .select("id, user_id")
       .eq("household_id", household.id)
       .eq("email", userEmail)
       .maybeSingle();
 
     if (existingMember) {
-      return new Response(JSON.stringify({ error: "You are already a member of this household" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+      if (existingMember.user_id === user.id) {
+        return new Response(JSON.stringify({ error: "You are already a member of this household" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      } else if (!existingMember.user_id) {
+        // Claim the existing member record by updating its user_id
+        const { error: updateError } = await supabaseClient
+          .from("household_members")
+          .update({
+            user_id: user.id,
+            invitation_status: "accepted",
+          })
+          .eq("id", existingMember.id);
 
-    // 7. Insert the user into household_members as 'member'
-    const { error: insertError } = await supabaseClient
-      .from("household_members")
-      .insert({
-        household_id: household.id,
-        user_id: user.id,
-        name: userName,
-        email: userEmail,
-        role: "member",
-        invitation_status: "accepted",
-      });
+        if (updateError) {
+          return new Response(JSON.stringify({ error: "Failed to claim household membership: " + updateError.message }), {
+            status: 500,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      } else {
+        return new Response(JSON.stringify({ error: "This email is already registered as a member with another user" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    } else {
+      // 7. Insert a new user into household_members as 'member'
+      const { error: insertError } = await supabaseClient
+        .from("household_members")
+        .insert({
+          household_id: household.id,
+          user_id: user.id,
+          name: userName,
+          email: userEmail,
+          role: "member",
+          invitation_status: "accepted",
+        });
 
-    if (insertError) {
-      return new Response(JSON.stringify({ error: "Failed to join household: " + insertError.message }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      if (insertError) {
+        return new Response(JSON.stringify({ error: "Failed to join household: " + insertError.message }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     return new Response(JSON.stringify({ success: true, householdId: household.id }), {

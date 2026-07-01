@@ -76,6 +76,7 @@ export interface PayHistory {
   rule_id: string | null;
   allocation_type: "goal" | "contribution" | null;
   allocation_target_id: string | null;
+  status?: 'pending' | 'confirmed';
 }
 
 export interface Member {
@@ -86,6 +87,7 @@ export interface Member {
   avatar: string;
   avatar_url?: string | null;
   invitation_status?: 'pending' | 'accepted' | 'declined';
+  user_id?: string | null;
 }
 
 export interface Household {
@@ -445,6 +447,7 @@ function mapMemberFromDb(dbMember: any): Member {
     avatar: name.charAt(0).toUpperCase(),
     avatar_url: dbMember.avatar_url || null,
     invitation_status: dbMember.invitation_status || "accepted",
+    user_id: dbMember.user_id || null,
   };
 }
 
@@ -492,7 +495,10 @@ interface AppContextValue {
   addPaySchedule: (data: Omit<PaySchedule, "id" | "household_id" | "created_at">) => Promise<void>;
   updatePaySchedule: (id: string, data: Omit<PaySchedule, "id" | "household_id" | "created_at">) => Promise<void>;
   deletePaySchedule: (id: string) => Promise<void>;
-  logPay: (payScheduleId: string, amount: number, date: string, notes: string | null) => Promise<PayHistory | null>;
+  logPay: (payScheduleId: string, amount: number, date: string, notes: string | null, status?: 'pending' | 'confirmed') => Promise<PayHistory | null>;
+  confirmPay: (historyId: string) => Promise<void>;
+  confirmAndUpdatePay: (historyId: string, newAmount: number, notes?: string | null) => Promise<void>;
+  autoLogMissedPays: () => Promise<void>;
   deletePayHistory: (id: string) => Promise<void>;
   calculateAveragePay: (memberId: string) => number | null;
 
@@ -568,14 +574,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const root = window.document.documentElement;
     const body = window.document.body;
-    
+
     const applyTheme = (t: "light" | "dark" | "system") => {
       let activeTheme = t;
       if (t === "system") {
         const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
         activeTheme = systemPrefersDark ? "dark" : "light";
       }
-      
+
       // Update HTML tag classes/dataset
       if (!root.classList.contains(activeTheme)) {
         root.classList.remove("light", "dark");
@@ -595,7 +601,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           body.setAttribute("data-theme", activeTheme);
         }
       }
-      
+
       console.log("[ThemeManager] applied:", activeTheme, "HTML classes:", root.className, "data-theme:", root.getAttribute("data-theme"));
     };
 
@@ -603,12 +609,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (typeof window !== "undefined") {
       localStorage.setItem("theme", theme);
     }
-    
+
     // Set up MutationObserver to defend against Next.js HTML tag reconciliations
     const observer = new MutationObserver(() => {
       applyTheme(theme);
     });
-    
+
     observer.observe(root, {
       attributes: true,
       attributeFilter: ["class", "data-theme"]
@@ -624,7 +630,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         attributeFilter: ["class", "data-theme"]
       });
     }
-    
+
     let cleanupSystemListener: (() => void) | undefined;
     if (theme === "system") {
       const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
@@ -753,7 +759,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (paydaysRes.data) {
         setPaydays(paydaysRes.data.map(mapPaydayFromDb));
       }
-      
+
       let loadedMembers: Member[] = [];
       if (membersRes.data) {
         loadedMembers = membersRes.data.map(mapMemberFromDb);
@@ -871,15 +877,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       const { data: { session: currentSession }, error: authError } = await supabase.auth.getSession();
       const activeUser = currentSession?.user || session?.user;
-      
+
       if (authError) {
         console.error('[createHousehold] Auth session error:', JSON.stringify(authError, null, 2));
       }
-      
+
       if (!activeUser?.id) {
         throw new Error('Pre-insert validation failed: No active user session found.');
       }
-      
+
       if (!name || name.trim() === '') {
         throw new Error('Pre-insert validation failed: Household name is required.');
       }
@@ -891,32 +897,33 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
 
       const joinCodeValue = Math.random().toString(36).substring(2, 8).toUpperCase();
-      
+
       console.log('[createHousehold] Attempting insert:', { name, joinCode: joinCodeValue, userId: activeUser.id });
-      
+
       const { data: household, error: hhError } = await supabase
         .from('households')
         .insert({
           name,
+          user_id: activeUser.id,
           join_code: joinCodeValue,
           code_expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
         })
         .select()
         .single();
-        
+
       // LOG THE ACTUAL ERROR OBJECT
       if (hhError) {
         console.error('[createHousehold] SUPABASE ERROR:', JSON.stringify(hhError, null, 2));
         throw new Error(`Household insert failed: ${hhError.message} | Code: ${hhError.code}`);
       }
-      
+
       if (!household) {
         console.error('[createHousehold] No data returned despite no error');
         throw new Error('Household created but no data returned');
       }
-      
+
       console.log('[createHousehold] Household created successfully:', household.id);
-      
+
       // Insert member...
       const userName = activeUser.user_metadata?.full_name || activeUser.email?.split('@')[0] || 'Owner';
       const userEmail = activeUser.email || "";
@@ -932,12 +939,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
         })
         .select()
         .single();
-        
+
       if (memberError) {
         console.error('[createHousehold] MEMBER INSERT ERROR:', JSON.stringify(memberError, null, 2));
         throw new Error(`Member insert failed: ${memberError.message}`);
       }
-      
+
       // Update state
       setDbHouseholdId(household.id);
       setHouseholdNameState(household.name);
@@ -950,7 +957,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setIsOnboarded(true);
 
       return household.id;
-      
+
     } catch (err) {
       console.error('[createHousehold] CAUGHT EXCEPTION:', err);
       throw err;
@@ -1034,7 +1041,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       // Step 3: Update Local State
       setBills((prev) => [...prev, mapBillFromDb(newBill)]);
-      
+
       if (newSplits && newSplits.length > 0) {
         setBillSplits((prev) => [...prev, ...newSplits]);
       }
@@ -1179,7 +1186,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   async function updateHouseholdPaymentMode(jointFundVal: boolean) {
     try {
       const hId = await ensureHousehold();
-      
+
       // Mode is changing if household is already onboarded and the value is different
       const oldMode = isJointFund;
       const isModeChanging = isOnboarded && oldMode !== jointFundVal;
@@ -1506,7 +1513,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   async function joinHousehold(code: string) {
     const sanitizedCode = code.trim().toUpperCase();
-    
+
     // Cache backup state for potential rollback on failure
     const backupState = {
       dbHouseholdId,
@@ -1538,65 +1545,158 @@ export function AppProvider({ children }: { children: ReactNode }) {
           throw new Error(data.error);
         }
         if (error) {
-          throw error;
+          let parsedError: Error | null = null;
+          if ((error as any).context) {
+            try {
+              const contextClone = (error as any).context.clone();
+              const errText = await contextClone.text();
+              console.warn("[joinHousehold] Error context text response:", errText);
+              const errBody = JSON.parse(errText);
+              if (errBody && errBody.error) {
+                parsedError = new Error(errBody.error);
+              }
+            } catch (jsonErr) {
+              console.error("[joinHousehold] Failed to parse edge function error response:", jsonErr);
+            }
+          }
+
+          // Recovery Logic: If already a member, check if we can claim the user_id = null record
+          if (parsedError && parsedError.message === "You are already a member of this household") {
+            console.log("[joinHousehold] Already member error detected, attempting client-side claim of user_id = null record...");
+            const { data: household } = await supabase
+              .from("households")
+              .select("id")
+              .eq("join_code", sanitizedCode)
+              .maybeSingle();
+
+            console.log("[joinHousehold] Recovery household query result:", household);
+
+            if (household) {
+              const { data: { session: currentSession } } = await supabase.auth.getSession();
+              const userObj = currentSession?.user || session?.user;
+              console.log("[joinHousehold] Recovery userObj query result:", userObj?.id, userObj?.email);
+              if (userObj) {
+                const userEmail = userObj.email || "";
+                const { data: existingMember } = await supabase
+                  .from("household_members")
+                  .select("id, user_id, email, household_id")
+                  .eq("household_id", household.id)
+                  .ilike("email", userEmail)
+                  .maybeSingle();
+
+                console.log("[joinHousehold] Recovery existingMember query result:", existingMember);
+
+                if (existingMember && !existingMember.user_id) {
+                  console.log("[joinHousehold] Found unclaimed member record, claiming it now...");
+                  const { error: updateErr } = await supabase
+                    .from("household_members")
+                    .update({
+                      user_id: userObj.id,
+                      invitation_status: "accepted"
+                    })
+                    .eq("id", existingMember.id);
+
+                  if (!updateErr) {
+                    console.log("[joinHousehold] Successfully claimed membership record on client!");
+                    newHouseholdId = household.id;
+                    parsedError = null; // Clear error to skip throwing
+                  } else {
+                    console.error("[joinHousehold] Failed to claim membership on client:", updateErr);
+                  }
+                } else if (existingMember && existingMember.user_id) {
+                  console.log("[joinHousehold] Member record already has user_id:", existingMember.user_id);
+                } else {
+                  console.log("[joinHousehold] No matching member record found for email:", userEmail);
+                }
+              }
+            }
+          }
+
+          if (parsedError) {
+            throw parsedError;
+          }
+          if (!newHouseholdId) {
+            throw error;
+          }
         }
 
-        // Fallback: Perform validation queries directly on client database
-        console.warn("Edge function invocation failed or not deployed, running fallback database logic");
+        // Only run fallback client-side join logic if we haven't already resolved newHouseholdId!
+        if (!newHouseholdId) {
+          // Fallback: Perform validation queries directly on client database
+          console.warn("Edge function invocation failed or not deployed, running fallback database logic");
 
-        // 1.1 Fetch household by join code
-        const { data: household, error: hError } = await supabase
-          .from("households")
-          .select("id, code_expires_at")
-          .eq("join_code", sanitizedCode)
-          .single();
+          // 1.1 Fetch household by join code
+          const { data: household, error: hError } = await supabase
+            .from("households")
+            .select("id, code_expires_at")
+            .eq("join_code", sanitizedCode)
+            .single();
 
-        if (hError || !household) {
-          throw new Error("Invalid join code.");
+          if (hError || !household) {
+            throw new Error("Invalid join code.");
+          }
+
+          // 1.2 Verify join code expiry
+          if (new Date(household.code_expires_at) < new Date()) {
+            throw new Error("Join code has expired.");
+          }
+
+          // 1.3 Authenticate current user email
+          const { data: { session: currentSession } } = await supabase.auth.getSession();
+          const userObj = currentSession?.user || session?.user;
+          if (!userObj) {
+            throw new Error("Unauthorized.");
+          }
+
+          const userName = userObj.user_metadata?.full_name || userObj.email?.split("@")[0] || "Member";
+          const userEmail = userObj.email || "";
+
+          // 1.4 Ensure user is not already a member
+          const { data: existingMember } = await supabase
+            .from("household_members")
+            .select("id, user_id")
+            .eq("household_id", household.id)
+            .eq("email", userEmail)
+            .maybeSingle();
+
+          if (existingMember) {
+            if (existingMember.user_id === userObj.id) {
+              throw new Error("You are already a member of this household.");
+            } else if (!existingMember.user_id) {
+              // Claim the existing member record
+              const { error: updateErr } = await supabase
+                .from("household_members")
+                .update({
+                  user_id: userObj.id,
+                  invitation_status: "accepted"
+                })
+                .eq("id", existingMember.id);
+
+              if (updateErr) {
+                throw new Error("Failed to claim household membership: " + updateErr.message);
+              }
+            } else {
+              throw new Error("This email is already registered as a member with another user.");
+            }
+          } else {
+            // 1.5 Insert new member row
+            const { error: insertErr } = await supabase
+              .from("household_members")
+              .insert({
+                household_id: household.id,
+                user_id: userObj.id,
+                name: userName,
+                email: userEmail,
+                role: "member",
+                invitation_status: "accepted"
+              });
+
+            if (insertErr) {
+              throw new Error("Failed to join household: " + insertErr.message);
+            }
+          }
+          newHouseholdId = household.id;
         }
-
-        // 1.2 Verify join code expiry
-        if (new Date(household.code_expires_at) < new Date()) {
-          throw new Error("Join code has expired.");
-        }
-
-        // 1.3 Authenticate current user email
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
-        const userObj = currentSession?.user || session?.user;
-        if (!userObj) {
-          throw new Error("Unauthorized.");
-        }
-
-        const userName = userObj.user_metadata?.full_name || userObj.email?.split("@")[0] || "Member";
-        const userEmail = userObj.email || "";
-
-        // 1.4 Ensure user is not already a member
-        const { data: existingMember } = await supabase
-          .from("household_members")
-          .select("id")
-          .eq("household_id", household.id)
-          .eq("email", userEmail)
-          .maybeSingle();
-
-        if (existingMember) {
-          throw new Error("You are already a member of this household.");
-        }
-
-        // 1.5 Insert new member row
-        const { error: insertErr } = await supabase
-          .from("household_members")
-          .insert({
-            household_id: household.id,
-            name: userName,
-            email: userEmail,
-            role: "member",
-            invitation_status: "accepted"
-          });
-
-        if (insertErr) {
-          throw new Error("Failed to join household: " + insertErr.message);
-        }
-        newHouseholdId = household.id;
       }
 
       // 2. WIPE CURRENT USER DATA IN DATABASE FIRST
@@ -1786,6 +1886,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setMembers((prev) =>
           prev.map((m) => (m.id === id ? mapMemberFromDb(updated) : m))
         );
+
+        // Sync with Supabase Auth metadata if the current user is updating their own record
+        const currentUserEmail = session?.user?.email;
+        if (currentUserEmail && String(updated.email).toLowerCase() === String(currentUserEmail).toLowerCase() && data.name) {
+          await supabase.auth.updateUser({
+            data: { full_name: data.name }
+          });
+        }
       }
     } catch (err) {
       console.error("Failed to update member:", err);
@@ -1960,10 +2068,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  async function logPay(payScheduleId: string, amount: number, date: string, notes: string | null): Promise<PayHistory | null> {
+  async function logPay(
+    payScheduleId: string,
+    amount: number,
+    date: string,
+    notes: string | null,
+    status: 'pending' | 'confirmed' = 'confirmed'
+  ): Promise<PayHistory | null> {
     try {
       const hId = await ensureHousehold();
-      
+
       const schedule = paySchedules.find((s) => s.id === payScheduleId);
       if (!schedule) {
         console.error("logPay - could not find pay schedule:", payScheduleId);
@@ -1977,6 +2091,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         amount,
         pay_date: parseDateForDb(date),
         notes,
+        status,
       };
 
       const { data: newHistory, error: historyErr } = await supabase
@@ -1994,12 +2109,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const currentDate = new Date(schedule.next_pay_date + "T00:00:00");
       if (schedule.frequency === "weekly") {
         currentDate.setDate(currentDate.getDate() + 7);
-      } else if (schedule.frequency === "by-weekly") {
+      } else if (schedule.frequency === "by-weekly" || schedule.frequency === "bi-weekly" as any) {
         currentDate.setDate(currentDate.getDate() + 14);
       } else if (schedule.frequency === "monthly") {
         currentDate.setMonth(currentDate.getMonth() + 1);
+      } else {
+        currentDate.setDate(currentDate.getDate() + 7); // Default fallback to avoid non-advanced date
       }
-      
+
       const newNextPayDate = currentDate.toISOString().split("T")[0];
 
       const { data: updatedSchedule, error: scheduleErr } = await supabase
@@ -2025,6 +2142,136 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       console.error("Failed to log pay:", err);
       return null;
+    }
+  }
+
+  async function confirmPay(historyId: string) {
+    try {
+      const { data, error } = await supabase
+        .from("pay_history")
+        .update({ status: "confirmed" })
+        .eq("id", historyId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("confirmPay - failed to update pay history status:", error);
+        return;
+      }
+
+      if (data) {
+        setPayHistory((prev) =>
+          prev.map((h) => (h.id === historyId ? data : h))
+        );
+      }
+    } catch (err) {
+      console.error("Failed to confirm pay:", err);
+    }
+  }
+
+  async function confirmAndUpdatePay(historyId: string, newAmount: number, notes?: string | null) {
+    try {
+      const updateData: any = {
+        amount: newAmount,
+        status: "confirmed",
+      };
+      if (notes !== undefined) {
+        updateData.notes = notes;
+      }
+
+      const { data, error } = await supabase
+        .from("pay_history")
+        .update(updateData)
+        .eq("id", historyId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("confirmAndUpdatePay - failed to update pay history:", error);
+        return;
+      }
+
+      if (data) {
+        setPayHistory((prev) =>
+          prev.map((h) => (h.id === historyId ? data : h))
+        );
+      }
+    } catch (err) {
+      console.error("Failed to confirm and update pay:", err);
+    }
+  }
+
+  async function autoLogMissedPays() {
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const hId = await ensureHousehold();
+
+      for (const schedule of paySchedules) {
+        if (!schedule.next_pay_date) continue;
+
+        const nextPayDateObj = new Date(schedule.next_pay_date + "T00:00:00");
+        nextPayDateObj.setHours(0, 0, 0, 0);
+
+        if (nextPayDateObj.getTime() >= today.getTime()) {
+          continue; // Not missed
+        }
+
+        const missedRecords: any[] = [];
+        let tempDate = new Date(nextPayDateObj);
+
+        while (tempDate.getTime() < today.getTime()) {
+          const payDateStr = tempDate.toISOString().split("T")[0];
+          missedRecords.push({
+            household_id: hId,
+            member_id: schedule.member_id,
+            pay_schedule_id: schedule.id,
+            amount: schedule.is_fixed_amount ? (schedule.amount || 0) : 0,
+            pay_date: payDateStr,
+            notes: schedule.is_fixed_amount
+              ? "Automatically logged missed pay"
+              : "Automatically logged missed pay — amount needs review",
+            status: "pending",
+          });
+
+          // Advance tempDate
+          if (schedule.frequency === "weekly") {
+            tempDate.setDate(tempDate.getDate() + 7);
+          } else if (schedule.frequency === "by-weekly" || schedule.frequency === "bi-weekly" as any) {
+            tempDate.setDate(tempDate.getDate() + 14);
+          } else if (schedule.frequency === "monthly") {
+            tempDate.setMonth(tempDate.getMonth() + 1);
+          } else {
+            tempDate.setDate(tempDate.getDate() + 7); // Fallback to avoid infinite loop
+          }
+        }
+
+        if (missedRecords.length > 0) {
+          const { error: insertErr } = await supabase
+            .from("pay_history")
+            .insert(missedRecords);
+
+          if (insertErr) {
+            console.error(`Failed to insert missed pay history for schedule ${schedule.id}:`, insertErr);
+            continue;
+          }
+
+          const nextValidDateStr = tempDate.toISOString().split("T")[0];
+          const { error: updateErr } = await supabase
+            .from("pay_schedules")
+            .update({ next_pay_date: nextValidDateStr })
+            .eq("id", schedule.id);
+
+          if (updateErr) {
+            console.error(`Failed to update next_pay_date for schedule ${schedule.id}:`, updateErr);
+          }
+        }
+      }
+
+      await fetchPayData(hId);
+    } catch (err) {
+      console.error("Failed to automatically log missed pays:", err);
     }
   }
 
@@ -2390,6 +2637,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     updatePaySchedule,
     deletePaySchedule,
     logPay,
+    confirmPay,
+    confirmAndUpdatePay,
+    autoLogMissedPays,
     deletePayHistory,
     calculateAveragePay,
     householdContributions,

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -210,7 +211,7 @@ export default function ContributorSplits({
                 </div>
               </div>
               
-              <div className="relative w-28">
+              <div className="relative w-24 sm:w-28">
                 {splitMode === "amount" && (
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted font-mono text-sm">$</span>
                 )}

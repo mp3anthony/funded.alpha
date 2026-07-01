@@ -133,7 +133,6 @@ export default function JoinHouseholdSheet({ isOpen, onClose }: JoinHouseholdShe
                 <input
                   ref={inputRef}
                   type="text"
-                  pattern="[A-Za-z0-9-]*"
                   inputMode="text"
                   placeholder="ABC-123"
                   value={getDisplayValue()}

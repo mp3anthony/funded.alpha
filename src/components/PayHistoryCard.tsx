@@ -1,16 +1,19 @@
 "use client";
 
 import React, { useState } from "react";
-import { Trash2, Calendar, User, FileText, Sparkles } from "lucide-react";
+import { Trash2, Calendar, User, FileText, Sparkles, CheckCircle2 } from "lucide-react";
 import { useApp, type PayHistory } from "@/context/AppContext";
 
 interface PayHistoryCardProps {
   history: PayHistory;
+  onConfirmPending?: (history: PayHistory) => void;
 }
 
-export default function PayHistoryCard({ history }: PayHistoryCardProps) {
+export default function PayHistoryCard({ history, onConfirmPending }: PayHistoryCardProps) {
   const { householdMembers, deletePayHistory, funds, contributionRules } = useApp();
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const isPending = history.status === "pending";
 
   // Find member name
   const member = householdMembers.find((m) => String(m.id) === String(history.member_id));
@@ -70,8 +73,20 @@ export default function PayHistoryCard({ history }: PayHistoryCardProps) {
     }
   };
 
+  const handleConfirm = () => {
+    if (onConfirmPending) {
+      onConfirmPending(history);
+    }
+  };
+
   return (
-    <div className="bg-[#111111] border border-white/10 rounded-2xl p-5 shadow-sm flex items-center justify-between gap-4 transition-all hover:border-white/20">
+    <div
+      className={`bg-[#111111] border rounded-2xl p-5 shadow-sm flex items-center justify-between gap-4 transition-all hover:border-white/20 ${
+        isPending
+          ? "border-yellow-500/50 bg-yellow-500/5"
+          : "border-white/10"
+      }`}
+    >
       <div className="flex-1 min-w-0 space-y-2">
         {/* Top Row: Member & Amount */}
         <div className="flex items-center justify-between">
@@ -90,19 +105,27 @@ export default function PayHistoryCard({ history }: PayHistoryCardProps) {
           </span>
         </div>
 
-        {/* Date & Automation rule allocations row */}
+        {/* Date & Status / Automation rule allocations row */}
         <div className="flex items-center justify-between gap-2 pt-0.5">
           <div className="flex items-center gap-1.5 text-xs text-muted font-mono">
             <Calendar size={13} className="shrink-0" />
             <span>{formattedDate}</span>
           </div>
 
-          {history.rule_id && rule && (
-            <div className="flex items-center gap-1 bg-[#c8ff00]/10 border border-[#c8ff00]/20 text-[9px] text-[#c8ff00] font-mono rounded-full px-2.5 py-0.5 w-fit uppercase font-bold shrink-0">
-              <Sparkles size={10} className="shrink-0 animate-pulse text-[#c8ff00]" />
-              <span>Rule: +${allocationAmount.toFixed(2)} to {allocationTargetName}</span>
-            </div>
-          )}
+          <div className="flex items-center gap-2 shrink-0">
+            {isPending && (
+              <span className="flex items-center gap-1 bg-yellow-500/10 border border-yellow-500/30 text-[9px] text-yellow-400 font-mono rounded-full px-2.5 py-0.5 uppercase font-bold">
+                Pending
+              </span>
+            )}
+
+            {history.rule_id && rule && (
+              <div className="flex items-center gap-1 bg-[#c8ff00]/10 border border-[#c8ff00]/20 text-[9px] text-[#c8ff00] font-mono rounded-full px-2.5 py-0.5 w-fit uppercase font-bold shrink-0">
+                <Sparkles size={10} className="shrink-0 animate-pulse text-[#c8ff00]" />
+                <span>Rule: +${allocationAmount.toFixed(2)} to {allocationTargetName}</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Notes (Conditional) */}
@@ -114,15 +137,26 @@ export default function PayHistoryCard({ history }: PayHistoryCardProps) {
         )}
       </div>
 
-      {/* Delete button */}
-      <button
-        onClick={handleDelete}
-        disabled={isDeleting}
-        className="shrink-0 p-2.5 rounded-xl border border-white/10 bg-white/5 text-muted hover:text-destructive hover:bg-destructive/10 hover:border-destructive/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-        title="Delete history entry"
-      >
-        <Trash2 size={16} />
-      </button>
+      {/* Action buttons */}
+      <div className="shrink-0 flex flex-col gap-2">
+        {isPending && (
+          <button
+            onClick={handleConfirm}
+            className="p-2.5 rounded-xl border border-[#c8ff00]/20 bg-[#c8ff00]/10 text-[#c8ff00] hover:bg-[#c8ff00]/20 hover:border-[#c8ff00]/40 transition-all active:scale-95 cursor-pointer"
+            title="Confirm this pay entry"
+          >
+            <CheckCircle2 size={16} />
+          </button>
+        )}
+        <button
+          onClick={handleDelete}
+          disabled={isDeleting}
+          className="p-2.5 rounded-xl border border-white/10 bg-white/5 text-muted hover:text-destructive hover:bg-destructive/10 hover:border-destructive/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          title="Delete history entry"
+        >
+          <Trash2 size={16} />
+        </button>
+      </div>
     </div>
   );
 }

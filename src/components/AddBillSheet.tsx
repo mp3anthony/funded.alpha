@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import React, { useState } from "react";
@@ -13,7 +14,7 @@ interface AddBillSheetProps {
 }
 
 export default function AddBillSheet({ isOpen, onClose, existingBill, existingSplits }: AddBillSheetProps) {
-  const { householdMembers, addBill, updateBill, session } = useApp();
+  const { householdMembers, addBill, updateBill, session, isJointFund } = useApp();
   const currentUser = useCurrentUser();
 
   const [name, setName] = useState("");
@@ -25,6 +26,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
   const [splits, setSplits] = useState<SplitResult[]>([]);
   const [notes, setNotes] = useState("");
   const [frequency, setFrequency] = useState("monthly");
+  const [paidByMode, setPaidByMode] = useState<"joint" | "individual">("individual");
   const [isSaving, setIsSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -39,6 +41,9 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
       setAssignee(existingBill.assignee_id ? existingBill.assignee_id.toString() : "");
       setNotes(existingBill.notes ? existingBill.notes : "");
       setFrequency(existingBill.frequency ? existingBill.frequency.toLowerCase() : "monthly");
+      
+      const hasSplits = existingSplits && existingSplits.length > 0;
+      setPaidByMode(hasSplits ? "individual" : (isJointFund ? "joint" : "individual"));
     } else if (isOpen) {
       setName("");
       setAmount("");
@@ -49,8 +54,9 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
       setSplits([]);
       setNotes("");
       setFrequency("monthly");
+      setPaidByMode(isJointFund ? "joint" : "individual");
     }
-  }, [isOpen, existingBill, currentUser.id]);
+  }, [isOpen, existingBill, currentUser.id, isJointFund, existingSplits]);
 
   // Fallback: If householdMembers is empty, display at least the logged-in user
   const displayMembers = householdMembers.length > 0 
@@ -84,10 +90,12 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
         frequency,
       };
 
+      const finalSplits = paidByMode === "joint" ? [] : splits;
+
       if (existingBill) {
-        await updateBill(existingBill.id, billData, splits);
+        await updateBill(existingBill.id, billData, finalSplits);
       } else {
-        await addBill(billData, splits);
+        await addBill(billData, finalSplits);
       }
       
       // Reset form on success
@@ -101,9 +109,10 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
       setNotes("");
       
       onClose();
-    } catch (error: any) {
-      console.error("Failed to save bill:", error);
-      setErrorMsg(error?.message || "Failed to save bill. Please verify details and permissions.");
+    } catch (error) {
+      const err = error as Error;
+      console.error("Failed to save bill:", err);
+      setErrorMsg(err.message || "Failed to save bill. Please verify details and permissions.");
     } finally {
       setIsSaving(false);
     }
@@ -118,7 +127,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
       <div className="relative w-full max-w-md max-h-[90dvh] md:h-screen md:max-h-screen bg-[#111111] border border-white/10 md:border-y-0 md:border-r-0 md:border-l rounded-2xl md:rounded-none md:rounded-l-3xl flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 md:zoom-in-100 md:slide-in-from-right duration-250">
         
         {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-[#111111]/90 px-6 py-4 backdrop-blur">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-[#111111]/90 px-4 py-4 sm:px-6 backdrop-blur">
           <h2 className="font-syne text-xl font-bold text-foreground">
             {existingBill ? "Edit Bill" : "Add Bill"}
           </h2>
@@ -132,7 +141,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
         </div>
 
         {/* Form Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+        <div className="flex-1 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6 space-y-6">
           {errorMsg && (
             <div className="bg-red-500/10 border border-red-500/50 rounded-xl p-3 text-red-500 text-xs font-mono break-words whitespace-pre-wrap">
               <span className="font-bold">Failed to save bill:</span><br/>
@@ -181,7 +190,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
                 How often is this bill paid?
               </span>
             </div>
-            <div className="grid grid-cols-4 gap-1 p-1 bg-[#111111] border border-white/10 rounded-xl">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 p-1 bg-[#111111] border border-white/10 rounded-xl">
               {(
                 [
                   { value: "weekly", label: "Weekly" },
@@ -210,7 +219,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
           </div>
 
           {/* Date Row (3. Invoice Date & 4. Due Date) */}
-          <div className="flex space-x-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex flex-1 flex-col space-y-2">
               <label className="font-heading text-sm font-semibold text-subtle uppercase tracking-wider">
                 Invoice Date
@@ -219,7 +228,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
                 type="date"
                 value={invoiceDate}
                 onChange={(e) => setInvoiceDate(e.target.value)}
-                className="rounded-xl border border-border bg-surface-raised px-4 py-3 font-mono text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                className="w-full rounded-xl border border-border bg-surface-raised px-4 py-3 font-mono text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
               />
             </div>
             
@@ -231,7 +240,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="rounded-xl border border-border bg-surface-raised px-4 py-3 font-mono text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                className="w-full rounded-xl border border-border bg-surface-raised px-4 py-3 font-mono text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
               />
             </div>
           </div>
@@ -298,17 +307,62 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
             )}
           </div>
 
-          {/* 7. Contributor Splits */}
+          {/* 7. Paid By Selector */}
           <div className="flex flex-col space-y-2 pt-2">
             <label className="font-heading text-sm font-semibold text-subtle uppercase tracking-wider">
-              Contributor Splits
+              Paid By
             </label>
-            <ContributorSplits 
-              totalBillAmount={Number(amount) || 0}
-              assigneeMemberId={assignee}
-              onSplitsChange={setSplits}
-              initialSplits={existingSplits}
-            />
+            {isJointFund ? (
+              <div className="flex flex-col space-y-3">
+                {/* Selector */}
+                <div className="flex rounded-xl bg-surface-raised p-1 border border-border">
+                  <button
+                    type="button"
+                    onClick={() => setPaidByMode("joint")}
+                    className={`flex-1 rounded-lg py-2 text-xs font-heading font-bold uppercase tracking-wider transition-all cursor-pointer text-center ${
+                      paidByMode === "joint"
+                        ? "bg-[#c8ff00] text-black font-extrabold shadow-sm"
+                        : "text-muted hover:text-foreground"
+                    }`}
+                  >
+                    Joint Fund
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPaidByMode("individual")}
+                    className={`flex-1 rounded-lg py-2 text-xs font-heading font-bold uppercase tracking-wider transition-all cursor-pointer text-center ${
+                      paidByMode === "individual"
+                        ? "bg-[#c8ff00] text-black font-extrabold shadow-sm"
+                        : "text-muted hover:text-foreground"
+                    }`}
+                  >
+                    Individual Splits
+                  </button>
+                </div>
+
+                {paidByMode === "individual" ? (
+                  <ContributorSplits 
+                    totalBillAmount={Number(amount) || 0}
+                    assigneeMemberId={assignee}
+                    onSplitsChange={setSplits}
+                    initialSplits={existingSplits}
+                  />
+                ) : (
+                  <div className="p-4 rounded-xl border border-dashed border-border bg-surface-raised/20 text-center">
+                    <p className="text-xs text-muted font-mono">
+                      Paid directly from the household Joint Fund account.
+                    </p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <ContributorSplits 
+                totalBillAmount={Number(amount) || 0}
+                assigneeMemberId={assignee}
+                onSplitsChange={setSplits}
+                initialSplits={existingSplits}
+              />
+            )}
           </div>
 
           {/* 8. Notes */}
@@ -329,7 +383,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
         {/* Footer */}
         <div 
           style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1rem)" }}
-          className="sticky bottom-0 z-10 border-t border-white/10 bg-[#111111]/95 px-6 pt-4 pb-4 backdrop-blur flex items-center gap-3 shrink-0"
+          className="sticky bottom-0 z-10 border-t border-white/10 bg-[#111111]/95 px-4 sm:px-6 pt-4 pb-4 backdrop-blur flex items-center gap-3 shrink-0"
         >
           <button
             type="button"

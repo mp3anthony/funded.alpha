@@ -48,10 +48,10 @@ export default function Funds() {
         action={
           <button
             onClick={() => setIsAddOpen(true)}
-            className="flex items-center gap-2 bg-secondary hover:bg-secondary-dark active:scale-95 text-secondary-fg text-sm font-semibold px-4 py-2.5 rounded-xl shadow-md shadow-secondary/15 transition-all duration-200"
+            className="flex items-center gap-2 bg-secondary hover:bg-secondary-dark active:scale-95 text-secondary-fg text-xs font-semibold px-3 py-2 rounded-xl shadow-md shadow-secondary/15 transition-all duration-200"
           >
             <Plus className="h-4 w-4" />
-            <span>New Goal</span>
+            <span className="hidden sm:inline">New Goal</span>
           </button>
         }
       />

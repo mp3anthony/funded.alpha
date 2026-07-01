@@ -2,7 +2,7 @@
 
 import React from "react";
 import { X, Calendar, AlertTriangle } from "lucide-react";
-import type { Bill, BillSplit, Member } from "@/context/AppContext";
+import { useApp, type Bill, type BillSplit, type Member } from "@/context/AppContext";
 
 interface BillDetailSheetProps {
   isOpen: boolean;
@@ -23,6 +23,7 @@ export default function BillDetailSheet({
   onEdit,
   onDelete,
 }: BillDetailSheetProps) {
+  const { isJointFund } = useApp();
   if (!isOpen || !bill) return null;
 
   // Find assignee
@@ -115,13 +116,22 @@ export default function BillDetailSheet({
           {/* Splits Breakdown */}
           <div className="space-y-3">
             <h4 className="font-heading text-sm font-semibold text-subtle uppercase tracking-wider">
-              Contribution Splits
+              Paid By
             </h4>
 
             {splits.length === 0 ? (
-              <div className="flex items-center space-x-2 p-3 bg-surface-raised rounded-xl border border-border">
-                <AlertTriangle size={16} className="text-muted" />
-                <p className="text-xs text-muted font-mono">No splits configured for this bill. Assignee pays 100%.</p>
+              <div className="flex items-center space-x-2.5 p-3.5 bg-surface-raised rounded-xl border border-border">
+                {isJointFund ? (
+                  <>
+                    <div className="h-2 w-2 rounded-full bg-[#c8ff00] animate-pulse shrink-0" />
+                    <p className="text-xs text-muted font-mono">Paid directly from the household Joint Fund.</p>
+                  </>
+                ) : (
+                  <>
+                    <AlertTriangle size={15} className="text-muted shrink-0" />
+                    <p className="text-xs text-muted font-mono">No splits configured. Assignee pays 100%.</p>
+                  </>
+                )}
               </div>
             ) : (
               <div className="space-y-2">

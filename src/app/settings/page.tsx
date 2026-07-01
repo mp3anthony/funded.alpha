@@ -12,6 +12,7 @@ import {
   Save,
   Check,
   SunMoon,
+  UserCog,
 } from "lucide-react";
 import { useApp, useCurrentUser } from "@/context/AppContext";
 import PaymentModeToggle from "@/components/PaymentModeToggle";
@@ -20,6 +21,7 @@ import RulesSettingsSheet from "@/components/RulesSettingsSheet";
 import PageHeader from "@/components/PageHeader";
 import AvatarUpload from "@/components/AvatarUpload";
 import RemoveMemberModal from "@/components/RemoveMemberModal";
+import EditMemberModal from "@/components/EditMemberModal";
 import JoinHouseholdSheet from "@/components/JoinHouseholdSheet";
 import { type Member } from "@/types";
 import { AlertTriangle } from "lucide-react";
@@ -93,9 +95,10 @@ export default function SettingsPage() {
   const [pushNotifications, setPushNotifications] = useState(true);
   const [emailAlerts, setEmailAlerts] = useState(false);
 
-  /* Invite and Remove member modals */
+  /* Invite, Edit, and Remove member modals */
   const [showInvite, setShowInvite] = useState(false);
   const [memberToRemove, setMemberToRemove] = useState<Member | null>(null);
+  const [memberToEdit, setMemberToEdit] = useState<Member | null>(null);
   const [isJoinSheetOpen, setIsJoinSheetOpen] = useState(false);
 
   /* ── Handlers ──────────────────────────────── */
@@ -298,8 +301,7 @@ export default function SettingsPage() {
                 </p>
               </div>
             </div>
-            
-            <div className="inline-flex p-1 bg-[#111111] border border-white/10 rounded-xl shrink-0">
+            <div className="grid grid-cols-3 gap-1 p-1 bg-[#111111] border border-white/10 rounded-xl shrink-0 w-full sm:w-72">
               {(
                 [
                   { value: "light", label: "Light" },
@@ -313,7 +315,7 @@ export default function SettingsPage() {
                     key={opt.value}
                     type="button"
                     onClick={() => setTheme(opt.value)}
-                    className={`px-4 py-1.5 rounded-lg text-[10px] font-heading font-bold uppercase tracking-wider transition-all duration-200 focus:outline-none cursor-pointer ${
+                    className={`py-1.5 rounded-lg text-[10px] font-heading font-bold uppercase tracking-wider transition-all duration-200 focus:outline-none cursor-pointer text-center ${
                       isSelected
                         ? "bg-[#c8ff00] text-black font-extrabold shadow-sm"
                         : "text-neutral-400 hover:text-white hover:bg-white/[0.02]"
@@ -553,6 +555,7 @@ export default function SettingsPage() {
               const isCurrentUser = String(member.email).toLowerCase() === String(session?.user?.email).toLowerCase();
               const isOwner = member.role === "owner";
               const isPending = member.invitation_status === "pending";
+              const isCurrentUserOwner = currentMember?.role === "owner";
 
               return (
                 <div
@@ -593,15 +596,14 @@ export default function SettingsPage() {
                     </div>
                   </div>
 
-                  {/* Remove Button */}
-                  {!isOwner && (
+                  {/* Edit/Manage Member Button */}
+                  {isCurrentUserOwner && !isCurrentUser && (
                     <button
-                      onClick={() => setMemberToRemove(member)}
-                      disabled={isCurrentUser}
-                      aria-label={`Remove ${member.name}`}
-                      className="flex h-9 w-9 items-center justify-center rounded-xl text-neutral-400 hover:text-[#ff3d57] hover:bg-[#ff3d57]/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-neutral-400 disabled:pointer-events-none cursor-pointer"
+                      onClick={() => setMemberToEdit(member)}
+                      aria-label={`Edit settings for ${member.name}`}
+                      className="flex h-9 w-9 items-center justify-center rounded-xl text-neutral-400 hover:text-[#c8ff00] hover:bg-[#c8ff00]/10 transition-colors border border-white/5 bg-white/[0.02] cursor-pointer"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <UserCog className="h-4.5 w-4.5" />
                     </button>
                   )}
                 </div>
@@ -653,6 +655,13 @@ export default function SettingsPage() {
         onClose={() => setMemberToRemove(null)}
         member={memberToRemove}
         householdMembers={members}
+      />
+
+      <EditMemberModal
+        isOpen={memberToEdit !== null}
+        onClose={() => setMemberToEdit(null)}
+        member={memberToEdit}
+        onRemoveTrigger={(m) => setMemberToRemove(m)}
       />
 
       {/* ── Mode Change Confirmation Modal ──────────── */}

@@ -16,10 +16,10 @@ export default function BottomNav() {
 
   return (
     <nav 
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 16px)" }}
       className="fixed bottom-0 left-0 right-0 z-50 border-t border-zinc-200/50 bg-[#111111]/85 backdrop-blur-lg dark:border-white/10 dark:bg-black/80 shadow-[0_-4px_24px_-4px_rgba(0,0,0,0.5)]"
     >
-      <div className="mx-auto flex h-20 max-w-md items-center justify-around px-4">
+      <div className="mx-auto flex h-16 max-w-md items-center justify-around px-4">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.path;
@@ -28,7 +28,7 @@ export default function BottomNav() {
             <Link
               key={item.name}
               href={item.path}
-              className="group flex flex-1 flex-col items-center justify-center py-3.5 text-center transition-all duration-200 ease-in-out hover:scale-105"
+              className="group flex flex-1 flex-col items-center justify-center py-2.5 text-center transition-all duration-200 ease-in-out hover:scale-105"
             >
               <div className="relative flex flex-col items-center gap-1">
                 {/* Active Indicator Dot */}

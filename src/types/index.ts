@@ -29,4 +29,5 @@ export interface Member {
   avatar: string;
   avatar_url?: string | null;
   invitation_status?: 'pending' | 'accepted' | 'declined';
+  user_id?: string | null;
 }

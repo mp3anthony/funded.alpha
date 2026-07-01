@@ -12,7 +12,7 @@ import { convertAmount } from "@/lib/utils";
 type FrequencyType = "weekly" | "by-weekly" | "monthly" | "yearly";
 
 export default function Bills() {
-  const { bills, billSplits, members: householdMembers, togglePaid, deleteBill } = useApp();
+  const { bills, billSplits, members: householdMembers } = useApp();
   const currentUser = useCurrentUser();
 
   const [isAddBillSheetOpen, setIsAddBillSheetOpen] = useState(false);
@@ -46,7 +46,7 @@ export default function Bills() {
         if (!b.name.toLowerCase().includes(query)) return false;
       }
 
-      let d = b.due_date ? new Date(b.due_date + "T00:00:00") : new Date(b.dueDate);
+      const d = b.due_date ? new Date(b.due_date + "T00:00:00") : new Date(b.dueDate);
       if (isNaN(d.getTime())) return false;
       d.setHours(0, 0, 0, 0);
 
@@ -79,22 +79,14 @@ export default function Bills() {
         user={currentUser}
       />
 
-      {/* 3. Total Bar - Matches the HTML prototype layout exactly */}
-      <div className="flex items-end justify-between px-1">
-        <div>
-          <div className="text-3xl font-bold text-accent tracking-tight font-jetbrains">
-            ${totalBills.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </div>
-          <div className="text-xs font-bold uppercase tracking-wider text-subtle mt-1">
-            {getFrequencyLabel(displayFrequency)} Total
-          </div>
+      {/* 3. Total Bar */}
+      <div className="px-1">
+        <div className="text-3xl font-bold text-accent tracking-tight font-jetbrains">
+          ${totalBills.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </div>
-
-        {/* Frequency Toggle moved here, out of the header, giving it breathing room */}
-        <FrequencyToggle
-          selectedFrequency={displayFrequency}
-          onChange={setDisplayFrequency}
-        />
+        <div className="text-xs font-bold uppercase tracking-wider text-subtle mt-1">
+          {getFrequencyLabel(displayFrequency)} Total
+        </div>
       </div>
 
       {/* 4. Compact Search, Filter, and Add Bill Button */}
@@ -121,7 +113,7 @@ export default function Bills() {
         <div className="relative">
           <select
             value={filter}
-            onChange={(e) => setFilter(e.target.value as any)}
+            onChange={(e) => setFilter(e.target.value as "all" | "week" | "month" | "overdue")}
             className="rounded-lg border border-border bg-surface px-3 py-2.5 text-xs font-bold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-8"
           >
             <option value="all">All</option>
@@ -146,6 +138,12 @@ export default function Bills() {
           <span className="hidden sm:inline">Add</span>
         </button>
       </div>
+
+      {/* Period Toggle */}
+      <FrequencyToggle
+        selectedFrequency={displayFrequency}
+        onChange={setDisplayFrequency}
+      />
 
       {/* Bills Scrollable Container */}
       <div className="space-y-3">

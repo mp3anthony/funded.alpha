@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Plus, Calendar, User, Trash2, CheckCircle2, AlertCircle, Clock, PiggyBank, DollarSign } from "lucide-react";
 import { useApp, useCurrentUser, type PaySchedule, type PayHistory } from "@/context/AppContext";
 import AddPayScheduleSheet from "@/components/AddPayScheduleSheet";
@@ -11,7 +11,7 @@ import PayScheduleDetailSheet from "@/components/PayScheduleDetailSheet";
 import PageHeader from "@/components/PageHeader";
 
 export default function PaydayPage() {
-  const { paySchedules, payHistory, householdMembers, deletePaySchedule, logPay, calculateAveragePay, addToGoal, isJointFund, householdContributions, checkAndApplyRules, applyRuleAllocation, funds } = useApp();
+  const { paySchedules, payHistory, householdMembers, deletePaySchedule, logPay, calculateAveragePay, addToGoal, isJointFund, householdContributions, checkAndApplyRules, applyRuleAllocation, funds, autoLogMissedPays, confirmAndUpdatePay } = useApp();
   const currentUser = useCurrentUser();
 
   const [isAddScheduleOpen, setIsAddScheduleOpen] = useState(false);
@@ -24,6 +24,16 @@ export default function PaydayPage() {
     newPayAmount: number;
     surplusAmount: number;
   } | null>(null);
+  const [pendingHistoryToConfirm, setPendingHistoryToConfirm] = useState<PayHistory | null>(null);
+
+  // Auto-log missed pays on mount / when schedules load
+  const hasAutoLogged = useRef(false);
+  useEffect(() => {
+    if (paySchedules.length > 0 && !hasAutoLogged.current) {
+      hasAutoLogged.current = true;
+      autoLogMissedPays();
+    }
+  }, [paySchedules]);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -42,16 +52,9 @@ export default function PaydayPage() {
     const diffTime = nextPay.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays < 0) {
-      const absDays = Math.abs(diffDays);
+    if (diffDays <= 0) {
       return {
-        text: `${absDays} day${absDays !== 1 ? "s" : ""} overdue`,
-        color: "text-destructive bg-destructive/10 border-destructive/20",
-        icon: AlertCircle,
-      };
-    } else if (diffDays === 0) {
-      return {
-        text: "today",
+        text: "Ready to Log",
         color: "text-[#c8ff00] bg-[#c8ff00]/10 border-[#c8ff00]/20",
         icon: CheckCircle2,
       };
@@ -72,32 +75,21 @@ export default function PaydayPage() {
     }
   };
 
-  // Log handler
-  const handleLogFixedPay = async (schedule: PaySchedule) => {
-    const memberName = householdMembers.find((m) => String(m.id) === String(schedule.member_id))?.name || "Member";
-    const formattedAmount = Number(schedule.amount || 0).toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-    });
-    if (confirm(`Log pay entry of $${formattedAmount} for ${memberName}?`)) {
-      const logDate = new Date().toISOString().split("T")[0];
-      await logPay(schedule.id, schedule.amount || 0, logDate, "Regular fixed amount logged");
-    }
-  };
-
-  const handleConfirmVariablePay = async (amount: number, notes: string | null) => {
+  // Unified pay handler — both fixed and variable go through the modal
+  const handleConfirmPay = async (amount: number, notes: string | null) => {
     if (activeVariableSchedule) {
       const memberId = activeVariableSchedule.member_id;
       const avg = calculateAveragePay(memberId);
 
       const logDate = new Date().toISOString().split("T")[0];
-      const newHistory = await logPay(activeVariableSchedule.id, amount, logDate, notes || "Variable amount logged");
-      
+      const newHistory = await logPay(activeVariableSchedule.id, amount, logDate, notes || "Pay logged");
+
       if (newHistory) {
         // Trigger rules checking
         const triggered = checkAndApplyRules(memberId, amount);
         for (const rule of triggered) {
           await applyRuleAllocation(rule, newHistory.id);
-          
+
           let targetName = "contribution";
           if (rule.action_type === "goal") {
             const goal = funds.find((g) => String(g.id) === String(rule.action_target_id));
@@ -106,7 +98,7 @@ export default function PaydayPage() {
           alert(`Rule triggered: Added $${rule.amount_to_add.toFixed(2)} to ${targetName}`);
         }
       }
-      
+
       if (avg !== null && amount > avg * 1.10) {
         const surplus = amount - avg;
         setSurplusInfo({
@@ -135,21 +127,33 @@ export default function PaydayPage() {
     setSurplusInfo(null);
   };
 
+  // Handler when user clicks Confirm on a pending PayHistoryCard
+  const handleConfirmPendingClick = (history: PayHistory) => {
+    setPendingHistoryToConfirm(history);
+  };
+
+  // Handler when user submits the confirm-pending modal
+  const handleConfirmPendingSubmit = async (amount: number, notes: string | null) => {
+    if (!pendingHistoryToConfirm) return;
+    await confirmAndUpdatePay(pendingHistoryToConfirm.id, amount, notes);
+    setPendingHistoryToConfirm(null);
+  };
+
   const recentHistory = payHistory.slice(0, 10);
 
   return (
     <div className="flex-1 w-full max-w-4xl mx-auto px-4 py-8 sm:px-6 md:py-12 space-y-8 pb-24">
       <PageHeader
-        title="Payday Hub"
-        subtitle="Manage scheduled payouts and track income"
+        title="Payday"
+        subtitle="Manage & track incomes"
         user={currentUser}
         action={
           <button
             onClick={() => setIsAddScheduleOpen(true)}
-            className="flex items-center gap-2 bg-primary hover:bg-primary/95 text-primary-fg text-sm font-semibold px-4 py-2.5 rounded-xl shadow-md transition-all active:scale-95 cursor-pointer font-heading uppercase tracking-wider animate-in fade-in duration-200"
+            className="flex items-center gap-2 bg-primary hover:bg-primary/95 text-primary-fg text-xs font-semibold px-3 py-2 rounded-xl shadow-md transition-all active:scale-95 cursor-pointer font-heading uppercase animate-in fade-in duration-200"
           >
             <Plus size={16} />
-            <span>New Schedule</span>
+            <span className="hidden sm:inline">New Schedule</span>
           </button>
         }
       />
@@ -195,7 +199,7 @@ export default function PaydayPage() {
                 >
                   <div className="space-y-2">
                     {/* Member & Actions */}
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2 text-foreground font-bold text-sm min-w-0">
                         {member?.avatar_url ? (
                           <img src={member.avatar_url} alt={memberName} className="h-6 w-6 rounded-full object-cover shrink-0" />
@@ -211,7 +215,7 @@ export default function PaydayPage() {
                           e.stopPropagation();
                           handleDeleteSchedule(schedule);
                         }}
-                        className="p-1.5 text-muted hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors cursor-pointer"
+                        className="p-1.5 text-muted hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors cursor-pointer shrink-0"
                         title="Delete Schedule"
                       >
                         <Trash2 size={14} />
@@ -219,75 +223,55 @@ export default function PaydayPage() {
                     </div>
 
                     {/* Meta info */}
-                    <div className="flex items-center justify-between text-xs text-muted font-mono pt-1">
-                      <div className="flex items-center gap-1.5 uppercase">
-                        <span>{schedule.frequency}</span>
+                    <div className="flex items-center justify-between gap-2 flex-wrap text-xs text-muted font-mono pt-1">
+                      <div className="flex items-center gap-1.5 uppercase min-w-0">
+                        <span className="truncate">{schedule.frequency}</span>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Calendar size={12} />
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Calendar size={12} className="shrink-0" />
                         <span>Next: {schedule.next_pay_date}</span>
                       </div>
                     </div>
 
                     {/* Amount & Status Badge */}
-                    <div className="flex items-center justify-between pt-2">
-                      <div className="flex flex-col">
-                        <span className="text-xs text-muted font-mono uppercase">Amount</span>
-                        <span className="text-lg font-heading font-extrabold text-foreground tracking-tight font-mono">
+                    <div className="flex items-center justify-between gap-2 flex-wrap pt-2">
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-xs text-muted font-mono uppercase truncate">Amount</span>
+                        <span className="text-lg font-heading font-extrabold text-foreground tracking-tight font-mono truncate whitespace-nowrap">
                           {formattedAmount}
                         </span>
                       </div>
-                      <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${countdown.color}`}>
+                      <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border shrink-0 ${countdown.color}`}>
                         <CountdownIcon size={12} className="shrink-0" />
-                        <span>{countdown.text}</span>
+                        <span className="truncate">{countdown.text}</span>
                       </div>
                     </div>
 
                     {/* Expected Joint Fund Contribution */}
                     {contribution && (
-                      <div className="mt-3 p-3 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-between text-[10px] font-mono">
-                        <span className="text-muted uppercase">Expected Contribution</span>
-                        <span className="text-primary font-bold">
+                      <div className="mt-3 p-3 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-between gap-2 flex-wrap text-[10px] font-mono">
+                        <span className="text-muted uppercase min-w-0 truncate">Expected Contribution</span>
+                        <span className="text-primary font-bold whitespace-nowrap">
                           ${Number(contribution.amount).toFixed(2)} per {contribution.frequency}
                         </span>
                       </div>
                     )}
                   </div>
 
-                  {/* Actions Bar */}
-                  <div className="pt-2 border-t border-white/5">
-                    {schedule.is_fixed_amount ? (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleLogFixedPay(schedule);
-                        }}
-                        disabled={!isReady}
-                        className={`w-full py-2.5 rounded-xl font-heading text-xs font-bold uppercase tracking-wider transition-all ${
-                          isReady
-                            ? "bg-primary text-primary-fg hover:brightness-110 active:scale-[0.98] cursor-pointer"
-                            : "bg-zinc-800 text-zinc-600 cursor-not-allowed"
-                        }`}
-                      >
-                        Log Pay
-                      </button>
-                    ) : (
+                  {/* Actions Bar — only shown when pay is due */}
+                  {isReady && (
+                    <div className="pt-2 border-t border-white/5">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           setActiveVariableSchedule(schedule);
                         }}
-                        disabled={!isReady}
-                        className={`w-full py-2.5 rounded-xl font-heading text-xs font-bold uppercase tracking-wider transition-all ${
-                          isReady
-                            ? "bg-primary text-primary-fg hover:brightness-110 active:scale-[0.98] cursor-pointer"
-                            : "bg-zinc-800 text-zinc-600 cursor-not-allowed"
-                        }`}
+                        className="w-full py-2.5 rounded-xl font-heading text-xs font-bold uppercase bg-primary text-primary-fg hover:brightness-110 active:scale-[0.98] cursor-pointer transition-all"
                       >
-                        Enter Pay Amount
+                        {schedule.is_fixed_amount ? "Log Pay" : "Enter Pay Amount"}
                       </button>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -310,7 +294,11 @@ export default function PaydayPage() {
         ) : (
           <div className="grid grid-cols-1 gap-3">
             {recentHistory.map((history) => (
-              <PayHistoryCard key={history.id} history={history} />
+              <PayHistoryCard
+                key={history.id}
+                history={history}
+                onConfirmPending={handleConfirmPendingClick}
+              />
             ))}
           </div>
         )}
@@ -347,12 +335,12 @@ export default function PaydayPage() {
         }}
       />
 
-      {/* Variable Pay Log Overlay */}
+      {/* Unified Pay Log Modal (for both fixed & variable) */}
       <EnterPayAmountModal
         isOpen={activeVariableSchedule !== null}
         onClose={() => setActiveVariableSchedule(null)}
         schedule={activeVariableSchedule}
-        onConfirm={handleConfirmVariablePay}
+        onConfirm={handleConfirmPay}
       />
 
       {/* Surplus Allocation Suggestion Modal */}
@@ -364,6 +352,35 @@ export default function PaydayPage() {
         surplusAmount={surplusInfo?.surplusAmount || 0}
         onAllocate={handleAllocateSurplus}
       />
+
+      {/* Confirm Pending Pay Modal */}
+      {pendingHistoryToConfirm && (() => {
+        // Build a synthetic schedule so the modal can render
+        const pendingSchedule = paySchedules.find(
+          (s) => s.id === pendingHistoryToConfirm.pay_schedule_id
+        ) || {
+          id: pendingHistoryToConfirm.pay_schedule_id || "pending",
+          household_id: "",
+          member_id: pendingHistoryToConfirm.member_id,
+          amount: pendingHistoryToConfirm.amount || null,
+          frequency: "monthly" as const,
+          is_fixed_amount: false,
+          next_pay_date: pendingHistoryToConfirm.pay_date,
+          created_at: "",
+        };
+        return (
+          <EnterPayAmountModal
+            isOpen={true}
+            onClose={() => setPendingHistoryToConfirm(null)}
+            schedule={pendingSchedule}
+            onConfirm={handleConfirmPendingSubmit}
+            title="Confirm Pending Pay"
+            submitLabel="Confirm & Save"
+            initialAmount={pendingHistoryToConfirm.amount || null}
+            initialNotes={pendingHistoryToConfirm.notes}
+          />
+        );
+      })()}
     </div>
   );
 }

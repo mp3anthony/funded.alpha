@@ -81,7 +81,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <main 
         style={{ 
           paddingTop: "calc(env(safe-area-inset-top) + 3.5rem)", 
-          paddingBottom: "calc(env(safe-area-inset-bottom) + 4rem)" 
+          paddingBottom: "calc(env(safe-area-inset-bottom) + 5rem)" 
         }}
         className="flex-1 w-full flex flex-col"
       >

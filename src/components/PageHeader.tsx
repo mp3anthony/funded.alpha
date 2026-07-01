@@ -13,7 +13,7 @@ interface PageHeaderProps {
 
 export default function PageHeader({ title, subtitle, user, action }: PageHeaderProps) {
   return (
-    <div className="flex items-start justify-between gap-4 mb-6">
+    <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
       <div className="flex items-center gap-3 flex-1 min-w-0">
         {/* Responsive Logo */}
         <div className="md:hidden shrink-0">
@@ -24,7 +24,7 @@ export default function PageHeader({ title, subtitle, user, action }: PageHeader
         </div>
 
         <div className="min-w-0">
-          <h1 className="font-syne font-extrabold text-2xl tracking-tight text-white">
+          <h1 className="font-syne font-extrabold text-2xl tracking-tight text-white min-w-0 truncate">
             {title}
           </h1>
           {subtitle && (
