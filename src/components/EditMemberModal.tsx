@@ -73,15 +73,15 @@ export default function EditMemberModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
       onClick={onClose}
     >
       <div
-        className="bg-[#111111] border border-white/10 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden transform transition-all animate-in fade-in zoom-in duration-200"
+        className="bg-[#111111] border border-white/10 rounded-2xl w-full max-w-md max-h-[92dvh] flex flex-col shadow-2xl overflow-hidden transform transition-all animate-in fade-in zoom-in duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-white/10">
+        <div className="flex items-center justify-between p-5 border-b border-white/10 shrink-0">
           <h3 className="text-lg font-bold text-white font-syne flex items-center gap-2">
             <User className="h-5 w-5 text-[#c8ff00]" />
             Edit Member Settings
@@ -94,8 +94,8 @@ export default function EditMemberModal({
           </button>
         </div>
 
-        <form onSubmit={handleSave}>
-          <div className="p-6 space-y-6 font-sans">
+        <form onSubmit={handleSave} className="flex flex-col flex-1 overflow-hidden">
+          <div className="flex-1 overflow-y-auto p-5 md:p-6 space-y-5 md:space-y-6 font-sans">
             {error && (
               <div className="p-3.5 rounded-xl bg-[#ff3d57]/10 border border-[#ff3d57]/20 text-[#ff3d57] text-xs font-medium">
                 {error}
@@ -204,7 +204,7 @@ export default function EditMemberModal({
           </div>
 
           {/* Footer */}
-          <div className="flex items-center gap-3 p-5 border-t border-white/10 font-sans">
+          <div className="flex items-center gap-3 p-5 border-t border-white/10 font-sans shrink-0">
             <button
               type="button"
               onClick={onClose}

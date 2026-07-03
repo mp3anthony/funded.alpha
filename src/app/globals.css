@@ -229,3 +229,11 @@ input, textarea, select {
 button, a, select, input, textarea, [role="button"] {
   touch-action: manipulation;
 }
+
+/* Prevent native date inputs from stretching their containers on mobile */
+input[type="date"] {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  width: 100%;
+  box-sizing: border-box;
+}

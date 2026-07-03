@@ -48,9 +48,9 @@ export default function SurplusSuggestionModal({
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Modal Container */}
-      <div className="relative w-full max-w-sm bg-[#111111] border border-white/10 rounded-2xl shadow-2xl p-6 flex flex-col space-y-5 animate-in zoom-in-95 duration-300">
+      <div className="relative w-full max-w-sm bg-[#111111] border border-white/10 rounded-2xl shadow-2xl max-h-[92dvh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between p-5 border-b border-white/10 shrink-0">
           <div className="flex items-center gap-2 text-primary">
             <TrendingUp size={20} />
             <h3 className="font-syne font-extrabold text-base text-foreground tracking-wide">
@@ -65,78 +65,81 @@ export default function SurplusSuggestionModal({
           </button>
         </div>
 
-        {/* Title details */}
-        <div className="space-y-1">
-          <h4 className="font-syne font-bold text-lg text-foreground leading-tight">
-            {memberName} earned <span className="text-primary font-mono">${formattedSurplus}</span> over average!
-          </h4>
-          <p className="text-xs text-muted font-sans">
-            Would you like to allocate this extra income to your savings goals or bills surplus pool?
-          </p>
-        </div>
-
-        {/* Allocations Options list */}
-        <div className="space-y-3">
-          <span className="text-[10px] font-bold text-subtle uppercase tracking-wider block font-mono">
-            Allocate Surplus To:
-          </span>
-
-          {/* Goals */}
-          <div className="space-y-2">
-            {topGoals.map((goal) => (
-              <button
-                key={goal.id}
-                onClick={() => onAllocate(String(goal.id), surplusAmount)}
-                className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl p-3 flex items-center justify-between text-left hover:border-primary/30 transition-all active:scale-[0.99] group cursor-pointer"
-              >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className={`p-1.5 rounded-lg bg-secondary/15 text-secondary shrink-0`}>
-                    <Target size={14} />
-                  </div>
-                  <div className="min-w-0">
-                    <span className="text-xs font-bold text-foreground block truncate">
-                      {goal.name}
-                    </span>
-                    <span className="text-[10px] text-muted font-mono block">
-                      Progress: {goal.progress.toFixed(0)}%
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1 font-mono text-xs font-bold text-primary whitespace-nowrap bg-primary/10 px-2.5 py-1 rounded-lg group-hover:bg-primary group-hover:text-primary-fg transition-all">
-                  <span>+${formattedSurplus}</span>
-                  <ArrowRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
-              </button>
-            ))}
+        {/* Scrollable Body */}
+        <div className="flex-1 overflow-y-auto p-5 space-y-5">
+          {/* Title details */}
+          <div className="space-y-1">
+            <h4 className="font-syne font-bold text-lg text-foreground leading-tight">
+              {memberName} earned <span className="text-primary font-mono">${formattedSurplus}</span> over average!
+            </h4>
+            <p className="text-xs text-muted font-sans">
+              Would you like to allocate this extra income to your savings goals or bills surplus pool?
+            </p>
           </div>
 
-          {/* Bills Surplus Pool */}
-          <button
-            onClick={() => onAllocate("bills_surplus", surplusAmount)}
-            className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl p-3 flex items-center justify-between text-left hover:border-primary/30 transition-all active:scale-[0.99] group cursor-pointer"
-          >
-            <div className="flex items-center gap-2.5">
-              <div className="p-1.5 rounded-lg bg-primary/10 text-primary shrink-0">
-                <PiggyBank size={14} />
-              </div>
-              <div>
-                <span className="text-xs font-bold text-foreground block">
-                  Bills Surplus Pool
-                </span>
-                <span className="text-[10px] text-muted block font-sans">
-                  Keep in household balance pool
-                </span>
-              </div>
+          {/* Allocations Options list */}
+          <div className="space-y-3">
+            <span className="text-[10px] font-bold text-subtle uppercase tracking-wider block font-mono">
+              Allocate Surplus To:
+            </span>
+
+            {/* Goals */}
+            <div className="space-y-2">
+              {topGoals.map((goal) => (
+                <button
+                  key={goal.id}
+                  onClick={() => onAllocate(String(goal.id), surplusAmount)}
+                  className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl p-3 flex items-center justify-between text-left hover:border-primary/30 transition-all active:scale-[0.99] group cursor-pointer"
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className={`p-1.5 rounded-lg bg-secondary/15 text-secondary shrink-0`}>
+                      <Target size={14} />
+                    </div>
+                    <div className="min-w-0">
+                      <span className="text-xs font-bold text-foreground block truncate">
+                        {goal.name}
+                      </span>
+                      <span className="text-[10px] text-muted font-mono block">
+                        Progress: {goal.progress.toFixed(0)}%
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 font-mono text-xs font-bold text-primary whitespace-nowrap bg-primary/10 px-2.5 py-1 rounded-lg group-hover:bg-primary group-hover:text-primary-fg transition-all">
+                    <span>+${formattedSurplus}</span>
+                    <ArrowRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                </button>
+              ))}
             </div>
-            <div className="flex items-center gap-1 font-mono text-xs font-bold text-primary whitespace-nowrap bg-primary/10 px-2.5 py-1 rounded-lg group-hover:bg-primary group-hover:text-primary-fg transition-all">
-              <span>+${formattedSurplus}</span>
-              <ArrowRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-            </div>
-          </button>
+
+            {/* Bills Surplus Pool */}
+            <button
+              onClick={() => onAllocate("bills_surplus", surplusAmount)}
+              className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl p-3 flex items-center justify-between text-left hover:border-primary/30 transition-all active:scale-[0.99] group cursor-pointer"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="p-1.5 rounded-lg bg-primary/10 text-primary shrink-0">
+                  <PiggyBank size={14} />
+                </div>
+                <div>
+                  <span className="text-xs font-bold text-foreground block">
+                    Bills Surplus Pool
+                  </span>
+                  <span className="text-[10px] text-muted block font-sans">
+                    Keep in household balance pool
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 font-mono text-xs font-bold text-primary whitespace-nowrap bg-primary/10 px-2.5 py-1 rounded-lg group-hover:bg-primary group-hover:text-primary-fg transition-all">
+                <span>+${formattedSurplus}</span>
+                <ArrowRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+            </button>
+          </div>
         </div>
 
-        {/* Skip Actions */}
-        <div className="pt-2">
+        {/* Skip Actions Footer */}
+        <div className="p-5 border-t border-white/10 shrink-0">
           <button
             onClick={onClose}
             className="w-full py-3 rounded-xl border border-white/10 text-xs font-bold text-muted hover:text-foreground hover:bg-white/5 transition-colors cursor-pointer uppercase tracking-wider"

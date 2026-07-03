@@ -34,15 +34,15 @@ export default function ContributionSettingsSheet({
   }, 0);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm md:items-stretch md:justify-end md:p-0 md:bg-black/60 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-sm md:items-stretch md:justify-end md:p-0 md:bg-black/60 animate-in fade-in duration-200">
       {/* Overlay to close */}
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Sheet Content */}
-      <div className="relative w-full max-w-md max-h-[90dvh] md:h-screen md:max-h-screen bg-[#111111] border border-white/10 md:border-y-0 md:border-r-0 md:border-l rounded-2xl md:rounded-none md:rounded-l-3xl flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 md:zoom-in-100 md:slide-in-from-right duration-250">
+      <div className="relative w-full max-w-md max-h-[92dvh] md:h-screen md:max-h-screen bg-[#111111] border border-white/10 md:border-y-0 md:border-r-0 md:border-l rounded-t-3xl rounded-b-none md:rounded-none md:rounded-l-3xl flex flex-col shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-5 md:slide-in-from-right duration-250">
         
         {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-[#111111]/90 px-6 py-4 backdrop-blur">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-[#111111]/90 px-5 py-3 md:px-6 md:py-4 backdrop-blur">
           <h2 className="font-syne text-lg font-bold text-foreground">Joint Fund Contributions</h2>
           <button
             onClick={onClose}
@@ -53,7 +53,7 @@ export default function ContributionSettingsSheet({
         </div>
 
         {/* Members Rows */}
-        <div className="flex flex-col divide-y divide-white/5 px-6 max-h-[50vh] overflow-y-auto">
+        <div className="flex-1 overflow-y-auto divide-y divide-white/5 px-5 md:px-6">
           {householdMembers.length === 0 ? (
             <div className="py-8 text-center text-xs text-muted">
               No household members added yet.
@@ -77,8 +77,8 @@ export default function ContributionSettingsSheet({
 
         {/* Bottom Total monthly summary */}
         <div 
-          style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1.25rem)" }}
-          className="sticky bottom-0 border-t border-white/10 bg-[#111111]/95 px-6 pt-5 pb-5 backdrop-blur flex items-center justify-between"
+          style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
+          className="sticky bottom-0 border-t border-white/10 bg-[#111111]/95 px-5 pt-3 pb-3 md:px-6 md:pt-4 md:pb-4 backdrop-blur flex items-center justify-between shrink-0"
         >
           <div className="space-y-0.5">
             <span className="text-[10px] font-bold text-subtle uppercase tracking-wider block font-mono">

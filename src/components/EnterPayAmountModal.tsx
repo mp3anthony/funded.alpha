@@ -100,10 +100,10 @@ export default function EnterPayAmountModal({
       {/* Modal Container */}
       <form
         onSubmit={handleConfirm}
-        className="relative w-full max-w-sm bg-[#111111] border border-white/10 rounded-2xl shadow-2xl p-6 flex flex-col space-y-4 animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto"
+        className="relative w-full max-w-sm bg-[#111111] border border-white/10 rounded-2xl shadow-2xl max-h-[92dvh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300"
       >
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between p-5 border-b border-white/10 shrink-0">
           <h3 className="font-syne font-bold text-base text-foreground">
             {title || "Review & Log Pay"}
           </h3>
@@ -116,93 +116,96 @@ export default function EnterPayAmountModal({
           </button>
         </div>
 
-        {/* Form Body */}
-        <div className="space-y-4">
-          <div className="flex flex-col space-y-1.5">
-            <label className="font-heading text-xs font-semibold text-subtle uppercase tracking-wider">
-              Amount Received
-            </label>
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted font-mono text-sm">$</span>
-              <input
-                type="number"
-                placeholder="0.00"
-                step="0.01"
-                min="0.01"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl pl-8 pr-4 py-3 font-mono text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
-                autoFocus
-                required
+        {/* Scrollable Body */}
+        <div className="flex-1 overflow-y-auto p-5 space-y-4">
+          {/* Form Fields */}
+          <div className="space-y-4">
+            <div className="flex flex-col space-y-1.5">
+              <label className="font-heading text-xs font-semibold text-subtle uppercase tracking-wider">
+                Amount Received
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted font-mono text-sm">$</span>
+                <input
+                  type="number"
+                  placeholder="0.00"
+                  step="0.01"
+                  min="0.01"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl pl-8 pr-4 py-3 font-mono text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+                  autoFocus
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col space-y-1.5">
+              <label className="font-heading text-xs font-semibold text-subtle uppercase tracking-wider">
+                Notes (Optional)
+              </label>
+              <textarea
+                placeholder="e.g. Regular monthly pay, overtime bonus"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 h-20 resize-none font-sans"
               />
             </div>
           </div>
 
-          <div className="flex flex-col space-y-1.5">
-            <label className="font-heading text-xs font-semibold text-subtle uppercase tracking-wider">
-              Notes (Optional)
-            </label>
-            <textarea
-              placeholder="e.g. Regular monthly pay, overtime bonus"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 h-20 resize-none font-sans"
-            />
-          </div>
-        </div>
-
-        {/* Allocation Preview */}
-        {allocationPreview && (
-          <div className="space-y-2 pt-1">
-            <div className="flex items-center gap-1.5">
-              <Sparkles size={12} className="text-[#c8ff00]" />
-              <span className="font-heading text-xs font-semibold text-subtle uppercase tracking-wider">
-                Allocation Preview
-              </span>
-            </div>
-            <div className="bg-[#0a0a0a] border border-white/10 rounded-xl p-3.5 space-y-2.5 font-mono text-xs">
-              {/* Gross */}
-              <div className="flex items-center justify-between text-foreground">
-                <span className="text-muted uppercase">Gross Pay</span>
-                <span className="font-bold">
-                  ${allocationPreview.gross.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          {/* Allocation Preview */}
+          {allocationPreview && (
+            <div className="space-y-2 pt-1">
+              <div className="flex items-center gap-1.5">
+                <Sparkles size={12} className="text-[#c8ff00]" />
+                <span className="font-heading text-xs font-semibold text-subtle uppercase tracking-wider">
+                  Allocation Preview
                 </span>
               </div>
-
-              {/* Divider */}
-              <div className="border-t border-white/5" />
-
-              {/* Rule allocations */}
-              {allocationPreview.allocations.map((alloc) => (
-                <div key={alloc.id} className="flex items-center justify-between text-[#c8ff00]/80">
-                  <span className="truncate mr-2">
-                    → {alloc.targetName}
-                    {alloc.isPercentage && (
-                      <span className="text-muted ml-1">({alloc.percentValue}%)</span>
-                    )}
-                  </span>
-                  <span className="font-bold whitespace-nowrap shrink-0">
-                    −${alloc.amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              <div className="bg-[#0a0a0a] border border-white/10 rounded-xl p-3.5 space-y-2.5 font-mono text-xs">
+                {/* Gross */}
+                <div className="flex items-center justify-between text-foreground">
+                  <span className="text-muted uppercase">Gross Pay</span>
+                  <span className="font-bold">
+                    ${allocationPreview.gross.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                 </div>
-              ))}
 
-              {/* Divider */}
-              <div className="border-t border-white/5" />
+                {/* Divider */}
+                <div className="border-t border-white/5" />
 
-              {/* Remaining */}
-              <div className="flex items-center justify-between text-foreground">
-                <span className="text-muted uppercase">Take Home</span>
-                <span className={`font-extrabold ${allocationPreview.remaining >= 0 ? "text-primary" : "text-destructive"}`}>
-                  ${allocationPreview.remaining.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </span>
+                {/* Rule allocations */}
+                {allocationPreview.allocations.map((alloc) => (
+                  <div key={alloc.id} className="flex items-center justify-between text-[#c8ff00]/80">
+                    <span className="truncate mr-2">
+                      → {alloc.targetName}
+                      {alloc.isPercentage && (
+                        <span className="text-muted ml-1">({alloc.percentValue}%)</span>
+                      )}
+                    </span>
+                    <span className="font-bold whitespace-nowrap shrink-0">
+                      −${alloc.amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                ))}
+
+                {/* Divider */}
+                <div className="border-t border-white/5" />
+
+                {/* Remaining */}
+                <div className="flex items-center justify-between text-foreground">
+                  <span className="text-muted uppercase">Take Home</span>
+                  <span className={`font-extrabold ${allocationPreview.remaining >= 0 ? "text-primary" : "text-destructive"}`}>
+                    ${allocationPreview.remaining.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
-        {/* Actions */}
-        <div className="flex gap-3 pt-2">
+        {/* Actions Footer */}
+        <div className="flex gap-3 p-5 border-t border-white/10 shrink-0">
           <button
             type="button"
             onClick={onClose}

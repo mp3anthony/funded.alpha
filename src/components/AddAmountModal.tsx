@@ -57,10 +57,10 @@ export default function AddAmountModal({
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Modal Container */}
-      <div className="relative w-full max-w-sm bg-[#111111] border border-white/10 rounded-2xl shadow-2xl p-6 flex flex-col space-y-5 animate-in zoom-in-95 duration-300">
+      <div className="relative w-full max-w-sm bg-[#111111] border border-white/10 rounded-2xl shadow-2xl max-h-[92dvh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
         
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between p-5 border-b border-white/10 shrink-0">
           <h3 className="font-heading font-bold text-base text-foreground">
             Add to {goal.name}
           </h3>
@@ -72,34 +72,37 @@ export default function AddAmountModal({
           </button>
         </div>
 
-        {/* Input Field */}
-        <div className="space-y-3">
-          <input
-            type="text"
-            placeholder="$0.00"
-            value={amountStr ? `$${amountStr}` : ""}
-            onChange={(e) => handleInputChange(e.target.value)}
-            className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 font-mono text-center text-xl text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 placeholder:text-muted"
-            autoFocus
-          />
+        {/* Scrollable Body */}
+        <div className="flex-1 overflow-y-auto p-5 space-y-4">
+          {/* Input Field */}
+          <div className="space-y-3">
+            <input
+              type="text"
+              placeholder="$0.00"
+              value={amountStr ? `$${amountStr}` : ""}
+              onChange={(e) => handleInputChange(e.target.value)}
+              className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 font-mono text-center text-xl text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 placeholder:text-muted"
+              autoFocus
+            />
 
-          {/* Quick-Add Options */}
-          <div className="grid grid-cols-4 gap-2">
-            {[10, 25, 50, 100].map((amt) => (
-              <button
-                key={amt}
-                type="button"
-                onClick={() => setAmountStr(amt.toFixed(2))}
-                className="rounded-xl border border-white/10 bg-white/5 py-2 font-mono text-xs text-foreground hover:bg-white/10 active:scale-95 transition-all"
-              >
-                +${amt}
-              </button>
-            ))}
+            {/* Quick-Add Options */}
+            <div className="grid grid-cols-4 gap-2">
+              {[10, 25, 50, 100].map((amt) => (
+                <button
+                  key={amt}
+                  type="button"
+                  onClick={() => setAmountStr(amt.toFixed(2))}
+                  className="rounded-xl border border-white/10 bg-white/5 py-2 font-mono text-xs text-foreground hover:bg-white/10 active:scale-95 transition-all"
+                >
+                  +${amt}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="flex gap-3 pt-2">
+        {/* Actions Footer */}
+        <div className="flex gap-3 p-5 border-t border-white/10 shrink-0">
           <button
             onClick={onClose}
             className="flex-1 py-3 rounded-xl border border-white/10 text-sm font-bold text-muted hover:text-foreground hover:bg-white/5 transition-colors cursor-pointer"

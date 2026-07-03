@@ -135,15 +135,15 @@ export default function RulesSettingsSheet({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm md:items-stretch md:justify-end md:p-0 md:bg-black/60 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-sm md:items-stretch md:justify-end md:p-0 md:bg-black/60 animate-in fade-in duration-200">
       {/* Overlay to close */}
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Sheet Content */}
-      <div className="relative w-full max-w-md max-h-[90dvh] md:h-screen md:max-h-screen bg-[#111111] border border-white/10 md:border-y-0 md:border-r-0 md:border-l rounded-2xl md:rounded-none md:rounded-l-3xl flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 md:zoom-in-100 md:slide-in-from-right duration-250">
+      <div className="relative w-full max-w-md max-h-[92dvh] md:h-screen md:max-h-screen bg-[#111111] border border-white/10 md:border-y-0 md:border-r-0 md:border-l rounded-t-3xl rounded-b-none md:rounded-none md:rounded-l-3xl flex flex-col shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-5 md:slide-in-from-right duration-250">
         
         {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-[#111111]/90 px-6 py-4 backdrop-blur">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-[#111111]/90 px-5 py-3 md:px-6 md:py-4 backdrop-blur">
           <div>
             <h2 className="font-syne text-lg font-bold text-foreground flex items-center gap-1.5">
               <Sparkles size={18} className="text-primary animate-pulse" />
@@ -402,12 +402,12 @@ export default function RulesSettingsSheet({
         {/* Footer Trigger to Add Rule */}
         {!isFormOpen && (
           <div 
-            style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1rem)" }}
-            className="sticky bottom-0 border-t border-white/10 bg-[#111111]/95 px-6 pt-4 pb-4 backdrop-blur"
+            style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
+            className="sticky bottom-0 border-t border-white/10 bg-[#111111]/95 px-5 pt-3 pb-3 md:px-6 md:pt-4 md:pb-4 backdrop-blur shrink-0"
           >
             <button
               onClick={() => setIsFormOpen(true)}
-              className="w-full py-3.5 bg-primary text-primary-fg rounded-xl font-heading text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer hover:brightness-110 active:scale-[0.98]"
+              className="w-full py-3 md:py-3.5 bg-primary text-primary-fg rounded-xl font-heading text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer hover:brightness-110 active:scale-[0.98]"
             >
               <Plus size={14} />
               <span>Add automation rule</span>

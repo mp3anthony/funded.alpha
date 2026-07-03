@@ -93,16 +93,16 @@ export default function AddPayScheduleSheet({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm md:items-stretch md:justify-end md:p-0 md:bg-black/60 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-sm md:items-stretch md:justify-end md:p-0 md:bg-black/60 animate-in fade-in duration-200">
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Sheet Content */}
       <form
         onSubmit={handleSave}
-        className="relative w-full max-w-md max-h-[90dvh] md:h-screen md:max-h-screen bg-[#111111] border border-white/10 md:border-y-0 md:border-r-0 md:border-l rounded-2xl md:rounded-none md:rounded-l-3xl flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 md:zoom-in-100 md:slide-in-from-right duration-250"
+        className="relative w-full max-w-md max-h-[92dvh] md:h-screen md:max-h-screen bg-[#111111] border border-white/10 md:border-y-0 md:border-r-0 md:border-l rounded-t-3xl rounded-b-none md:rounded-none md:rounded-l-3xl flex flex-col shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-5 md:slide-in-from-right duration-250"
       >
         {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-[#111111]/90 px-6 py-4 backdrop-blur">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-[#111111]/90 px-5 py-3 md:px-6 md:py-4 backdrop-blur">
           <h2 className="font-syne text-lg font-bold text-foreground">
             {existingSchedule ? "Edit Pay Schedule" : "Add Pay Schedule"}
           </h2>
@@ -116,7 +116,7 @@ export default function AddPayScheduleSheet({
         </div>
 
         {/* Form Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+        <div className="flex-1 overflow-y-auto px-5 py-4 md:px-6 md:py-5 space-y-4 md:space-y-5">
           {errorMsg && (
             <div className="bg-red-500/10 border border-red-500/50 rounded-xl p-3 text-red-500 text-xs font-mono break-words whitespace-pre-wrap">
               <span className="font-bold">Error:</span> {errorMsg}
@@ -124,15 +124,15 @@ export default function AddPayScheduleSheet({
           )}
 
           {/* Member Dropdown */}
-          <div className="flex flex-col space-y-1.5">
-            <label className="font-heading text-xs font-semibold text-subtle uppercase tracking-wider">
+          <div className="flex flex-col space-y-1 md:space-y-1.5">
+            <label className="font-heading text-[10px] md:text-xs font-semibold text-subtle uppercase tracking-wider">
               Household Member
             </label>
             <div className="relative">
               <select
                 value={memberId}
                 onChange={(e) => setMemberId(e.target.value)}
-                className="w-full rounded-xl border border-white/10 bg-[#0a0a0a] px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 appearance-none transition-all"
+                className="w-full rounded-xl border border-white/10 bg-[#0a0a0a] px-4 py-2.5 md:py-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 appearance-none transition-all"
                 required
               >
                 <option value="" disabled>Select member...</option>
@@ -151,8 +151,8 @@ export default function AddPayScheduleSheet({
           </div>
 
           {/* Frequency Segmented Control */}
-          <div className="flex flex-col space-y-1.5">
-            <label className="font-heading text-xs font-semibold text-subtle uppercase tracking-wider">
+          <div className="flex flex-col space-y-1 md:space-y-1.5">
+            <label className="font-heading text-[10px] md:text-xs font-semibold text-subtle uppercase tracking-wider">
               Frequency
             </label>
             <div className="grid grid-cols-3 gap-2 bg-[#0a0a0a] border border-white/10 rounded-xl p-1">
@@ -161,7 +161,7 @@ export default function AddPayScheduleSheet({
                   key={freq}
                   type="button"
                   onClick={() => setFrequency(freq)}
-                  className={`py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
+                  className={`py-1.5 md:py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
                     frequency === freq
                       ? "bg-primary text-primary-fg shadow"
                       : "text-muted hover:text-foreground hover:bg-white/5"
@@ -174,20 +174,20 @@ export default function AddPayScheduleSheet({
           </div>
 
           {/* Fixed Amount Toggle */}
-          <div className="flex items-center justify-between bg-[#0a0a0a] border border-white/10 rounded-xl p-4">
+          <div className="flex items-center justify-between bg-[#0a0a0a] border border-white/10 rounded-xl p-3 md:p-4">
             <div className="flex flex-col">
-              <span className="text-sm font-semibold text-foreground">Fixed Pay Amount?</span>
-              <span className="text-xs text-muted">Toggle off if pay varies each time</span>
+              <span className="text-xs md:text-sm font-semibold text-foreground">Fixed Pay Amount?</span>
+              <span className="text-[10px] md:text-xs text-muted">Toggle off if pay varies each time</span>
             </div>
             <button
               type="button"
               onClick={() => setIsFixedAmount(!isFixedAmount)}
-              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+              className={`relative inline-flex h-5 w-10 md:h-6 md:w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
                 isFixedAmount ? "bg-primary" : "bg-zinc-800"
               }`}
             >
               <span
-                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                className={`pointer-events-none inline-block h-4 w-4 md:h-5 md:w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
                   isFixedAmount ? "translate-x-5" : "translate-x-0"
                 }`}
               />
@@ -196,8 +196,8 @@ export default function AddPayScheduleSheet({
 
           {/* Fixed Amount Input (Conditional) */}
           {isFixedAmount && (
-            <div className="flex flex-col space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
-              <label className="font-heading text-xs font-semibold text-subtle uppercase tracking-wider">
+            <div className="flex flex-col space-y-1 md:space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
+              <label className="font-heading text-[10px] md:text-xs font-semibold text-subtle uppercase tracking-wider">
                 Amount
               </label>
               <div className="relative">
@@ -209,7 +209,7 @@ export default function AddPayScheduleSheet({
                   min="0.01"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl pl-8 pr-4 py-3 font-mono text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+                  className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl pl-8 pr-4 py-2.5 md:py-3 font-mono text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
                   required={isFixedAmount}
                 />
               </div>
@@ -217,8 +217,8 @@ export default function AddPayScheduleSheet({
           )}
 
           {/* Next Pay Date Datepicker */}
-          <div className="flex flex-col space-y-1.5">
-            <label className="font-heading text-xs font-semibold text-subtle uppercase tracking-wider">
+          <div className="flex flex-col space-y-1 md:space-y-1.5">
+            <label className="font-heading text-[10px] md:text-xs font-semibold text-subtle uppercase tracking-wider">
               Next Pay Date
             </label>
             <div className="relative">
@@ -226,7 +226,7 @@ export default function AddPayScheduleSheet({
                 type="date"
                 value={nextPayDate}
                 onChange={(e) => setNextPayDate(e.target.value)}
-                className="w-full bg-[#111111] border border-white/10 rounded-lg p-3 font-mono text-sm text-white [color-scheme:dark] focus:outline-none focus:ring-1 focus:ring-primary/50"
+                className="w-full min-w-0 bg-[#111111] border border-white/10 rounded-lg p-2.5 md:p-3 font-mono text-sm text-white [color-scheme:dark] focus:outline-none focus:ring-1 focus:ring-primary/50"
                 required
               />
             </div>
@@ -235,20 +235,20 @@ export default function AddPayScheduleSheet({
 
         {/* Footer */}
         <div 
-          style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1rem)" }}
-          className="sticky bottom-0 z-10 border-t border-white/10 bg-[#111111]/95 px-6 pt-4 pb-4 backdrop-blur flex items-center gap-3 shrink-0"
+          style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
+          className="sticky bottom-0 z-10 border-t border-white/10 bg-[#111111]/95 px-5 pt-3 pb-3 md:px-6 md:pt-4 md:pb-4 backdrop-blur flex items-center gap-3 shrink-0"
         >
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 py-4 rounded-xl border border-white/10 text-sm font-bold text-muted hover:text-foreground hover:bg-white/5 transition-all cursor-pointer"
+            className="flex-1 py-3 md:py-4 rounded-xl border border-white/10 text-sm font-bold text-muted hover:text-foreground hover:bg-white/5 transition-all cursor-pointer"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={!isFormValid || isSaving}
-            className={`flex-1 rounded-xl py-4 text-sm font-bold uppercase tracking-wider transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:ring-primary cursor-pointer ${
+            className={`flex-1 rounded-xl py-3 md:py-4 text-sm font-bold uppercase tracking-wider transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:ring-primary cursor-pointer ${
               isFormValid && !isSaving
                 ? "bg-primary text-primary-fg hover:brightness-110 active:scale-[0.98]"
                 : "bg-zinc-800 text-zinc-500 cursor-not-allowed"

@@ -285,7 +285,7 @@ export default function Onboarding() {
                       type="date"
                       value={paydayDate}
                       onChange={(e) => setPaydayDate(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl bg-surface-raised border border-border text-foreground text-sm font-medium focus:ring-2 focus:ring-secondary/40 focus:border-secondary outline-none transition-all"
+                      className="w-full min-w-0 px-4 py-3 rounded-xl bg-surface-raised border border-border text-foreground text-sm font-medium focus:ring-2 focus:ring-secondary/40 focus:border-secondary outline-none transition-all"
                     />
                   </div>
                   <div className="space-y-2">
