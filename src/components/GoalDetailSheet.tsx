@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { X, Calendar, Target, Award, Play, Pause, Check } from "lucide-react";
 import type { Fund } from "@/context/AppContext";
 
@@ -19,6 +19,17 @@ export default function GoalDetailSheet({
   onEdit,
   onDelete,
 }: GoalDetailSheetProps) {
+  useEffect(() => {
+    if (!isOpen) return;
+    document.body.classList.add("modal-open");
+    return () => {
+      const activeModals = document.querySelectorAll(".modal-backdrop");
+      if (activeModals.length <= 1) {
+        document.body.classList.remove("modal-open");
+      }
+    };
+  }, [isOpen]);
+
   if (!isOpen || !goal) return null;
 
   const percentage = Math.min((goal.currentAmount / goal.targetAmount) * 100, 100);
@@ -68,7 +79,7 @@ export default function GoalDetailSheet({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm md:items-stretch md:justify-end md:p-0 md:bg-black/60 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[100] modal-backdrop flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm md:items-stretch md:justify-end md:p-0 md:bg-black/60 animate-in fade-in duration-200">
       {/* Backdrop overlay */}
       <div className="absolute inset-0" onClick={onClose} />
 

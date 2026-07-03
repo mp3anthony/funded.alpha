@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { X, Calendar, User, Clock } from "lucide-react";
 import type { PaySchedule, Member } from "@/context/AppContext";
 
@@ -21,6 +21,17 @@ export default function PayScheduleDetailSheet({
   onEdit,
   onDelete,
 }: PayScheduleDetailSheetProps) {
+  useEffect(() => {
+    if (!isOpen) return;
+    document.body.classList.add("modal-open");
+    return () => {
+      const activeModals = document.querySelectorAll(".modal-backdrop");
+      if (activeModals.length <= 1) {
+        document.body.classList.remove("modal-open");
+      }
+    };
+  }, [isOpen]);
+
   if (!isOpen || !paySchedule) return null;
 
   const member = householdMembers.find((m) => String(m.id) === String(paySchedule.member_id));
@@ -63,7 +74,7 @@ export default function PayScheduleDetailSheet({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm md:items-stretch md:justify-end md:p-0 md:bg-black/60 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[100] modal-backdrop flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm md:items-stretch md:justify-end md:p-0 md:bg-black/60 animate-in fade-in duration-200">
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Sheet Content */}

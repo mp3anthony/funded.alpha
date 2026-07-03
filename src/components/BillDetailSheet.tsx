@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { X, Calendar, AlertTriangle } from "lucide-react";
 import { useApp, type Bill, type BillSplit, type Member } from "@/context/AppContext";
 
@@ -24,6 +24,18 @@ export default function BillDetailSheet({
   onDelete,
 }: BillDetailSheetProps) {
   const { isJointFund } = useApp();
+
+  useEffect(() => {
+    if (!isOpen) return;
+    document.body.classList.add("modal-open");
+    return () => {
+      const activeModals = document.querySelectorAll(".modal-backdrop");
+      if (activeModals.length <= 1) {
+        document.body.classList.remove("modal-open");
+      }
+    };
+  }, [isOpen]);
+
   if (!isOpen || !bill) return null;
 
   // Find assignee
@@ -42,7 +54,7 @@ export default function BillDetailSheet({
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm md:items-stretch md:justify-end md:p-0 md:bg-black/60 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[100] modal-backdrop flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm md:items-stretch md:justify-end md:p-0 md:bg-black/60 animate-in fade-in duration-200">
       {/* Backdrop overlay */}
       <div className="absolute inset-0" onClick={onClose} />
 

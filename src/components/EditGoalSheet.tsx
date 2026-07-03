@@ -26,6 +26,17 @@ export default function EditGoalSheet({
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
+    if (!isOpen) return;
+    document.body.classList.add("modal-open");
+    return () => {
+      const activeModals = document.querySelectorAll(".modal-backdrop");
+      if (activeModals.length <= 1) {
+        document.body.classList.remove("modal-open");
+      }
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
     if (isOpen && existingGoal) {
       setName(existingGoal.name);
       setTargetAmount(existingGoal.targetAmount.toString());
@@ -109,7 +120,7 @@ export default function EditGoalSheet({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-sm md:items-stretch md:justify-end md:p-0 md:bg-black/60 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[100] modal-backdrop flex items-end justify-center bg-black/80 backdrop-blur-sm md:items-stretch md:justify-end md:p-0 md:bg-black/60 animate-in fade-in duration-200">
       {/* Overlay to close */}
       <div className="absolute inset-0" onClick={onClose} />
 

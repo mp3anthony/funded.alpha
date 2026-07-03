@@ -31,6 +31,17 @@ export default function JoinHouseholdSheet({ isOpen, onClose }: JoinHouseholdShe
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    document.body.classList.add("modal-open");
+    return () => {
+      const activeModals = document.querySelectorAll(".modal-backdrop");
+      if (activeModals.length <= 1) {
+        document.body.classList.remove("modal-open");
+      }
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -82,7 +93,7 @@ export default function JoinHouseholdSheet({ isOpen, onClose }: JoinHouseholdShe
   };
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[110] modal-backdrop flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
       {/* Backdrop overlay click */}
       {!isJoining && !isSuccess && (
         <div className="absolute inset-0" onClick={onClose} />

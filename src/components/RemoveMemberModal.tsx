@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Users, Trash2, X, AlertTriangle, Loader2 } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import { type Member } from "@/types";
@@ -53,6 +53,17 @@ export default function RemoveMemberModal({
     return { billsCount: bCount, goalsCount: gCount, schedulesCount: sCount };
   }, [member, billSplits, funds, paySchedules]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    document.body.classList.add("modal-open");
+    return () => {
+      const activeModals = document.querySelectorAll(".modal-backdrop");
+      if (activeModals.length <= 1) {
+        document.body.classList.remove("modal-open");
+      }
+    };
+  }, [isOpen]);
+
   if (!isOpen || !member) return null;
 
   async function handleRemove(e: React.FormEvent) {
@@ -95,7 +106,7 @@ export default function RemoveMemberModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-[100] modal-backdrop flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
       onClick={onClose}
     >
       <div

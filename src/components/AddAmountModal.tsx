@@ -25,6 +25,17 @@ export default function AddAmountModal({
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    document.body.classList.add("modal-open");
+    return () => {
+      const activeModals = document.querySelectorAll(".modal-backdrop");
+      if (activeModals.length <= 1) {
+        document.body.classList.remove("modal-open");
+      }
+    };
+  }, [isOpen]);
+
   if (!isOpen || !goal) return null;
 
   const handleInputChange = (val: string) => {
@@ -52,7 +63,7 @@ export default function AddAmountModal({
   const isValid = !isNaN(parseFloat(amountStr)) && parseFloat(amountStr) > 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[100] modal-backdrop flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       {/* Backdrop click close */}
       <div className="absolute inset-0" onClick={onClose} />
 

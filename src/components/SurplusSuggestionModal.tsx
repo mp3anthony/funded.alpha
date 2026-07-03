@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { X, TrendingUp, PiggyBank, Target, ArrowRight } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 
@@ -23,6 +23,17 @@ export default function SurplusSuggestionModal({
 }: SurplusSuggestionModalProps) {
   const { funds, householdMembers } = useApp();
 
+  useEffect(() => {
+    if (!isOpen) return;
+    document.body.classList.add("modal-open");
+    return () => {
+      const activeModals = document.querySelectorAll(".modal-backdrop");
+      if (activeModals.length <= 1) {
+        document.body.classList.remove("modal-open");
+      }
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const member = householdMembers.find((m) => String(m.id) === String(memberId));
@@ -43,7 +54,7 @@ export default function SurplusSuggestionModal({
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[100] modal-backdrop flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       {/* Backdrop overlay */}
       <div className="absolute inset-0" onClick={onClose} />
 

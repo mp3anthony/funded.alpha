@@ -237,3 +237,9 @@ input[type="date"] {
   width: 100%;
   box-sizing: border-box;
 }
+
+/* Prevent background scrolling when a modal or sheet is open */
+body.modal-open {
+  overflow: hidden !important;
+  height: 100vh !important;
+}
