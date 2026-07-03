@@ -18,6 +18,85 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   console.log('AppShell render - isAuthLoading:', isAuthLoading, 'session:', session ? 'exists (user: ' + session.user?.id + ')' : 'null', 'isOnboarded:', isOnboarded, 'pathname:', pathname);
 
+  // 1. Manage Visual Viewport (for mobile keyboard support)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const updateVisualViewport = () => {
+      const vv = window.visualViewport;
+      if (vv) {
+        document.documentElement.style.setProperty(
+          "--visual-viewport-height",
+          `${vv.height}px`
+        );
+        document.documentElement.style.setProperty(
+          "--visual-viewport-offsetTop",
+          `${vv.offsetTop}px`
+        );
+      } else {
+        document.documentElement.style.setProperty(
+          "--visual-viewport-height",
+          `${window.innerHeight}px`
+        );
+        document.documentElement.style.setProperty(
+          "--visual-viewport-offsetTop",
+          "0px"
+        );
+      }
+    };
+
+    updateVisualViewport();
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", updateVisualViewport);
+      window.visualViewport.addEventListener("scroll", updateVisualViewport);
+    } else {
+      window.addEventListener("resize", updateVisualViewport);
+    }
+
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener("resize", updateVisualViewport);
+        window.visualViewport.removeEventListener("scroll", updateVisualViewport);
+      } else {
+        window.removeEventListener("resize", updateVisualViewport);
+      }
+    };
+  }, []);
+
+  // 2. Global Scroll Lock (MutationObserver)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const updateScrollLock = () => {
+      const activeModals = document.querySelectorAll(".modal-backdrop");
+      if (activeModals.length > 0) {
+        document.body.classList.add("modal-open");
+        document.documentElement.classList.add("modal-open");
+      } else {
+        document.body.classList.remove("modal-open");
+        document.documentElement.classList.remove("modal-open");
+      }
+    };
+
+    updateScrollLock();
+
+    const observer = new MutationObserver(() => {
+      updateScrollLock();
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+
+    return () => {
+      observer.disconnect();
+      document.body.classList.remove("modal-open");
+      document.documentElement.classList.remove("modal-open");
+    };
+  }, []);
+
   useEffect(() => {
     if (isAuthLoading) return;
 
