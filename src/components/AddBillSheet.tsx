@@ -170,7 +170,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
               placeholder="e.g., Internet"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="rounded-xl border border-border bg-surface-raised px-4 py-2.5 md:py-3 text-foreground placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
+              className="w-full rounded-xl border border-border bg-surface-raised px-4 py-2.5 md:py-3 text-foreground placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
             />
           </div>
 

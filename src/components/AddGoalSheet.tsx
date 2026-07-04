@@ -180,7 +180,7 @@ export default function AddGoalSheet({
               placeholder="e.g. Holiday Trip, House Deposit"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="rounded-xl border border-border bg-surface-raised px-4 py-2.5 md:py-3 text-foreground placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-sans text-sm"
+              className="w-full rounded-xl border border-border bg-surface-raised px-4 py-2.5 md:py-3 text-foreground placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-sans text-sm"
               required
             />
           </div>

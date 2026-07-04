@@ -230,18 +230,28 @@ button, a, select, input, textarea, [role="button"] {
   touch-action: manipulation;
 }
 
-/* Prevent native date inputs from stretching their containers on mobile */
-input[type="date"] {
+/* Ensure all form input fields are full-width, box-sized, and don't overflow */
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+  width: 100% !important;
   min-width: 0 !important;
   max-width: 100% !important;
-  width: 100%;
-  box-sizing: border-box;
+  box-sizing: border-box !important;
+}
+
+/* Fix native date input appearance and stretching on iOS Safari */
+input[type="date"] {
+  display: block !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
 }
 
 /* Prevent background scrolling when a modal or sheet is open */
 html.modal-open,
 body.modal-open {
   overflow: hidden !important;
+  overflow-x: hidden !important;
   height: 100% !important;
   height: 100dvh !important;
   overscroll-behavior: none !important;
@@ -254,6 +264,7 @@ body.modal-open {
   height: var(--visual-viewport-height, 100dvh) !important;
   left: 0 !important;
   right: 0 !important;
+  overflow-x: hidden !important;
   overscroll-behavior: contain !important;
 }
 
