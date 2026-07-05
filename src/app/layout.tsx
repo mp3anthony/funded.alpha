@@ -25,6 +25,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AppProvider } from "@/context/AppContext";
 import AppShell from "@/components/AppShell";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Funded",
@@ -82,7 +83,9 @@ export default function RootLayout({
       </head>
       <body className={`${syne.variable} ${instrument.variable} ${jetbrains.variable} font-body`}>
         <AppProvider>
-          <AppShell>{children}</AppShell>
+          <Suspense fallback={null}>
+            <AppShell>{children}</AppShell>
+          </Suspense>
         </AppProvider>
       </body>
     </html>

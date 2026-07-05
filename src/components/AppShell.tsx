@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import BottomNav from "@/components/BottomNav";
@@ -8,6 +8,34 @@ import Onboarding from "@/components/Onboarding";
 import Logo from "./Logo";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // During static prerendering at build time, render a clean, completely static wrapper
+  // around children. This prevents any layout-level client hooks (like usePathname)
+  // or state contexts from being evaluated on the server, avoiding dynamic de-optimization.
+  if (!isMounted) {
+    return (
+      <div className="relative min-h-screen">
+        <main 
+          style={{ 
+            paddingTop: "calc(env(safe-area-inset-top) + 3.5rem)", 
+            paddingBottom: "calc(env(safe-area-inset-bottom) + 5rem)" 
+          }}
+          className="flex-1 w-full flex flex-col"
+        >
+          {children}
+        </main>
+      </div>
+    );
+  }
+
+  return <AppShellBody>{children}</AppShellBody>;
+}
+
+function AppShellBody({ children }: { children: React.ReactNode }) {
   const { isOnboarded, session, isAuthLoading } = useApp();
   const router = useRouter();
   const pathname = usePathname();
