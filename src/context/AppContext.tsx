@@ -542,6 +542,7 @@ interface AppContextValue {
   /* Auth */
   session: Session | null;
   isAuthLoading: boolean;
+  isDataLoading: boolean;
 
   /* Theme */
   theme: "light" | "dark" | "system";
@@ -554,7 +555,13 @@ const AppContext = createContext<AppContextValue | null>(null);
    Provider
    ═══════════════════════════════════════════════ */
 
-export function AppProvider({ children }: { children: ReactNode }) {
+interface AppProviderProps {
+  children: ReactNode;
+  initialSession?: Session | null;
+  initialIsOnboarded?: boolean;
+}
+
+export function AppProvider({ children, initialSession = null, initialIsOnboarded = false }: AppProviderProps) {
   /* ── Theme State & Logic ─────────────────────── */
   const [theme, setThemeState] = useState<"light" | "dark" | "system">("system");
 
@@ -651,7 +658,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   /* ── Onboarding & Household ──────────────────── */
-  const [isOnboarded, setIsOnboarded] = useState(false);
+  const [isOnboarded, setIsOnboarded] = useState(initialIsOnboarded);
   const [householdName, setHouseholdNameState] = useState("");
   const [dbHouseholdId, setDbHouseholdId] = useState<string | null>(null);
   const [isJointFund, setIsJointFund] = useState(false);
@@ -659,8 +666,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [codeExpiresAt, setCodeExpiresAt] = useState<string | null>(null);
 
   /* ── Auth ────────────────────────────────── */
-  const [session, setSession] = useState<Session | null>(null);
-  const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [session, setSession] = useState<Session | null>(initialSession);
+  const [isAuthLoading, setIsAuthLoading] = useState(!initialSession);
+  const [isDataLoading, setIsDataLoading] = useState(!initialIsOnboarded && !!initialSession);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -703,7 +711,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (isAuthLoading || !session?.user) {
       console.log('loadData skipped - isAuthLoading:', isAuthLoading, 'session:', session ? 'exists' : 'null');
       setIsOnboarded(false);
+      setIsDataLoading(false);
       return;
+    }
+    if (!dbHouseholdId && !isOnboarded) {
+      setIsDataLoading(true);
     }
     console.log('loadData running with authenticated session, user:', session.user.id);
     try {
@@ -717,6 +729,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (memError || !membership?.household_id) {
         console.log('[loadData] No active household membership or user has no household yet');
         setIsOnboarded(false);
+        setIsDataLoading(false);
         return;
       }
 
@@ -730,6 +743,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (hhError || !household) {
         console.error('[loadData] Failed to fetch household details:', hhError);
         setIsOnboarded(false);
+        setIsDataLoading(false);
         return;
       }
 
@@ -779,8 +793,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         fetchContributionRules(household.id)
       ]);
     } catch (err) {
-      console.error('[loadData] Failed to load initial data from Supabase for user:', session.user.id, err);
+      console.error('[loadData] Failed loading all household data:', err);
       setIsOnboarded(false);
+    } finally {
+      setIsDataLoading(false);
     }
   }
 
@@ -2656,6 +2672,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     applyRuleAllocation,
     session,
     isAuthLoading,
+    isDataLoading,
     theme,
     setTheme,
   };

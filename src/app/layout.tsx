@@ -26,6 +26,9 @@ import "./globals.css";
 import { AppProvider } from "@/context/AppContext";
 import AppShell from "@/components/AppShell";
 import { Suspense } from "react";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+import { type Session } from "@supabase/supabase-js";
 
 export const metadata: Metadata = {
   title: "Funded",
@@ -38,11 +41,58 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  let session: Session | null = null;
+  let initialIsOnboarded = false;
+
+  try {
+    const cookieStore = await cookies();
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (supabaseUrl && supabaseAnonKey) {
+      const supabase = createServerClient(
+        supabaseUrl,
+        supabaseAnonKey,
+        {
+          cookies: {
+            getAll() {
+              return cookieStore.getAll();
+            },
+            setAll(cookiesToSet) {
+              try {
+                cookiesToSet.forEach(({ name, value, options }) =>
+                  cookieStore.set(name, value, options)
+                );
+              } catch {
+                // Safe to ignore in Server Components
+              }
+            },
+          },
+        }
+      );
+
+      const { data } = await supabase.auth.getSession();
+      session = data.session;
+
+      if (session?.user) {
+        const { data: membership } = await supabase
+          .from('household_members')
+          .select('household_id')
+          .eq('user_id', session.user.id)
+          .maybeSingle();
+
+        initialIsOnboarded = !!membership?.household_id;
+      }
+    }
+  } catch (err) {
+    console.error("Error fetching session in RootLayout:", err);
+  }
+
   return (
     <html lang="en" className="h-full antialiased">
       <head>
@@ -82,7 +132,7 @@ export default function RootLayout({
         />
       </head>
       <body className={`${syne.variable} ${instrument.variable} ${jetbrains.variable} font-body`}>
-        <AppProvider>
+        <AppProvider initialSession={session} initialIsOnboarded={initialIsOnboarded}>
           <Suspense fallback={null}>
             <AppShell>{children}</AppShell>
           </Suspense>

@@ -10,34 +10,16 @@ import Logo from "./Logo";
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const [isMounted, setIsMounted] = useState(false);
   useEffect(() => {
-    setIsMounted(true);
+    Promise.resolve().then(() => {
+      setIsMounted(true);
+    });
   }, []);
 
-  // During static prerendering at build time, render a clean, completely static wrapper
-  // around children. This prevents any layout-level client hooks (like usePathname)
-  // or state contexts from being evaluated on the server, avoiding dynamic de-optimization.
-  if (!isMounted) {
-    return (
-      <div className="relative min-h-screen">
-        <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-2xl aspect-[3/1] bg-[radial-gradient(ellipse_at_top,_rgba(200,255,0,0.15),_transparent_70%)] pointer-events-none z-0" />
-        <main 
-          style={{ 
-            paddingTop: "env(safe-area-inset-top)", 
-            paddingBottom: "calc(env(safe-area-inset-bottom) + 5rem)" 
-          }}
-          className="flex-1 w-full flex flex-col relative z-10"
-        >
-          {children}
-        </main>
-      </div>
-    );
-  }
-
-  return <AppShellBody>{children}</AppShellBody>;
+  return <AppShellBody isMounted={isMounted}>{children}</AppShellBody>;
 }
 
-function AppShellBody({ children }: { children: React.ReactNode }) {
-  const { isOnboarded, session, isAuthLoading } = useApp();
+function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMounted: boolean }) {
+  const { isOnboarded, session, isAuthLoading, isDataLoading } = useApp();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -46,7 +28,20 @@ function AppShellBody({ children }: { children: React.ReactNode }) {
   const isConfirmEmailPage = pathname === "/confirm-email";
   const isResetPasswordPage = pathname?.startsWith("/reset-password");
 
-  console.log('AppShell render - isAuthLoading:', isAuthLoading, 'session:', session ? 'exists (user: ' + session.user?.id + ')' : 'null', 'isOnboarded:', isOnboarded, 'pathname:', pathname);
+  console.log(
+    "AppShell render - isAuthLoading:",
+    isAuthLoading,
+    "isDataLoading:",
+    isDataLoading,
+    "session:",
+    session ? "exists (user: " + session.user?.id + ")" : "null",
+    "isOnboarded:",
+    isOnboarded,
+    "pathname:",
+    pathname,
+    "isMounted:",
+    isMounted
+  );
 
   // 1. Manage Visual Viewport (for mobile keyboard support)
   useEffect(() => {
@@ -127,37 +122,74 @@ function AppShellBody({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  // 3. Navigation/Auth Guard Redirects
   useEffect(() => {
-    if (isAuthLoading) return;
+    if (!isMounted || isAuthLoading) return;
 
     if (!session) {
       if (!isLoginPage && !isConfirmEmailPage && !isResetPasswordPage) {
-        console.log('AppShell useEffect - triggering redirect to /login');
+        console.log("AppShell useEffect - triggering redirect to /login");
         router.replace("/login");
       }
     } else {
       const isConfirmed = !!session.user.email_confirmed_at;
       if (!isConfirmed) {
         if (!isConfirmEmailPage) {
-          console.log('AppShell useEffect - redirecting unconfirmed user to /confirm-email');
+          console.log("AppShell useEffect - redirecting unconfirmed user to /confirm-email");
           router.replace("/confirm-email");
         }
       } else {
         if (isConfirmEmailPage) {
-          console.log('AppShell useEffect - redirecting confirmed user away from /confirm-email');
+          console.log("AppShell useEffect - redirecting confirmed user away from /confirm-email");
           router.replace("/");
         }
       }
     }
-  }, [isAuthLoading, session, isLoginPage, isConfirmEmailPage, isResetPasswordPage, router]);
+  }, [isMounted, isAuthLoading, session, isLoginPage, isConfirmEmailPage, isResetPasswordPage, router]);
 
-  // Let the login, email confirmation, or reset password page render fullscreen
+  // Let the login, email confirmation, or reset password page render fullscreen immediately
   if (isLoginPage || isConfirmEmailPage || isResetPasswordPage) {
     return <>{children}</>;
   }
 
-  // Show loading spinner while auth is resolving
-  if (isAuthLoading) {
+  // Pre-hydration rendering path: Match server HTML to prevent flashes
+  if (!isMounted) {
+    if (session && isOnboarded) {
+      return (
+        <div className="relative min-h-screen">
+          <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-2xl aspect-[3/1] bg-[radial-gradient(ellipse_at_top,_rgba(200,255,0,0.15),_transparent_70%)] pointer-events-none z-0" />
+          <main
+            style={{
+              paddingTop: "env(safe-area-inset-top)",
+              paddingBottom: "calc(env(safe-area-inset-bottom) + 5rem)",
+            }}
+            className="flex-1 w-full flex flex-col relative z-10"
+          >
+            {children}
+          </main>
+          <BottomNav />
+        </div>
+      );
+    }
+
+    return (
+      <div className="relative min-h-screen">
+        <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-2xl aspect-[3/1] bg-[radial-gradient(ellipse_at_top,_rgba(200,255,0,0.15),_transparent_70%)] pointer-events-none z-0" />
+        <main
+          style={{
+            paddingTop: "env(safe-area-inset-top)",
+            paddingBottom: "calc(env(safe-area-inset-bottom) + 5rem)",
+          }}
+          className="flex-1 w-full flex flex-col relative z-10"
+        >
+          {children}
+        </main>
+      </div>
+    );
+  }
+
+  // Post-hydration loading state: Show full-screen loader if authenticating or fetching household info
+  if (isAuthLoading || (session && isDataLoading)) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-black text-white">
         <div className="flex flex-col items-center gap-6 animate-in fade-in duration-300">
@@ -168,9 +200,8 @@ function AppShellBody({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // If auth resolved but there's no session, show spinner while redirect fires
+  // If auth resolved and no session exists, show loader until redirect fires
   if (!session) {
-    console.log('AppShell guard - showing redirecting spinner because session is null');
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-black text-white">
         <div className="flex flex-col items-center gap-6 animate-in fade-in duration-300">
@@ -181,17 +212,19 @@ function AppShellBody({ children }: { children: React.ReactNode }) {
     );
   }
 
+  // Check onboarding status
   if (!isOnboarded) {
     return <Onboarding />;
   }
 
+  // Render normal layout
   return (
     <div className="relative min-h-screen">
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-2xl aspect-[3/1] bg-[radial-gradient(ellipse_at_top,_rgba(200,255,0,0.15),_transparent_70%)] pointer-events-none z-0" />
-      <main 
-        style={{ 
-          paddingTop: "env(safe-area-inset-top)", 
-          paddingBottom: "calc(env(safe-area-inset-bottom) + 5rem)" 
+      <main
+        style={{
+          paddingTop: "env(safe-area-inset-top)",
+          paddingBottom: "calc(env(safe-area-inset-bottom) + 5rem)",
         }}
         className="flex-1 w-full flex flex-col relative z-10"
       >
