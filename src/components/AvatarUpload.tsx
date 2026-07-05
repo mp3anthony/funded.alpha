@@ -1,0 +1,166 @@
+"use client";
+
+import React, { useState, useRef } from "react";
+import { Upload, Trash2, Loader2 } from "lucide-react";
+import { uploadAvatar, deleteAvatar } from "@/lib/storage";
+
+interface AvatarUploadProps {
+  currentAvatarUrl: string | null;
+  memberName: string;
+  userId: string;
+  onAvatarChange: (url: string | null) => void;
+}
+
+export default function AvatarUpload({
+  currentAvatarUrl,
+  memberName,
+  userId,
+  onAvatarChange,
+}: AvatarUploadProps) {
+  const [loading, setLoading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate size (2MB max)
+    if (file.size > 2 * 1024 * 1024) {
+      setError("File size must be less than 2MB.");
+      return;
+    }
+
+    // Validate type
+    const validTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!validTypes.includes(file.type)) {
+      setError("Invalid file type. Only JPEG, PNG, and WebP are allowed.");
+      return;
+    }
+
+    setError(null);
+    setPreviewUrl(URL.createObjectURL(file));
+    setLoading(true);
+
+    try {
+      // If there's an existing avatar, delete it from storage first
+      if (currentAvatarUrl) {
+        try {
+          await deleteAvatar(userId, currentAvatarUrl);
+        } catch (delErr) {
+          console.warn("Could not delete old avatar from storage:", delErr);
+        }
+      }
+
+      const publicUrl = await uploadAvatar(userId, file);
+      onAvatarChange(publicUrl);
+    } catch (err: any) {
+      console.error("Avatar upload failed:", err);
+      setError(err.message || "Failed to upload avatar.");
+      setPreviewUrl(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRemove = async () => {
+    if (!currentAvatarUrl) return;
+    if (!confirm("Are you sure you want to remove your profile photo?")) return;
+
+    setLoading(true);
+    setError(null);
+    try {
+      await deleteAvatar(userId, currentAvatarUrl);
+      onAvatarChange(null);
+      setPreviewUrl(null);
+    } catch (err: any) {
+      console.error("Failed to remove avatar:", err);
+      setError(err.message || "Failed to remove avatar.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
+  const activeAvatar = previewUrl || currentAvatarUrl;
+
+  return (
+    <div className="flex flex-col sm:flex-row items-center gap-5 p-4 bg-[#111111] border border-white/10 rounded-2xl">
+      {/* Avatar Display wrapper */}
+      <div className="relative h-20 w-20 rounded-full overflow-hidden bg-zinc-800 border border-white/10 shrink-0 shadow-inner">
+        {activeAvatar ? (
+          <img
+            src={activeAvatar}
+            alt={memberName}
+            className="h-full w-full object-cover"
+            onError={() => {
+              setError("Failed to load avatar image.");
+              setPreviewUrl(null);
+            }}
+          />
+        ) : (
+          <div className="h-full w-full bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-white font-extrabold text-2xl">
+            {memberName.charAt(0).toUpperCase() || "?"}
+          </div>
+        )}
+
+        {loading && (
+          <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+            <Loader2 className="h-6 w-6 text-primary animate-spin" />
+          </div>
+        )}
+      </div>
+
+      {/* Control Buttons */}
+      <div className="flex flex-col space-y-2 w-full sm:w-auto">
+        <div className="flex items-center gap-2">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+          />
+          <button
+            type="button"
+            onClick={triggerFileInput}
+            disabled={loading}
+            className="flex items-center justify-center gap-1.5 px-4 py-2 bg-primary text-primary-fg text-xs font-bold uppercase tracking-wider rounded-xl transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+          >
+            <Upload size={14} />
+            <span>Upload Photo</span>
+          </button>
+
+          {currentAvatarUrl && (
+            <button
+              type="button"
+              onClick={handleRemove}
+              disabled={loading}
+              className="flex items-center justify-center gap-1.5 px-4 py-2 bg-white/5 border border-white/10 text-muted hover:text-destructive hover:bg-destructive/10 hover:border-destructive/20 text-xs font-bold uppercase tracking-wider rounded-xl transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+              title="Remove Photo"
+            >
+              <Trash2 size={14} />
+              <span>Remove</span>
+            </button>
+          )}
+        </div>
+
+        {/* Hints and Error messages */}
+        <div className="space-y-1">
+          <p className="text-[10px] text-muted">
+            Allowed formats: JPEG, PNG, WebP. Max size: 2MB.
+          </p>
+          {error && (
+            <p className="text-[10px] text-red-500 font-semibold uppercase tracking-wider animate-shake">
+              {error}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
