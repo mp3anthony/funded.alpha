@@ -29,7 +29,7 @@ import AppShell from "@/components/AppShell";
 export const metadata: Metadata = {
   title: "Funded",
   description: "Household Finance Control Center",
-  manifest: "/manifest.json",
+  manifest: "/manifest.json?v=2",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -46,7 +46,9 @@ export default function RootLayout({
     <html lang="en" className="h-full antialiased">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png?v=2" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png?v=2" />
+        <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512x512.png?v=2" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="theme-color" content="#c8ff00" />

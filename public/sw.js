@@ -1,13 +1,13 @@
-const CACHE_NAME = 'funded-pwa-cache-v1';
+const CACHE_NAME = 'funded-pwa-cache-v2';
 const OFFLINE_URL = '/offline';
 
 const ASSETS_TO_CACHE = [
   '/',
   OFFLINE_URL,
-  '/manifest.json',
+  '/manifest.json?v=2',
   '/favicon.ico',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png',
+  '/icons/icon-192x192.png?v=2',
+  '/icons/icon-512x512.png?v=2',
   '/icons/logo-icon.svg',
   '/icons/logo-wordmark.svg'
 ];
