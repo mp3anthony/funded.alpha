@@ -24,7 +24,8 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
   const router = useRouter();
   const pathname = usePathname();
   const currentUser = useCurrentUser();
-  const [isPageTransitioning, setIsPageTransitioning] = useState(false);
+  const [showTransitionOverlay, setShowTransitionOverlay] = useState(false);
+  const [overlayOpacity, setOverlayOpacity] = useState(0);
 
   // Detect navigation start via click interception
   useEffect(() => {
@@ -41,19 +42,34 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
       const targetPath = href.split("?")[0].split("#")[0];
       if (targetPath === pathname) return;
 
-      setIsPageTransitioning(true);
+      setShowTransitionOverlay(true);
+      setTimeout(() => {
+        setOverlayOpacity(1);
+      }, 20);
     };
 
     document.addEventListener("click", handleClick, { capture: true });
     return () => document.removeEventListener("click", handleClick, { capture: true });
   }, [pathname]);
 
-  // Reset transitioning state when pathname changes with a 350ms delay to cover hydration/mounting lag
+  // Reset transitioning state when pathname changes with a delay to allow new page to mount
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsPageTransitioning(false);
-    }, 350);
-    return () => clearTimeout(timer);
+    let unmountTimer: ReturnType<typeof setTimeout>;
+    
+    // Hold black screen for 300ms, then fade out
+    const startFadeOut = setTimeout(() => {
+      setOverlayOpacity(0);
+      
+      // Unmount after 300ms fade duration finishes
+      unmountTimer = setTimeout(() => {
+        setShowTransitionOverlay(false);
+      }, 300);
+    }, 300);
+
+    return () => {
+      clearTimeout(startFadeOut);
+      if (unmountTimer) clearTimeout(unmountTimer);
+    };
   }, [pathname]);
 
   // Skip auth guards on the login and email confirmation pages
@@ -182,18 +198,16 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
 
   // Let the login, email confirmation, or reset password page render fullscreen immediately
   if (isLoginPage || isConfirmEmailPage || isResetPasswordPage) {
-    return <>{children}</>;
-  }
-
-  // Navigation transition loading overlay
-  if (isPageTransitioning) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-black text-white z-[100] fixed inset-0">
-        <div className="flex flex-col items-center gap-6 animate-in fade-in duration-300">
-          <Logo size="large" showWordmark={true} />
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#c8ff00] border-t-transparent" />
-        </div>
-      </div>
+      <>
+        {children}
+        {showTransitionOverlay && (
+          <div 
+            style={{ opacity: overlayOpacity }}
+            className="fixed inset-0 bg-black z-[100] pointer-events-none transition-opacity duration-300 ease-in-out"
+          />
+        )}
+      </>
     );
   }
 
@@ -224,6 +238,12 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
             </Suspense>
           </main>
           <BottomNav />
+          {showTransitionOverlay && (
+            <div 
+              style={{ opacity: overlayOpacity }}
+              className="fixed inset-0 bg-black z-[100] pointer-events-none transition-opacity duration-300 ease-in-out"
+            />
+          )}
         </div>
       );
     }
@@ -244,6 +264,12 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
             {children}
           </Suspense>
         </main>
+        {showTransitionOverlay && (
+          <div 
+            style={{ opacity: overlayOpacity }}
+            className="fixed inset-0 bg-black z-[100] pointer-events-none transition-opacity duration-300 ease-in-out"
+          />
+        )}
       </div>
     );
   }
@@ -302,6 +328,12 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
         </Suspense>
       </main>
       <BottomNav />
+      {showTransitionOverlay && (
+        <div 
+          style={{ opacity: overlayOpacity }}
+          className="fixed inset-0 bg-black z-[100] pointer-events-none transition-opacity duration-300 ease-in-out"
+        />
+      )}
     </div>
   );
 }
