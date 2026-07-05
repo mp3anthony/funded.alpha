@@ -64,7 +64,7 @@ export default function LoginPage() {
         router.replace("/");
       } else if (mode === "forgot") {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/auth/callback?next=/reset-password/update`,
+          redirectTo: `${window.location.origin}/auth/callback`,
         });
         if (error) throw error;
         setSuccessMsg("Recovery link sent! Check your email to reset your password.");
