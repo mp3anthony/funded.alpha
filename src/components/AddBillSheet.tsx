@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { useApp, useCurrentUser, type Bill, type BillSplit } from "@/context/AppContext";
 import ContributorSplits, { type SplitResult } from "./ContributorSplits";
@@ -129,13 +130,15 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-[100] modal-backdrop flex items-end justify-center bg-black/80 backdrop-blur-sm md:items-stretch md:justify-end md:p-0 md:bg-black/60 animate-in fade-in duration-200">
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[100] modal-backdrop flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
       {/* Overlay to close */}
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Sheet Content */}
-      <div className="relative w-full max-w-md max-h-[92dvh] md:h-screen md:max-h-screen bg-[#111111] border border-white/10 md:border-y-0 md:border-r-0 md:border-l rounded-t-3xl rounded-b-none md:rounded-none md:rounded-l-3xl flex flex-col shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-5 md:slide-in-from-right duration-250">
+      <div className="relative w-full max-w-md max-h-[90dvh] bg-[#111111] border border-white/10 rounded-2xl flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-250">
         
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-[#111111]/90 px-4 py-3 sm:px-6 sm:py-4 backdrop-blur">
@@ -392,6 +395,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
         </div>
 
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

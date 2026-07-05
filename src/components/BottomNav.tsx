@@ -17,8 +17,8 @@ export default function BottomNav() {
   return (
     <nav className="z-50 w-full shrink-0 border-t border-white/10 bg-black backdrop-blur-lg">
       <div 
-        className="mx-auto flex max-w-md items-center justify-around px-4 pt-3"
-        style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+        className="mx-auto flex max-w-md items-center justify-around px-4 pt-2"
+        style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))' }}
       >
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -28,17 +28,13 @@ export default function BottomNav() {
             <Link
               key={item.name}
               href={item.path}
-              className="group flex flex-1 flex-col items-center justify-center py-2.5 text-center transition-all duration-200 ease-in-out hover:scale-105"
+              className="group flex flex-1 flex-col items-center justify-center pb-3 pt-2 text-center transition-all duration-200 ease-in-out hover:-translate-y-1"
             >
               <div className="relative flex flex-col items-center gap-1">
-                {/* Active Indicator Dot */}
-                {isActive && (
-                  <span className="absolute -top-1.5 h-1.5 w-1.5 rounded-full bg-[#c8ff00] shadow-[0_0_8px_rgba(200,255,0,0.6)] animate-pulse" />
-                )}
                 <Icon
-                  className={`h-5 w-5 transition-colors duration-200 ${
+                  className={`h-5 w-5 transition-all duration-200 ${
                     isActive
-                      ? "text-[#c8ff00] scale-105"
+                      ? "text-[#c8ff00] scale-110 drop-shadow-[0_0_8px_rgba(200,255,0,0.6)]"
                       : "text-zinc-500 group-hover:text-zinc-300 dark:text-zinc-500 dark:group-hover:text-zinc-300"
                   }`}
                 />

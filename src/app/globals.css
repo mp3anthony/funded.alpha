@@ -310,3 +310,9 @@ body.modal-open {
 .standalone-mode body {
   height: 100vh !important;
 }
+
+/* Prevent main content from scrolling when modal is open */
+html.modal-open main,
+body.modal-open main {
+  overflow: hidden !important;
+}
