@@ -6,6 +6,7 @@ import { useApp } from "@/context/AppContext";
 import BottomNav from "@/components/BottomNav";
 import Onboarding from "@/components/Onboarding";
 import Logo from "./Logo";
+import NavigationProgress from "@/components/NavigationProgress";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const [isMounted, setIsMounted] = useState(false);
@@ -230,6 +231,7 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
       >
         {children}
       </main>
+      <NavigationProgress />
       <BottomNav />
     </div>
   );
