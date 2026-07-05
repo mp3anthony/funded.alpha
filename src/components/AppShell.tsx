@@ -100,24 +100,6 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
 
   return (
     <div className="flex-1 flex flex-col w-full relative overflow-hidden text-white">
-      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[350px] aspect-square bg-[radial-gradient(ellipse_at_left,_rgba(200,255,0,0.12),_transparent_70%)] pointer-events-none z-0" />
-      
-      {/* Header */}
-      {(!isLoading || session) && (
-        <header 
-          style={{ paddingTop: "env(safe-area-inset-top)" }}
-          className="w-full max-w-4xl mx-auto px-4 pb-3 flex items-center justify-between z-20 border-b border-white/5 bg-[#0a0a0a]/50 backdrop-blur-md shrink-0 relative"
-        >
-          <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-[linear-gradient(to_left,_rgba(200,255,0,0.22),_transparent)] pointer-events-none z-0" />
-          <div className="relative z-10">
-            <Logo size="medium" showWordmark={true} />
-          </div>
-          <div className="relative z-10">
-            {currentUser && <AvatarDropdown user={currentUser} />}
-          </div>
-        </header>
-      )}
-
       {/* Main Content */}
       <main 
         className="flex-1 overflow-y-auto w-full relative z-10 transform-gpu"
