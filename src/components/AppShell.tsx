@@ -24,53 +24,7 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
   const router = useRouter();
   const pathname = usePathname();
   const currentUser = useCurrentUser();
-  const [showTransitionOverlay, setShowTransitionOverlay] = useState(false);
-  const [overlayOpacity, setOverlayOpacity] = useState(0);
 
-  // Detect navigation start via click interception
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      const anchor = (e.target as HTMLElement).closest("a");
-      if (!anchor) return;
-
-      const href = anchor.getAttribute("href");
-      if (!href) return;
-
-      // Only intercept internal links (not external, not anchors, not same page)
-      if (href.startsWith("http") || href.startsWith("#") || href.startsWith("mailto:")) return;
-
-      const targetPath = href.split("?")[0].split("#")[0];
-      if (targetPath === pathname) return;
-
-      setShowTransitionOverlay(true);
-      setTimeout(() => {
-        setOverlayOpacity(1);
-      }, 20);
-    };
-
-    document.addEventListener("click", handleClick, { capture: true });
-    return () => document.removeEventListener("click", handleClick, { capture: true });
-  }, [pathname]);
-
-  // Reset transitioning state when pathname changes with a delay to allow new page to mount
-  useEffect(() => {
-    let unmountTimer: ReturnType<typeof setTimeout>;
-    
-    // Hold black screen for 300ms, then fade out
-    const startFadeOut = setTimeout(() => {
-      setOverlayOpacity(0);
-      
-      // Unmount after 300ms fade duration finishes
-      unmountTimer = setTimeout(() => {
-        setShowTransitionOverlay(false);
-      }, 300);
-    }, 300);
-
-    return () => {
-      clearTimeout(startFadeOut);
-      if (unmountTimer) clearTimeout(unmountTimer);
-    };
-  }, [pathname]);
 
   // Skip auth guards on the login and email confirmation pages
   const isLoginPage = pathname === "/login";
@@ -198,17 +152,7 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
 
   // Let the login, email confirmation, or reset password page render fullscreen immediately
   if (isLoginPage || isConfirmEmailPage || isResetPasswordPage) {
-    return (
-      <>
-        {children}
-        {showTransitionOverlay && (
-          <div 
-            style={{ opacity: overlayOpacity }}
-            className="fixed inset-0 bg-black z-[100] pointer-events-none transition-opacity duration-300 ease-in-out"
-          />
-        )}
-      </>
-    );
+    return <>{children}</>;
   }
 
   // Pre-hydration rendering path: Match server HTML to prevent flashes
@@ -238,12 +182,6 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
             </Suspense>
           </main>
           <BottomNav />
-          {showTransitionOverlay && (
-            <div 
-              style={{ opacity: overlayOpacity }}
-              className="fixed inset-0 bg-black z-[100] pointer-events-none transition-opacity duration-300 ease-in-out"
-            />
-          )}
         </div>
       );
     }
@@ -264,12 +202,6 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
             {children}
           </Suspense>
         </main>
-        {showTransitionOverlay && (
-          <div 
-            style={{ opacity: overlayOpacity }}
-            className="fixed inset-0 bg-black z-[100] pointer-events-none transition-opacity duration-300 ease-in-out"
-          />
-        )}
       </div>
     );
   }
@@ -328,12 +260,6 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
         </Suspense>
       </main>
       <BottomNav />
-      {showTransitionOverlay && (
-        <div 
-          style={{ opacity: overlayOpacity }}
-          className="fixed inset-0 bg-black z-[100] pointer-events-none transition-opacity duration-300 ease-in-out"
-        />
-      )}
     </div>
   );
 }
