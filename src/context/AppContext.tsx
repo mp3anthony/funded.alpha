@@ -31,7 +31,6 @@ export interface Bill {
   notes?: string | null;
   is_recurring?: boolean;
   is_paused?: boolean;
-  category?: string;
 }
 
 export interface Fund {
@@ -432,7 +431,6 @@ function mapBillFromDb(dbBill: any): Bill {
     due_date: adjustedDueDate,
     is_recurring: dbBill.is_recurring !== undefined ? dbBill.is_recurring : true,
     is_paused: dbBill.is_paused || false,
-    category: dbBill.category || "Other",
   };
 }
 
@@ -1054,7 +1052,6 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
         notes: billData.notes || null,
         is_recurring: true,
         is_paused: false,
-        category: billData.category || "Other",
       };
 
       const { data: newBill, error: billError } = await supabase
@@ -1135,7 +1132,6 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
         notes: billData.notes || null,
         is_recurring: true,
         is_paused: billData.is_paused || false,
-        category: billData.category || "Other",
       };
 
       console.log('updateBill - dbBillData payload:', dbBillData);
@@ -2723,6 +2719,8 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
     addBill,
     updateBill,
     togglePaid,
+    markAsPaid,
+    togglePauseBill,
     deleteBill,
     isJointFund,
     updateHouseholdPaymentMode,
