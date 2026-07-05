@@ -119,7 +119,7 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
         >
           <div className="fixed left-0 top-1/2 -translate-y-1/2 w-[350px] aspect-square bg-[radial-gradient(ellipse_at_left,_rgba(200,255,0,0.12),_transparent_70%)] pointer-events-none z-0" />
           <header 
-            style={{ paddingTop: "calc(env(safe-area-inset-top, 24px) + 24px)" }}
+            style={{ paddingTop: "env(safe-area-inset-top)" }}
             className="w-full max-w-4xl mx-auto px-4 pb-3 flex items-center justify-between z-20 border-b border-white/5 bg-[#0a0a0a]/50 backdrop-blur-md shrink-0 relative"
           >
             <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-[linear-gradient(to_left,_rgba(200,255,0,0.22),_transparent)] pointer-events-none z-0" />
@@ -167,7 +167,7 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
   // Post-hydration loading state: Show full-screen loader if authenticating or fetching household info
   if (isAuthLoading || (session && isDataLoading)) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-black text-white">
+      <div className="flex h-[100dvh] w-screen items-center justify-center bg-black text-white">
         <div className="flex flex-col items-center gap-6 animate-in fade-in duration-300">
           <Logo size="large" showWordmark={true} />
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#c8ff00] border-t-transparent" />
@@ -179,7 +179,7 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
   // If auth resolved and no session exists, show loader until redirect fires
   if (!session) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-black text-white">
+      <div className="flex h-[100dvh] w-screen items-center justify-center bg-black text-white">
         <div className="flex flex-col items-center gap-6 animate-in fade-in duration-300">
           <Logo size="large" showWordmark={true} />
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#c8ff00] border-t-transparent" />
@@ -200,7 +200,7 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
     >
       <div className="fixed left-0 top-1/2 -translate-y-1/2 w-[350px] aspect-square bg-[radial-gradient(ellipse_at_left,_rgba(200,255,0,0.12),_transparent_70%)] pointer-events-none z-0" />
       <header 
-        style={{ paddingTop: "calc(env(safe-area-inset-top, 24px) + 24px)" }}
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
         className="w-full max-w-4xl mx-auto px-4 pb-3 flex items-center justify-between z-20 border-b border-white/5 bg-[#0a0a0a]/50 backdrop-blur-md shrink-0 relative"
       >
         <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-[linear-gradient(to_left,_rgba(200,255,0,0.22),_transparent)] pointer-events-none z-0" />
