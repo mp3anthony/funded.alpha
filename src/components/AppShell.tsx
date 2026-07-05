@@ -163,13 +163,18 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
           style={{ height: "var(--visual-viewport-height, 100dvh)" }}
           className="relative w-screen flex flex-col overflow-hidden bg-black text-white"
         >
-          <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-2xl aspect-[3/1] bg-[radial-gradient(ellipse_at_top,_rgba(200,255,0,0.15),_transparent_70%)] pointer-events-none z-0" />
+          <div className="fixed left-0 top-1/2 -translate-y-1/2 w-[350px] aspect-square bg-[radial-gradient(ellipse_at_left,_rgba(200,255,0,0.12),_transparent_70%)] pointer-events-none z-0" />
           <header 
             style={{ paddingTop: "calc(env(safe-area-inset-top) + 8px)" }}
-            className="w-full max-w-4xl mx-auto px-4 pb-3 flex items-center justify-between z-20 border-b border-white/5 bg-[#0a0a0a]/50 backdrop-blur-md shrink-0"
+            className="w-full max-w-4xl mx-auto px-4 pb-3 flex items-center justify-between z-20 border-b border-white/5 bg-[#0a0a0a]/50 backdrop-blur-md shrink-0 relative overflow-hidden"
           >
-            <Logo size="medium" showWordmark={true} />
-            <AvatarDropdown user={currentUser} />
+            <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-[linear-gradient(to_left,_rgba(200,255,0,0.15),_transparent)] pointer-events-none z-0" />
+            <div className="relative z-10">
+              <Logo size="medium" showWordmark={true} />
+            </div>
+            <div className="relative z-10">
+              <AvatarDropdown user={currentUser} />
+            </div>
           </header>
           <main
             style={{
@@ -191,7 +196,7 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
         style={{ height: "var(--visual-viewport-height, 100dvh)" }}
         className="relative w-screen flex flex-col overflow-hidden bg-black text-white"
       >
-        <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-2xl aspect-[3/1] bg-[radial-gradient(ellipse_at_top,_rgba(200,255,0,0.15),_transparent_70%)] pointer-events-none z-0" />
+        <div className="fixed left-0 top-1/2 -translate-y-1/2 w-[350px] aspect-square bg-[radial-gradient(ellipse_at_left,_rgba(200,255,0,0.12),_transparent_70%)] pointer-events-none z-0" />
         <main
           style={{
             paddingBottom: "calc(env(safe-area-inset-bottom) + 5.5rem)",
@@ -241,13 +246,18 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
       style={{ height: "var(--visual-viewport-height, 100dvh)" }}
       className="relative w-screen flex flex-col overflow-hidden bg-black text-white"
     >
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-2xl aspect-[3/1] bg-[radial-gradient(ellipse_at_top,_rgba(200,255,0,0.15),_transparent_70%)] pointer-events-none z-0" />
+      <div className="fixed left-0 top-1/2 -translate-y-1/2 w-[350px] aspect-square bg-[radial-gradient(ellipse_at_left,_rgba(200,255,0,0.12),_transparent_70%)] pointer-events-none z-0" />
       <header 
         style={{ paddingTop: "calc(env(safe-area-inset-top) + 8px)" }}
-        className="w-full max-w-4xl mx-auto px-4 pb-3 flex items-center justify-between z-20 border-b border-white/5 bg-[#0a0a0a]/50 backdrop-blur-md shrink-0"
+        className="w-full max-w-4xl mx-auto px-4 pb-3 flex items-center justify-between z-20 border-b border-white/5 bg-[#0a0a0a]/50 backdrop-blur-md shrink-0 relative overflow-hidden"
       >
-        <Logo size="medium" showWordmark={true} />
-        <AvatarDropdown user={currentUser} />
+        <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-[linear-gradient(to_left,_rgba(200,255,0,0.15),_transparent)] pointer-events-none z-0" />
+        <div className="relative z-10">
+          <Logo size="medium" showWordmark={true} />
+        </div>
+        <div className="relative z-10">
+          <AvatarDropdown user={currentUser} />
+        </div>
       </header>
       <main
         style={{
