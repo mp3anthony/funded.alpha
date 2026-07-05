@@ -12,7 +12,7 @@ import PageHeader from "@/components/PageHeader";
 import HealthScoreCard from "@/components/HealthScoreCard";
 import UpcomingBillsCard from "@/components/UpcomingBillsCard";
 import ActiveGoalsCard from "@/components/ActiveGoalsCard";
-import RecentActivityCard from "@/components/RecentActivityCard";
+
 
 export default function HomeClient() {
   const {
@@ -94,13 +94,7 @@ export default function HomeClient() {
           </div>
         </div>
 
-        {/* Recent Activity Card - Full Width */}
-        <RecentActivityCard
-          bills={bills}
-          payHistory={payHistory}
-          funds={funds}
-          members={householdMembers}
-        />
+
       </div>
 
       {/* Bill Detail Sheet */}

@@ -5,6 +5,8 @@ import { CheckCircle, Clock, AlertCircle, Plane, Shield, Car, PiggyBank, Home, B
 import { supabase } from "@/lib/supabase";
 import { type Session } from "@supabase/supabase-js";
 import { type HouseholdContribution, type ContributionRule } from "@/types";
+import { adjustAutopayBillDate } from "@/lib/utils";
+
 
 /* ═══════════════════════════════════════════════
    Types
@@ -386,15 +388,36 @@ function formatDateForUi(dateStr: string): string {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapBillFromDb(dbBill: any): Bill {
-  const statusStyle = getStatusStyle(dbBill.status);
+  const adjustedDueDate = adjustAutopayBillDate(
+    dbBill.due_date,
+    dbBill.frequency,
+    dbBill.payment_type
+  );
+
+  let mappedStatus = dbBill.status;
+  if (mappedStatus !== "Paid" && dbBill.payment_type?.toLowerCase() !== "auto") {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (adjustedDueDate) {
+      const d = new Date(adjustedDueDate + "T00:00:00");
+      if (!isNaN(d.getTime())) {
+        d.setHours(0, 0, 0, 0);
+        if (d.getTime() < today.getTime()) {
+          mappedStatus = "Overdue";
+        }
+      }
+    }
+  }
+
+  const statusStyle = getStatusStyle(mappedStatus);
   const categoryColor = getCategoryColor(dbBill.category);
   return {
     id: dbBill.id,
     name: dbBill.name,
     category: dbBill.category,
-    dueDate: formatDateForUi(dbBill.due_date),
+    dueDate: formatDateForUi(adjustedDueDate),
     amount: parseFloat(dbBill.amount),
-    status: dbBill.status,
+    status: mappedStatus,
     frequency: dbBill.frequency,
     statusColor: statusStyle.statusColor,
     statusIcon: statusStyle.statusIcon,
@@ -402,7 +425,7 @@ function mapBillFromDb(dbBill: any): Bill {
     assignee_id: dbBill.assignee_id,
     payment_type: dbBill.payment_type ? (dbBill.payment_type.toLowerCase() as "auto" | "manual") : undefined,
     invoice_date: dbBill.invoice_date,
-    due_date: dbBill.due_date,
+    due_date: adjustedDueDate,
     is_recurring: dbBill.is_recurring !== undefined ? dbBill.is_recurring : true,
   };
 }

@@ -25,6 +25,50 @@ export function parseBillDate(dateStr: string): Date {
 }
 
 /**
+ * Dynamic due date adjustment for auto-pay bills.
+ * If a bill is auto-pay and its due date is in the past, advance it iteratively
+ * by its frequency until it is today or in the future.
+ * Returns the date in YYYY-MM-DD local format to avoid timezone offset bugs.
+ */
+export function adjustAutopayBillDate(dueDateStr: string, frequency: string, paymentType?: string): string {
+  if (!dueDateStr) return dueDateStr;
+  const isAutoPay = paymentType?.toLowerCase() === "auto";
+  if (!isAutoPay) return dueDateStr;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const tempDate = parseBillDate(dueDateStr);
+  tempDate.setHours(0, 0, 0, 0);
+
+  if (tempDate.getTime() < today.getTime()) {
+    const freq = (frequency || "monthly").toLowerCase();
+    let limit = 0;
+    while (tempDate.getTime() < today.getTime() && limit < 100) {
+      limit++;
+      if (freq === "weekly") {
+        tempDate.setDate(tempDate.getDate() + 7);
+      } else if (freq === "by-weekly" || freq === "bi-weekly" || freq === "byweekly" || freq === "biweekly") {
+        tempDate.setDate(tempDate.getDate() + 14);
+      } else if (freq === "monthly") {
+        tempDate.setMonth(tempDate.getMonth() + 1);
+      } else if (freq === "yearly") {
+        tempDate.setFullYear(tempDate.getFullYear() + 1);
+      } else {
+        tempDate.setMonth(tempDate.getMonth() + 1);
+      }
+    }
+    const year = tempDate.getFullYear();
+    const month = String(tempDate.getMonth() + 1).padStart(2, "0");
+    const day = String(tempDate.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  return dueDateStr;
+}
+
+
+/**
  * Calculates a financial health score (0-100) based on:
  * - Bills management (40% weight)
  * - Goals/contributions progress (30% weight)
