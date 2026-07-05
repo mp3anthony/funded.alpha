@@ -166,7 +166,7 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
           <div className="fixed left-0 top-1/2 -translate-y-1/2 w-[350px] aspect-square bg-[radial-gradient(ellipse_at_left,_rgba(200,255,0,0.12),_transparent_70%)] pointer-events-none z-0" />
           <header 
             style={{ paddingTop: "calc(env(safe-area-inset-top) + 12px)" }}
-            className="w-full max-w-4xl mx-auto px-4 pb-3 flex items-center justify-between z-20 border-b border-white/5 bg-[#0a0a0a]/50 backdrop-blur-md shrink-0 relative overflow-hidden"
+            className="w-full max-w-4xl mx-auto px-4 pb-3 flex items-center justify-between z-20 border-b border-white/5 bg-[#0a0a0a]/50 backdrop-blur-md shrink-0 relative"
           >
             <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-[linear-gradient(to_left,_rgba(200,255,0,0.22),_transparent)] pointer-events-none z-0" />
             <div className="relative z-10">
@@ -249,7 +249,7 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
       <div className="fixed left-0 top-1/2 -translate-y-1/2 w-[350px] aspect-square bg-[radial-gradient(ellipse_at_left,_rgba(200,255,0,0.12),_transparent_70%)] pointer-events-none z-0" />
       <header 
         style={{ paddingTop: "calc(env(safe-area-inset-top) + 12px)" }}
-        className="w-full max-w-4xl mx-auto px-4 pb-3 flex items-center justify-between z-20 border-b border-white/5 bg-[#0a0a0a]/50 backdrop-blur-md shrink-0 relative overflow-hidden"
+        className="w-full max-w-4xl mx-auto px-4 pb-3 flex items-center justify-between z-20 border-b border-white/5 bg-[#0a0a0a]/50 backdrop-blur-md shrink-0 relative"
       >
         <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-[linear-gradient(to_left,_rgba(200,255,0,0.22),_transparent)] pointer-events-none z-0" />
         <div className="relative z-10">

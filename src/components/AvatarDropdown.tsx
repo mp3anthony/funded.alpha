@@ -84,10 +84,10 @@ export default function AvatarDropdown({ user }: AvatarDropdownProps) {
         <div
           role="menu"
           aria-orientation="vertical"
-          className="absolute right-0 mt-2 w-52 origin-top-right rounded-xl border border-white/10 bg-[#111111] shadow-lg shadow-black/40 ring-1 ring-black ring-opacity-5 focus:outline-none z-50 animate-in fade-in slide-in-from-top-1 duration-150"
+          className="absolute right-0 mt-2 w-56 origin-top-right rounded-xl border border-white/10 bg-[#111111] shadow-lg shadow-black/40 ring-1 ring-black ring-opacity-5 focus:outline-none z-50 animate-in fade-in slide-in-from-top-1 duration-150"
         >
           {/* User Information Header */}
-          <div className="px-4 py-3 border-b border-white/5 flex flex-col space-y-0.5">
+          <div className="px-5 py-3.5 border-b border-white/5 flex flex-col space-y-0.5">
             <span className="text-[10px] uppercase font-bold tracking-wider font-mono text-primary">
               Signed in as
             </span>
@@ -104,20 +104,20 @@ export default function AvatarDropdown({ user }: AvatarDropdownProps) {
             <Link
               href="/settings"
               onClick={() => setIsOpen(false)}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-xs font-bold uppercase tracking-wider text-muted hover:text-foreground hover:bg-white/5 transition-all cursor-pointer font-heading"
+              className="w-full flex items-center gap-3.5 px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider text-muted hover:text-foreground hover:bg-white/5 transition-all cursor-pointer font-heading"
               role="menuitem"
             >
-              <Settings size={14} className="text-muted shrink-0 group-hover:text-foreground" />
+              <Settings size={16} className="text-muted shrink-0 group-hover:text-foreground" />
               <span>Settings</span>
             </Link>
 
             {/* Logout Link */}
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-xs font-bold uppercase tracking-wider text-muted hover:text-destructive hover:bg-destructive/10 transition-all cursor-pointer font-heading"
+              className="w-full flex items-center gap-3.5 px-5 py-3.5 text-left text-xs font-bold uppercase tracking-wider text-muted hover:text-destructive hover:bg-destructive/10 transition-all cursor-pointer font-heading"
               role="menuitem"
             >
-              <LogOut size={14} className="text-muted shrink-0 group-hover:text-destructive" />
+              <LogOut size={16} className="text-muted shrink-0 group-hover:text-destructive" />
               <span>Log out</span>
             </button>
           </div>
