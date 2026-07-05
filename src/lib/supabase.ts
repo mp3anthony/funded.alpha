@@ -1,11 +1,24 @@
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder-please-set-env-vars.supabase.co";
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder-key";
+let supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+if (!supabaseUrl || supabaseUrl === "undefined" || (!supabaseUrl.startsWith("http://") && !supabaseUrl.startsWith("https://"))) {
+  supabaseUrl = "https://placeholder-please-set-env-vars.supabase.co";
+}
 
-if ((!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) && typeof window !== "undefined") {
+let supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+if (!supabaseAnonKey || supabaseAnonKey === "undefined") {
+  supabaseAnonKey = "placeholder-key";
+}
+
+const hasRealEnvVars = 
+  process.env.NEXT_PUBLIC_SUPABASE_URL && 
+  process.env.NEXT_PUBLIC_SUPABASE_URL !== "undefined" && 
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY && 
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY !== "undefined";
+
+if (!hasRealEnvVars && typeof window !== "undefined") {
   console.error(
-    "Missing Supabase environment variables: NEXT_PUBLIC_SUPABASE_URL and/or NEXT_PUBLIC_SUPABASE_ANON_KEY must be defined in your environment."
+    "Missing or invalid Supabase environment variables: NEXT_PUBLIC_SUPABASE_URL and/or NEXT_PUBLIC_SUPABASE_ANON_KEY must be defined in your environment."
   );
 }
 
