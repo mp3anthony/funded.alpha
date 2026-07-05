@@ -151,7 +151,6 @@ export default function PaydayClient() {
       <PageHeader
         title="Payday"
         subtitle="Manage & track incomes"
-        user={currentUser}
         action={
           <button
             onClick={() => setIsAddScheduleOpen(true)}

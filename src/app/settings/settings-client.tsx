@@ -134,7 +134,6 @@ export default function SettingsClient() {
       <PageHeader
         title="Settings"
         subtitle="Manage your account and household preferences"
-        user={currentUser}
       />
 
       {/* ── Profile Section ──────────────────────── */}

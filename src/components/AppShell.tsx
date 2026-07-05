@@ -2,10 +2,11 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { useApp } from "@/context/AppContext";
+import { useApp, useCurrentUser } from "@/context/AppContext";
 import BottomNav from "@/components/BottomNav";
 import Onboarding from "@/components/Onboarding";
 import Logo from "./Logo";
+import AvatarDropdown from "./AvatarDropdown";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const [isMounted, setIsMounted] = useState(false);
@@ -22,6 +23,7 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
   const { isOnboarded, session, isAuthLoading, isDataLoading } = useApp();
   const router = useRouter();
   const pathname = usePathname();
+  const currentUser = useCurrentUser();
   const [isPageTransitioning, setIsPageTransitioning] = useState(false);
 
   // Detect navigation start via click interception
@@ -46,9 +48,12 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
     return () => document.removeEventListener("click", handleClick, { capture: true });
   }, [pathname]);
 
-  // Reset transitioning state when pathname changes
+  // Reset transitioning state when pathname changes with a 350ms delay to cover hydration/mounting lag
   useEffect(() => {
-    setIsPageTransitioning(false);
+    const timer = setTimeout(() => {
+      setIsPageTransitioning(false);
+    }, 350);
+    return () => clearTimeout(timer);
   }, [pathname]);
 
   // Skip auth guards on the login and email confirmation pages
@@ -196,14 +201,23 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
   if (!isMounted) {
     if (session && isOnboarded) {
       return (
-        <div className="relative min-h-screen">
+        <div 
+          style={{ height: "var(--visual-viewport-height, 100dvh)" }}
+          className="relative w-screen flex flex-col overflow-hidden bg-black text-white"
+        >
           <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-2xl aspect-[3/1] bg-[radial-gradient(ellipse_at_top,_rgba(200,255,0,0.15),_transparent_70%)] pointer-events-none z-0" />
+          <header 
+            style={{ paddingTop: "calc(env(safe-area-inset-top) + 8px)" }}
+            className="w-full max-w-4xl mx-auto px-4 pb-3 flex items-center justify-between z-20 border-b border-white/5 bg-[#0a0a0a]/50 backdrop-blur-md shrink-0"
+          >
+            <Logo size="medium" showWordmark={true} />
+            <AvatarDropdown user={currentUser} />
+          </header>
           <main
             style={{
-              paddingTop: "env(safe-area-inset-top)",
-              paddingBottom: "calc(env(safe-area-inset-bottom) + 4.5rem)",
+              paddingBottom: "calc(env(safe-area-inset-bottom) + 5.5rem)",
             }}
-            className="flex-1 w-full flex flex-col relative z-10"
+            className="flex-1 w-full flex flex-col relative z-10 overflow-y-auto"
           >
             <Suspense fallback={null}>
               {children}
@@ -215,14 +229,16 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
     }
 
     return (
-      <div className="relative min-h-screen">
+      <div 
+        style={{ height: "var(--visual-viewport-height, 100dvh)" }}
+        className="relative w-screen flex flex-col overflow-hidden bg-black text-white"
+      >
         <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-2xl aspect-[3/1] bg-[radial-gradient(ellipse_at_top,_rgba(200,255,0,0.15),_transparent_70%)] pointer-events-none z-0" />
         <main
           style={{
-            paddingTop: "env(safe-area-inset-top)",
-            paddingBottom: "calc(env(safe-area-inset-bottom) + 4.5rem)",
+            paddingBottom: "calc(env(safe-area-inset-bottom) + 5.5rem)",
           }}
-          className="flex-1 w-full flex flex-col relative z-10"
+          className="flex-1 w-full flex flex-col relative z-10 overflow-y-auto"
         >
           <Suspense fallback={null}>
             {children}
@@ -263,14 +279,23 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
 
   // Render normal layout
   return (
-    <div className="relative min-h-screen">
+    <div 
+      style={{ height: "var(--visual-viewport-height, 100dvh)" }}
+      className="relative w-screen flex flex-col overflow-hidden bg-black text-white"
+    >
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-2xl aspect-[3/1] bg-[radial-gradient(ellipse_at_top,_rgba(200,255,0,0.15),_transparent_70%)] pointer-events-none z-0" />
+      <header 
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 8px)" }}
+        className="w-full max-w-4xl mx-auto px-4 pb-3 flex items-center justify-between z-20 border-b border-white/5 bg-[#0a0a0a]/50 backdrop-blur-md shrink-0"
+      >
+        <Logo size="medium" showWordmark={true} />
+        <AvatarDropdown user={currentUser} />
+      </header>
       <main
         style={{
-          paddingTop: "env(safe-area-inset-top)",
-          paddingBottom: "calc(env(safe-area-inset-bottom) + 4.5rem)",
+          paddingBottom: "calc(env(safe-area-inset-bottom) + 5.5rem)",
         }}
-        className="flex-1 w-full flex flex-col relative z-10"
+        className="flex-1 w-full flex flex-col relative z-10 overflow-y-auto"
       >
         <Suspense fallback={null}>
           {children}

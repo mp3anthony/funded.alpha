@@ -81,7 +81,6 @@ export default function BillsClient() {
       <PageHeader
         title="Bills"
         subtitle="All household costs, organised by category."
-        user={currentUser}
         action={
           <button
             onClick={() => setIsAddBillSheetOpen(true)}

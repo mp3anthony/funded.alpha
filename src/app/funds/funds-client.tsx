@@ -44,7 +44,6 @@ export default function FundsClient() {
       <PageHeader
         title="Goals"
         subtitle="Track your savings and financial targets"
-        user={currentUser}
         action={
           <button
             onClick={() => setIsAddOpen(true)}

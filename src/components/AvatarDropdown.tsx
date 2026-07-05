@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Settings, LogOut } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
@@ -100,14 +101,15 @@ export default function AvatarDropdown({ user }: AvatarDropdownProps) {
 
           <div className="py-1" role="none">
             {/* Settings Link */}
-            <button
-              onClick={handleNavigateToSettings}
+            <Link
+              href="/settings"
+              onClick={() => setIsOpen(false)}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-xs font-bold uppercase tracking-wider text-muted hover:text-foreground hover:bg-white/5 transition-all cursor-pointer font-heading"
               role="menuitem"
             >
               <Settings size={14} className="text-muted shrink-0 group-hover:text-foreground" />
               <span>Settings</span>
-            </button>
+            </Link>
 
             {/* Logout Link */}
             <button

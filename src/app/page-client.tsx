@@ -61,7 +61,6 @@ export default function HomeClient() {
       <PageHeader
         title="Dashboard"
         subtitle="Your household financial overview"
-        user={currentUser}
       />
 
       {/* Main Grid Layout */}
