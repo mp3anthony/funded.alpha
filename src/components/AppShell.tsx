@@ -46,51 +46,6 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
     isMounted
   );
 
-  // 1. Manage Visual Viewport (for mobile keyboard support)
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const updateVisualViewport = () => {
-      const vv = window.visualViewport;
-      if (vv) {
-        document.documentElement.style.setProperty(
-          "--visual-viewport-height",
-          `${vv.height}px`
-        );
-        document.documentElement.style.setProperty(
-          "--visual-viewport-offsetTop",
-          `${vv.offsetTop}px`
-        );
-      } else {
-        document.documentElement.style.setProperty(
-          "--visual-viewport-height",
-          `${window.innerHeight}px`
-        );
-        document.documentElement.style.setProperty(
-          "--visual-viewport-offsetTop",
-          "0px"
-        );
-      }
-    };
-
-    updateVisualViewport();
-
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", updateVisualViewport);
-      window.visualViewport.addEventListener("scroll", updateVisualViewport);
-    } else {
-      window.addEventListener("resize", updateVisualViewport);
-    }
-
-    return () => {
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener("resize", updateVisualViewport);
-        window.visualViewport.removeEventListener("scroll", updateVisualViewport);
-      } else {
-        window.removeEventListener("resize", updateVisualViewport);
-      }
-    };
-  }, []);
 
   // 2. Global Scroll Lock (MutationObserver)
   useEffect(() => {
@@ -160,12 +115,11 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
     if (session && isOnboarded) {
       return (
         <div 
-          style={{ height: "var(--visual-viewport-height, 100dvh)" }}
-          className="relative w-screen flex flex-col overflow-hidden bg-black text-white"
+          className="relative w-screen h-[100dvh] flex flex-col overflow-hidden bg-black text-white"
         >
           <div className="fixed left-0 top-1/2 -translate-y-1/2 w-[350px] aspect-square bg-[radial-gradient(ellipse_at_left,_rgba(200,255,0,0.12),_transparent_70%)] pointer-events-none z-0" />
           <header 
-            style={{ paddingTop: "calc(env(safe-area-inset-top) + 12px)" }}
+            style={{ paddingTop: "calc(env(safe-area-inset-top, 24px) + 24px)" }}
             className="w-full max-w-4xl mx-auto px-4 pb-3 flex items-center justify-between z-20 border-b border-white/5 bg-[#0a0a0a]/50 backdrop-blur-md shrink-0 relative"
           >
             <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-[linear-gradient(to_left,_rgba(200,255,0,0.22),_transparent)] pointer-events-none z-0" />
@@ -193,8 +147,7 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
 
     return (
       <div 
-        style={{ height: "var(--visual-viewport-height, 100dvh)" }}
-        className="relative w-screen flex flex-col overflow-hidden bg-black text-white"
+        className="relative w-screen h-[100dvh] flex flex-col overflow-hidden bg-black text-white"
       >
         <div className="fixed left-0 top-1/2 -translate-y-1/2 w-[350px] aspect-square bg-[radial-gradient(ellipse_at_left,_rgba(200,255,0,0.12),_transparent_70%)] pointer-events-none z-0" />
         <main
@@ -243,12 +196,11 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
   // Render normal layout
   return (
     <div 
-      style={{ height: "var(--visual-viewport-height, 100dvh)" }}
-      className="relative w-screen flex flex-col overflow-hidden bg-black text-white"
+      className="relative w-screen h-[100dvh] flex flex-col overflow-hidden bg-black text-white"
     >
       <div className="fixed left-0 top-1/2 -translate-y-1/2 w-[350px] aspect-square bg-[radial-gradient(ellipse_at_left,_rgba(200,255,0,0.12),_transparent_70%)] pointer-events-none z-0" />
       <header 
-        style={{ paddingTop: "calc(env(safe-area-inset-top) + 12px)" }}
+        style={{ paddingTop: "calc(env(safe-area-inset-top, 24px) + 24px)" }}
         className="w-full max-w-4xl mx-auto px-4 pb-3 flex items-center justify-between z-20 border-b border-white/5 bg-[#0a0a0a]/50 backdrop-blur-md shrink-0 relative"
       >
         <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-[linear-gradient(to_left,_rgba(200,255,0,0.22),_transparent)] pointer-events-none z-0" />

@@ -16,7 +16,7 @@ export default function BottomNav() {
 
   return (
     <nav 
-      style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 8px)" }}
+      style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 16px) + 16px)" }}
       className="fixed bottom-0 left-0 right-0 z-50 border-t border-zinc-200/50 bg-[#111111]/85 backdrop-blur-lg dark:border-white/10 dark:bg-black/80 shadow-[0_-4px_24px_-4px_rgba(0,0,0,0.5)]"
     >
       <div className="mx-auto flex h-16 max-w-md items-center justify-around px-4">
