@@ -201,31 +201,22 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
                 How often is this bill paid?
               </span>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 p-1 bg-[#111111] border border-white/10 rounded-xl">
-              {(
-                [
-                  { value: "weekly", label: "Weekly" },
-                  { value: "by-weekly", label: "By-Weekly" },
-                  { value: "monthly", label: "Monthly" },
-                  { value: "yearly", label: "Yearly" },
-                ] as const
-              ).map((opt) => {
-                const isSelected = frequency.toLowerCase() === opt.value;
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => setFrequency(opt.value)}
-                    className={`py-2 rounded-lg text-[10px] font-heading font-bold uppercase tracking-wider transition-all duration-200 focus:outline-none cursor-pointer text-center ${
-                      isSelected
-                        ? "bg-[#c8ff00] text-black font-extrabold shadow-sm"
-                        : "text-neutral-400 hover:text-white hover:bg-white/[0.02]"
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                );
-              })}
+            <div className="relative">
+              <select
+                value={frequency.toLowerCase()}
+                onChange={(e) => setFrequency(e.target.value)}
+                className="w-full rounded-xl border border-white/10 bg-[#0a0a0a] px-4 py-2.5 md:py-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 appearance-none transition-all cursor-pointer pr-10"
+              >
+                <option value="weekly">Weekly</option>
+                <option value="by-weekly">By-Weekly</option>
+                <option value="monthly">Monthly</option>
+                <option value="yearly">Yearly</option>
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-muted">
+                <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
+                  <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                </svg>
+              </div>
             </div>
           </div>
 
@@ -261,29 +252,20 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
             <label className="font-heading text-sm font-semibold text-subtle uppercase tracking-wider">
               Payment Type
             </label>
-            <div className="flex rounded-xl bg-surface-raised p-1">
-              <button
-                type="button"
-                onClick={() => setPaymentType("Manual")}
-                className={`flex-1 rounded-lg py-2 text-sm font-heading font-semibold tracking-wide uppercase transition-all ${
-                  paymentType === "Manual" 
-                    ? "bg-surface-elevated text-foreground shadow-sm ring-1 ring-border" 
-                    : "text-muted hover:text-foreground"
-                }`}
+            <div className="relative">
+              <select
+                value={paymentType}
+                onChange={(e) => setPaymentType(e.target.value as "Manual" | "Auto")}
+                className="w-full rounded-xl border border-white/10 bg-[#0a0a0a] px-4 py-2.5 md:py-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 appearance-none transition-all cursor-pointer pr-10"
               >
-                Manual
-              </button>
-              <button
-                type="button"
-                onClick={() => setPaymentType("Auto")}
-                className={`flex-1 rounded-lg py-2 text-sm font-heading font-semibold tracking-wide uppercase transition-all ${
-                  paymentType === "Auto" 
-                    ? "bg-surface-elevated text-foreground shadow-sm ring-1 ring-border" 
-                    : "text-muted hover:text-foreground"
-                }`}
-              >
-                Auto-Pay
-              </button>
+                <option value="Manual">Manual</option>
+                <option value="Auto">Auto-Pay</option>
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-muted">
+                <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
+                  <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                </svg>
+              </div>
             </div>
           </div>
 
@@ -326,29 +308,20 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
             {isJointFund ? (
               <div className="flex flex-col space-y-3">
                 {/* Selector */}
-                <div className="flex rounded-xl bg-surface-raised p-1 border border-border">
-                  <button
-                    type="button"
-                    onClick={() => setPaidByMode("joint")}
-                    className={`flex-1 rounded-lg py-2 text-xs font-heading font-bold uppercase tracking-wider transition-all cursor-pointer text-center ${
-                      paidByMode === "joint"
-                        ? "bg-[#c8ff00] text-black font-extrabold shadow-sm"
-                        : "text-muted hover:text-foreground"
-                    }`}
+                <div className="relative">
+                  <select
+                    value={paidByMode}
+                    onChange={(e) => setPaidByMode(e.target.value as "joint" | "individual")}
+                    className="w-full rounded-xl border border-white/10 bg-[#0a0a0a] px-4 py-2.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 appearance-none transition-all cursor-pointer pr-10 uppercase tracking-wider font-bold"
                   >
-                    Joint Fund
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPaidByMode("individual")}
-                    className={`flex-1 rounded-lg py-2 text-xs font-heading font-bold uppercase tracking-wider transition-all cursor-pointer text-center ${
-                      paidByMode === "individual"
-                        ? "bg-[#c8ff00] text-black font-extrabold shadow-sm"
-                        : "text-muted hover:text-foreground"
-                    }`}
-                  >
-                    Individual Splits
-                  </button>
+                    <option value="joint">Joint Fund</option>
+                    <option value="individual">Individual Splits</option>
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-muted">
+                    <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
+                      <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                    </svg>
+                  </div>
                 </div>
 
                 {paidByMode === "individual" ? (

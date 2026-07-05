@@ -75,7 +75,7 @@ export default function BillsClient() {
 
   return (
     // 1. Drastically reduced padding and spacing to fix the "oversized" feel
-    <div className="flex-1 w-full max-w-4xl mx-auto px-4 py-4 sm:px-6 sm:py-6 space-y-4">
+    <div className="flex-1 w-full max-w-4xl mx-auto px-4 pt-4 pb-4 sm:px-6 sm:pt-6 sm:pb-6 space-y-4">
 
       {/* 2. Clean Header - Action slot added to hold the Add Bill button next to avatar */}
       <PageHeader

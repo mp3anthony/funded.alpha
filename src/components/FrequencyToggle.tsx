@@ -21,23 +21,23 @@ export default function FrequencyToggle({
   ];
 
   return (
-    <div className="flex w-full p-0.5 bg-[#111111] border border-white/10 rounded-lg shrink-0">
-      {options.map((opt) => {
-        const isSelected = selectedFrequency === opt.value;
-        return (
-          <button
-            key={opt.value}
-            type="button"
-            onClick={() => onChange(opt.value)}
-            className={`flex-1 text-center py-2 rounded-md text-[10px] sm:text-xs font-heading font-bold uppercase tracking-wider transition-all duration-200 focus:outline-none cursor-pointer ${isSelected
-                ? "bg-[#c8ff00] text-black font-extrabold shadow-sm"
-                : "text-neutral-400 hover:text-white hover:bg-white/[0.02]"
-              }`}
-          >
+    <div className="relative w-full">
+      <select
+        value={selectedFrequency}
+        onChange={(e) => onChange(e.target.value as FrequencyType)}
+        className="w-full rounded-xl border border-white/10 bg-[#0a0a0a] px-4 py-2.5 md:py-3 text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all appearance-none text-sm font-semibold cursor-pointer pr-10"
+      >
+        {options.map((opt) => (
+          <option key={opt.value} value={opt.value} className="bg-surface text-foreground">
             {opt.label}
-          </button>
-        );
-      })}
+          </option>
+        ))}
+      </select>
+      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-muted">
+        <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
+          <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+        </svg>
+      </div>
     </div>
   );
 }

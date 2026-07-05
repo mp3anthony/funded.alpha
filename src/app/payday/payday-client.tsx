@@ -147,7 +147,7 @@ export default function PaydayClient() {
   const recentHistory = payHistory.slice(0, 10);
 
   return (
-    <div className="flex-1 w-full max-w-4xl mx-auto px-4 py-8 sm:px-6 md:py-12 space-y-8 pb-24">
+    <div className="flex-1 w-full max-w-4xl mx-auto px-4 pt-4 pb-24 sm:px-6 md:pt-6 space-y-8">
       <PageHeader
         title="Payday"
         subtitle="Manage & track incomes"

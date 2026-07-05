@@ -57,17 +57,12 @@ export default function HomeClient() {
   };
 
   return (
-    <div className="flex-1 w-full max-w-7xl mx-auto px-4 py-8 space-y-6">
-      {/* Header Greeting with Ambient radial glow */}
-      <div className="relative">
-        <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-full max-w-2xl aspect-[3/1] bg-[radial-gradient(ellipse_at_top,_rgba(200,255,0,0.12),_transparent_70%)] pointer-events-none -z-10" />
-
-        <PageHeader
-          title="Dashboard"
-          subtitle="Your household financial overview"
-          user={currentUser}
-        />
-      </div>
+    <div className="flex-1 w-full max-w-7xl mx-auto px-4 pt-4 pb-8 space-y-6">
+      <PageHeader
+        title="Dashboard"
+        subtitle="Your household financial overview"
+        user={currentUser}
+      />
 
       {/* Main Grid Layout */}
       <div className="space-y-6">

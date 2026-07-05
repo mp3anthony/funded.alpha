@@ -10,16 +10,16 @@ interface LogoProps {
 export default function Logo({ size = "medium", showWordmark = false }: LogoProps) {
   // Define dimensions based on size prop
   let iconSize = 36;
-  let wordmarkWidth = 135;
+  let wordmarkWidth = 112;
   let wordmarkHeight = 36;
 
   if (size === "small") {
     iconSize = 24;
-    wordmarkWidth = 90;
+    wordmarkWidth = 75;
     wordmarkHeight = 24;
   } else if (size === "large") {
     iconSize = 52;
-    wordmarkWidth = 195;
+    wordmarkWidth = 162;
     wordmarkHeight = 52;
   }
 

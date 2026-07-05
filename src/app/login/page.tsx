@@ -3,13 +3,15 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { Mail, Lock, Loader2, AlertCircle, Check } from "lucide-react";
+import { Mail, Lock, Loader2, AlertCircle, Check, Eye, EyeOff } from "lucide-react";
+import Logo from "@/components/Logo";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
@@ -19,21 +21,24 @@ export default function LoginPage() {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       if (params.get("error") === "confirmation_failed") {
-        setErrorMsg("Email confirmation failed. The link may have expired or is invalid.");
+        Promise.resolve().then(() => {
+          setErrorMsg("Email confirmation failed. The link may have expired or is invalid.");
+        });
       }
     }
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) return;
+    if (!email) return;
+    if (mode !== "forgot" && !password) return;
 
     setLoading(true);
     setErrorMsg("");
     setSuccessMsg("");
 
     try {
-      if (isSignUp) {
+      if (mode === "signup") {
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -47,19 +52,28 @@ export default function LoginPage() {
         // If email confirmation is required, session will be null
         if (data.user && !data.session) {
           setSuccessMsg("Please check your email to confirm your account before logging in.");
-          setIsSignUp(false);
+          setMode("signin");
           setEmail("");
           setPassword("");
         } else {
           router.replace("/");
         }
-      } else {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      } else if (mode === "signin") {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         router.replace("/");
+      } else if (mode === "forgot") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/auth/callback?next=/reset-password/update`,
+        });
+        if (error) throw error;
+        setSuccessMsg("Recovery link sent! Check your email to reset your password.");
+        setMode("signin");
+        setEmail("");
       }
-    } catch (err: any) {
-      setErrorMsg(err.message || "An error occurred");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "An error occurred";
+      setErrorMsg(message);
     } finally {
       setLoading(false);
     }
@@ -69,15 +83,21 @@ export default function LoginPage() {
     <div className="flex-1 w-full flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-surface border border-border rounded-3xl p-6 sm:p-8 shadow-2xl">
         <div className="text-center mb-8">
-          <div className="h-12 w-12 bg-secondary/10 text-secondary rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Lock className="h-6 w-6" />
+          <div className="flex justify-center mb-6">
+            <Logo size="large" showWordmark={true} />
           </div>
           <h1 className="font-syne text-2xl font-extrabold text-white tracking-tight">
-            {isSignUp ? "Create an account" : "Welcome back"}
+            {mode === "signup"
+              ? "Create an account"
+              : mode === "forgot"
+              ? "Reset password"
+              : "Welcome back"}
           </h1>
           <p className="text-sm text-muted mt-2">
-            {isSignUp
+            {mode === "signup"
               ? "Sign up to start managing your funds"
+              : mode === "forgot"
+              ? "Enter your email address to recover your account"
               : "Sign in to your account to continue"}
           </p>
         </div>
@@ -114,47 +134,90 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="block text-xs font-bold tracking-wider uppercase text-muted">
-              Password
-            </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                className="w-full pl-10 pr-4 py-3 rounded-xl bg-surface-raised border border-border text-foreground text-sm font-medium focus:ring-2 focus:ring-secondary/40 focus:border-secondary outline-none transition-all"
-              />
+          {mode !== "forgot" && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold tracking-wider uppercase text-muted">
+                  Password
+                </label>
+                {mode === "signin" && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode("forgot");
+                      setErrorMsg("");
+                      setSuccessMsg("");
+                    }}
+                    className="text-xs text-secondary hover:underline cursor-pointer font-semibold"
+                  >
+                    Forgot password?
+                  </button>
+                )}
+              </div>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  className="w-full pl-10 pr-12 py-3 rounded-xl bg-surface-raised border border-border text-foreground text-sm font-medium focus:ring-2 focus:ring-secondary/40 focus:border-secondary outline-none transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-muted hover:text-foreground transition-colors cursor-pointer"
+                  tabIndex={-1}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-secondary text-secondary-fg text-sm font-bold shadow-lg shadow-secondary/20 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none mt-2"
+            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-secondary text-secondary-fg text-sm font-bold shadow-lg shadow-secondary/20 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none mt-2 cursor-pointer"
           >
             {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : null}
-            {isSignUp ? "Sign Up" : "Sign In"}
+            {mode === "signup" ? "Sign Up" : mode === "forgot" ? "Send Reset Link" : "Sign In"}
           </button>
         </form>
 
         <div className="mt-8 text-center">
-          <button
-            type="button"
-            onClick={() => {
-              setIsSignUp(!isSignUp);
-              setErrorMsg("");
-              setSuccessMsg("");
-            }}
-            className="text-sm font-medium text-muted hover:text-foreground transition-colors"
-          >
-            {isSignUp
-              ? "Already have an account? Sign In"
-              : "Need an account? Sign Up"}
-          </button>
+          {mode === "forgot" ? (
+            <button
+              type="button"
+              onClick={() => {
+                setMode("signin");
+                setErrorMsg("");
+                setSuccessMsg("");
+              }}
+              className="text-sm font-medium text-muted hover:text-foreground transition-colors cursor-pointer"
+            >
+              Back to Sign In
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                setMode(mode === "signin" ? "signup" : "signin");
+                setErrorMsg("");
+                setSuccessMsg("");
+              }}
+              className="text-sm font-medium text-muted hover:text-foreground transition-colors cursor-pointer"
+            >
+              {mode === "signin"
+                ? "Need an account? Sign Up"
+                : "Already have an account? Sign In"}
+            </button>
+          )}
         </div>
       </div>
     </div>

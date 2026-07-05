@@ -40,7 +40,7 @@ export default function FundsClient() {
   };
 
   return (
-    <div className="flex-1 w-full max-w-4xl mx-auto px-4 py-8 sm:px-6 md:py-12 space-y-6">
+    <div className="flex-1 w-full max-w-4xl mx-auto px-4 pt-4 pb-8 sm:px-6 md:pt-6 md:pb-12 space-y-6">
       <PageHeader
         title="Goals"
         subtitle="Track your savings and financial targets"

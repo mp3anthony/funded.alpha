@@ -130,7 +130,7 @@ export default function SettingsClient() {
 
   /* ── Render ────────────────────────────────── */
   return (
-    <div className="flex-1 w-full max-w-4xl mx-auto px-4 py-8 sm:px-6 md:py-12 space-y-8">
+    <div className="flex-1 w-full max-w-4xl mx-auto px-4 pt-4 pb-8 sm:px-6 md:pt-6 md:pb-12 space-y-8">
       <PageHeader
         title="Settings"
         subtitle="Manage your account and household preferences"
@@ -238,20 +238,21 @@ export default function SettingsClient() {
                 </p>
               </div>
             </div>
-            <button
-              role="switch"
-              aria-checked={pushNotifications}
-              onClick={() => setPushNotifications((v) => !v)}
-              className={`relative inline-flex h-7 w-12 shrink-0 rounded-full transition-colors duration-200 cursor-pointer focus:ring-2 focus:ring-secondary/40 focus:ring-offset-2 focus:ring-offset-surface ${
-                pushNotifications ? "bg-primary" : "bg-zinc-300 dark:bg-zinc-600"
-              }`}
-            >
-              <span
-                className={`inline-block h-5 w-5 rounded-full bg-white shadow-md transform transition-transform duration-200 mt-1 ${
-                  pushNotifications ? "translate-x-6 ml-0.5" : "translate-x-1"
-                }`}
-              />
-            </button>
+            <div className="relative shrink-0">
+              <select
+                value={pushNotifications ? "enabled" : "disabled"}
+                onChange={(e) => setPushNotifications(e.target.value === "enabled")}
+                className="rounded-lg border border-white/10 bg-[#0a0a0a] px-3 py-1.5 text-xs font-bold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-8 uppercase tracking-wider"
+              >
+                <option value="enabled">Enabled</option>
+                <option value="disabled">Disabled</option>
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-muted">
+                <svg className="h-3 w-3 fill-current" viewBox="0 0 20 20">
+                  <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                </svg>
+              </div>
+            </div>
           </div>
 
           {/* Email Alerts */}
@@ -269,20 +270,21 @@ export default function SettingsClient() {
                 </p>
               </div>
             </div>
-            <button
-              role="switch"
-              aria-checked={emailAlerts}
-              onClick={() => setEmailAlerts((v) => !v)}
-              className={`relative inline-flex h-7 w-12 shrink-0 rounded-full transition-colors duration-200 cursor-pointer focus:ring-2 focus:ring-secondary/40 focus:ring-offset-2 focus:ring-offset-surface ${
-                emailAlerts ? "bg-primary" : "bg-zinc-300 dark:bg-zinc-600"
-              }`}
-            >
-              <span
-                className={`inline-block h-5 w-5 rounded-full bg-white shadow-md transform transition-transform duration-200 mt-1 ${
-                  emailAlerts ? "translate-x-6 ml-0.5" : "translate-x-1"
-                }`}
-              />
-            </button>
+            <div className="relative shrink-0">
+              <select
+                value={emailAlerts ? "enabled" : "disabled"}
+                onChange={(e) => setEmailAlerts(e.target.value === "enabled")}
+                className="rounded-lg border border-white/10 bg-[#0a0a0a] px-3 py-1.5 text-xs font-bold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-8 uppercase tracking-wider"
+              >
+                <option value="enabled">Enabled</option>
+                <option value="disabled">Disabled</option>
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-muted">
+                <svg className="h-3 w-3 fill-current" viewBox="0 0 20 20">
+                  <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                </svg>
+              </div>
+            </div>
           </div>
 
           {/* App Theme Mode Toggle */}
@@ -300,30 +302,21 @@ export default function SettingsClient() {
                 </p>
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-1 p-1 bg-[#111111] border border-white/10 rounded-xl shrink-0 w-full sm:w-72">
-              {(
-                [
-                  { value: "light", label: "Light" },
-                  { value: "dark", label: "Dark" },
-                  { value: "system", label: "System" },
-                ] as const
-              ).map((opt) => {
-                const isSelected = theme === opt.value;
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => setTheme(opt.value)}
-                    className={`py-1.5 rounded-lg text-[10px] font-heading font-bold uppercase tracking-wider transition-all duration-200 focus:outline-none cursor-pointer text-center ${
-                      isSelected
-                        ? "bg-[#c8ff00] text-black font-extrabold shadow-sm"
-                        : "text-neutral-400 hover:text-white hover:bg-white/[0.02]"
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                );
-              })}
+            <div className="relative shrink-0 w-full sm:w-44">
+              <select
+                value={theme}
+                onChange={(e) => setTheme(e.target.value as "light" | "dark" | "system")}
+                className="w-full rounded-lg border border-white/10 bg-[#0a0a0a] px-3 py-1.5 text-xs font-bold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-8 uppercase tracking-wider"
+              >
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+                <option value="system">System</option>
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-muted">
+                <svg className="h-3 w-3 fill-current" viewBox="0 0 20 20">
+                  <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                </svg>
+              </div>
             </div>
           </div>
         </div>

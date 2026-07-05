@@ -219,26 +219,25 @@ export default function RulesSettingsSheet({
               </div>
             </div>
 
-            {/* Action Type Segmented Control */}
+            {/* Action Type Dropdown */}
             <div className="flex flex-col space-y-1.5">
               <label className="font-heading text-[10px] font-semibold text-subtle uppercase tracking-wider">
                 Action Type
               </label>
-              <div className="grid grid-cols-2 gap-1 bg-[#111111] border border-white/10 rounded-xl p-1 shrink-0">
-                {(["goal", "contribution"] as const).map((type) => (
-                  <button
-                    key={type}
-                    type="button"
-                    onClick={() => setActionType(type)}
-                    className={`py-1.5 px-3 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
-                      actionType === type
-                        ? "bg-primary text-primary-fg shadow"
-                        : "text-muted hover:text-foreground hover:bg-white/5"
-                    }`}
-                  >
-                    {type === "goal" ? "Add to Goal" : "Add to Contribution"}
-                  </button>
-                ))}
+              <div className="relative">
+                <select
+                  value={actionType}
+                  onChange={(e) => setActionType(e.target.value as any)}
+                  className="w-full rounded-xl border border-white/10 bg-[#111111] px-4 py-2.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 appearance-none cursor-pointer pr-10"
+                >
+                  <option value="goal">Add to Goal</option>
+                  <option value="contribution">Add to Contribution</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-muted">
+                  <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
+                    <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                  </svg>
+                </div>
               </div>
             </div>
 
@@ -268,26 +267,25 @@ export default function RulesSettingsSheet({
               </div>
             )}
 
-            {/* Calculation Type Segmented Control */}
+            {/* Calculation Type Dropdown */}
             <div className="flex flex-col space-y-1.5">
               <label className="font-heading text-[10px] font-semibold text-subtle uppercase tracking-wider">
                 Calculation Type
               </label>
-              <div className="grid grid-cols-2 gap-1 bg-[#111111] border border-white/10 rounded-xl p-1 shrink-0">
-                {(["fixed", "percentage"] as const).map((type) => (
-                  <button
-                    key={type}
-                    type="button"
-                    onClick={() => setAmountType(type)}
-                    className={`py-1.5 px-3 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
-                      amountType === type
-                        ? "bg-primary text-primary-fg shadow"
-                        : "text-muted hover:text-foreground hover:bg-white/5"
-                    }`}
-                  >
-                    {type === "fixed" ? "Fixed Dollar ($)" : "Percentage (%)"}
-                  </button>
-                ))}
+              <div className="relative">
+                <select
+                  value={amountType}
+                  onChange={(e) => setAmountType(e.target.value as any)}
+                  className="w-full rounded-xl border border-white/10 bg-[#111111] px-4 py-2.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 appearance-none cursor-pointer pr-10"
+                >
+                  <option value="fixed">Fixed Dollar ($)</option>
+                  <option value="percentage">Percentage (%)</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-muted">
+                  <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
+                    <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                  </svg>
+                </div>
               </div>
             </div>
 

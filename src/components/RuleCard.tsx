@@ -60,22 +60,22 @@ export default function RuleCard({
           </div>
         </div>
 
-        {/* Toggle Switch */}
-        <button
-          onClick={onToggle}
-          type="button"
-          role="switch"
-          aria-checked={rule.is_active}
-          className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-            rule.is_active ? "bg-primary" : "bg-zinc-800"
-          }`}
-        >
-          <span
-            className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-              rule.is_active ? "translate-x-4" : "translate-x-0"
-            }`}
-          />
-        </button>
+        {/* Toggle Dropdown */}
+        <div className="relative shrink-0">
+          <select
+            value={rule.is_active ? "active" : "inactive"}
+            onChange={onToggle}
+            className="rounded-lg border border-white/10 bg-[#0a0a0a] px-2.5 py-1 text-[10px] font-bold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-6 uppercase tracking-wider"
+          >
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1.5 text-muted">
+            <svg className="h-3 w-3 fill-current" viewBox="0 0 20 20">
+              <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+            </svg>
+          </div>
+        </div>
       </div>
 
       {/* Card Actions */}

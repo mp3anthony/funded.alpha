@@ -19,12 +19,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   if (!isMounted) {
     return (
       <div className="relative min-h-screen">
+        <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-2xl aspect-[3/1] bg-[radial-gradient(ellipse_at_top,_rgba(200,255,0,0.15),_transparent_70%)] pointer-events-none z-0" />
         <main 
           style={{ 
-            paddingTop: "calc(env(safe-area-inset-top) + 3.5rem)", 
+            paddingTop: "env(safe-area-inset-top)", 
             paddingBottom: "calc(env(safe-area-inset-bottom) + 5rem)" 
           }}
-          className="flex-1 w-full flex flex-col"
+          className="flex-1 w-full flex flex-col relative z-10"
         >
           {children}
         </main>
@@ -43,6 +44,7 @@ function AppShellBody({ children }: { children: React.ReactNode }) {
   // Skip auth guards on the login and email confirmation pages
   const isLoginPage = pathname === "/login";
   const isConfirmEmailPage = pathname === "/confirm-email";
+  const isResetPasswordPage = pathname?.startsWith("/reset-password");
 
   console.log('AppShell render - isAuthLoading:', isAuthLoading, 'session:', session ? 'exists (user: ' + session.user?.id + ')' : 'null', 'isOnboarded:', isOnboarded, 'pathname:', pathname);
 
@@ -129,7 +131,7 @@ function AppShellBody({ children }: { children: React.ReactNode }) {
     if (isAuthLoading) return;
 
     if (!session) {
-      if (!isLoginPage && !isConfirmEmailPage) {
+      if (!isLoginPage && !isConfirmEmailPage && !isResetPasswordPage) {
         console.log('AppShell useEffect - triggering redirect to /login');
         router.replace("/login");
       }
@@ -147,10 +149,10 @@ function AppShellBody({ children }: { children: React.ReactNode }) {
         }
       }
     }
-  }, [isAuthLoading, session, isLoginPage, isConfirmEmailPage, router]);
+  }, [isAuthLoading, session, isLoginPage, isConfirmEmailPage, isResetPasswordPage, router]);
 
-  // Let the login or email confirmation page render fullscreen
-  if (isLoginPage || isConfirmEmailPage) {
+  // Let the login, email confirmation, or reset password page render fullscreen
+  if (isLoginPage || isConfirmEmailPage || isResetPasswordPage) {
     return <>{children}</>;
   }
 
@@ -185,12 +187,13 @@ function AppShellBody({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="relative min-h-screen">
+      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-2xl aspect-[3/1] bg-[radial-gradient(ellipse_at_top,_rgba(200,255,0,0.15),_transparent_70%)] pointer-events-none z-0" />
       <main 
         style={{ 
-          paddingTop: "calc(env(safe-area-inset-top) + 3.5rem)", 
+          paddingTop: "env(safe-area-inset-top)", 
           paddingBottom: "calc(env(safe-area-inset-bottom) + 5rem)" 
         }}
-        className="flex-1 w-full flex flex-col"
+        className="flex-1 w-full flex flex-col relative z-10"
       >
         {children}
       </main>

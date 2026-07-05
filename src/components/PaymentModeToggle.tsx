@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Users, Wallet, Info } from "lucide-react";
+import { Info } from "lucide-react";
 
 interface PaymentModeToggleProps {
   currentMode: boolean; // false = Direct Pay, true = Joint Fund
@@ -20,55 +20,23 @@ export default function PaymentModeToggle({ currentMode, onModeChange }: Payment
         </p>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 w-full">
-        {/* Direct Pay Card */}
-        <button
-          type="button"
-          onClick={() => onModeChange(false)}
-          className={`flex-1 flex flex-col items-center sm:items-start p-5 rounded-2xl bg-surface border transition-all duration-300 text-left focus:outline-none focus:ring-2 focus:ring-primary/50 ${
-            currentMode === false
-              ? "border-primary bg-primary/5 shadow-md shadow-primary/5"
-              : "border-border hover:border-white/20 hover:bg-surface-raised"
-          }`}
+      <div className="relative w-full">
+        <select
+          value={currentMode ? "joint" : "direct"}
+          onChange={(e) => onModeChange(e.target.value === "joint")}
+          className="w-full rounded-xl border border-border bg-[#0a0a0a] px-4 py-2.5 md:py-3 text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all appearance-none text-sm font-semibold cursor-pointer pr-10"
         >
-          <div className={`p-3 rounded-xl mb-4 transition-colors ${
-            currentMode === false ? "bg-primary/20 text-primary" : "bg-surface-elevated text-subtle"
-          }`}>
-            <Users className="h-6 w-6" />
-          </div>
-          <h4 className="font-syne font-semibold text-base text-foreground mb-1">
-            Direct Pay
-          </h4>
-          <p className="font-mono text-xs text-muted leading-relaxed text-center sm:text-left">
-            Each person pays their share directly to the bill assignee.
-          </p>
-        </button>
-
-        {/* Joint Fund Card */}
-        <button
-          type="button"
-          onClick={() => onModeChange(true)}
-          className={`flex-1 flex flex-col items-center sm:items-start p-5 rounded-2xl bg-surface border transition-all duration-300 text-left focus:outline-none focus:ring-2 focus:ring-primary/50 ${
-            currentMode === true
-              ? "border-primary bg-primary/5 shadow-md shadow-primary/5"
-              : "border-border hover:border-white/20 hover:bg-surface-raised"
-          }`}
-        >
-          <div className={`p-3 rounded-xl mb-4 transition-colors ${
-            currentMode === true ? "bg-primary/20 text-primary" : "bg-surface-elevated text-subtle"
-          }`}>
-            <Wallet className="h-6 w-6" />
-          </div>
-          <h4 className="font-syne font-semibold text-base text-foreground mb-1">
-            Joint Fund
-          </h4>
-          <p className="font-mono text-xs text-muted leading-relaxed text-center sm:text-left">
-            Everyone contributes to a shared household account for bills.
-          </p>
-        </button>
+          <option value="direct">Direct Pay (Transfer directly per bill split)</option>
+          <option value="joint">Joint Fund (Shared household bank account)</option>
+        </select>
+        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-muted">
+          <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
+            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+          </svg>
+        </div>
       </div>
 
-      <div className="flex items-start space-x-2 p-3 bg-surface-raised rounded-xl border border-border">
+      <div className="flex items-start space-x-2 p-3 bg-[#111111] border border-white/10 rounded-xl">
         <Info className="h-4 w-4 text-subtle shrink-0 mt-0.5" />
         <p className="font-mono text-[10px] text-muted leading-normal">
           <strong>Tip:</strong> Direct Pay is great for houses where roommates split individual transfers. Joint Fund is ideal for couples or families who share a bank account.

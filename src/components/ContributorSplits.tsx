@@ -159,30 +159,21 @@ export default function ContributorSplits({
 
   return (
     <div className="flex flex-col space-y-5 rounded-xl border border-border bg-surface-raised/30 p-5">
-      {/* Mode Toggle */}
-      <div className="flex rounded-xl bg-surface p-1 border border-border">
-        <button
-          type="button"
-          onClick={() => handleModeChange("percentage")}
-          className={`flex-1 rounded-lg py-1.5 text-sm font-heading font-medium transition-all ${
-            splitMode === "percentage"
-              ? "bg-surface-elevated text-foreground shadow-sm ring-1 ring-border"
-              : "text-muted hover:text-foreground"
-          }`}
+      {/* Mode Select Dropdown */}
+      <div className="relative w-full">
+        <select
+          value={splitMode}
+          onChange={(e) => handleModeChange(e.target.value as "percentage" | "amount")}
+          className="w-full rounded-xl border border-border bg-[#0a0a0a] px-4 py-2.5 text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all appearance-none text-sm font-semibold cursor-pointer pr-10"
         >
-          Percentage (%)
-        </button>
-        <button
-          type="button"
-          onClick={() => handleModeChange("amount")}
-          className={`flex-1 rounded-lg py-1.5 text-sm font-heading font-medium transition-all ${
-            splitMode === "amount"
-              ? "bg-surface-elevated text-foreground shadow-sm ring-1 ring-border"
-              : "text-muted hover:text-foreground"
-          }`}
-        >
-          Amount ($)
-        </button>
+          <option value="percentage">Split by Percentage (%)</option>
+          <option value="amount">Split by Amount ($)</option>
+        </select>
+        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-muted">
+          <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
+            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+          </svg>
+        </div>
       </div>
 
       {/* Member Inputs */}
