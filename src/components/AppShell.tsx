@@ -22,6 +22,34 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
   const { isOnboarded, session, isAuthLoading, isDataLoading } = useApp();
   const router = useRouter();
   const pathname = usePathname();
+  const [isPageTransitioning, setIsPageTransitioning] = useState(false);
+
+  // Detect navigation start via click interception
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      const anchor = (e.target as HTMLElement).closest("a");
+      if (!anchor) return;
+
+      const href = anchor.getAttribute("href");
+      if (!href) return;
+
+      // Only intercept internal links (not external, not anchors, not same page)
+      if (href.startsWith("http") || href.startsWith("#") || href.startsWith("mailto:")) return;
+
+      const targetPath = href.split("?")[0].split("#")[0];
+      if (targetPath === pathname) return;
+
+      setIsPageTransitioning(true);
+    };
+
+    document.addEventListener("click", handleClick, { capture: true });
+    return () => document.removeEventListener("click", handleClick, { capture: true });
+  }, [pathname]);
+
+  // Reset transitioning state when pathname changes
+  useEffect(() => {
+    setIsPageTransitioning(false);
+  }, [pathname]);
 
   // Skip auth guards on the login and email confirmation pages
   const isLoginPage = pathname === "/login";
@@ -150,6 +178,18 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
   // Let the login, email confirmation, or reset password page render fullscreen immediately
   if (isLoginPage || isConfirmEmailPage || isResetPasswordPage) {
     return <>{children}</>;
+  }
+
+  // Navigation transition loading overlay
+  if (isPageTransitioning) {
+    return (
+      <div className="flex h-screen w-screen items-center justify-center bg-black text-white z-[100] fixed inset-0">
+        <div className="flex flex-col items-center gap-6 animate-in fade-in duration-300">
+          <Logo size="large" showWordmark={true} />
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#c8ff00] border-t-transparent" />
+        </div>
+      </div>
+    );
   }
 
   // Pre-hydration rendering path: Match server HTML to prevent flashes
