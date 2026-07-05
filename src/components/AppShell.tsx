@@ -25,27 +25,10 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
   const pathname = usePathname();
   const currentUser = useCurrentUser();
 
-
   // Skip auth guards on the login and email confirmation pages
   const isLoginPage = pathname === "/login";
   const isConfirmEmailPage = pathname === "/confirm-email";
   const isResetPasswordPage = pathname?.startsWith("/reset-password");
-
-  console.log(
-    "AppShell render - isAuthLoading:",
-    isAuthLoading,
-    "isDataLoading:",
-    isDataLoading,
-    "session:",
-    session ? "exists (user: " + session.user?.id + ")" : "null",
-    "isOnboarded:",
-    isOnboarded,
-    "pathname:",
-    pathname,
-    "isMounted:",
-    isMounted
-  );
-
 
   // 2. Global Scroll Lock (MutationObserver)
   useEffect(() => {
@@ -86,19 +69,16 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
 
     if (!session) {
       if (!isLoginPage && !isConfirmEmailPage && !isResetPasswordPage) {
-        console.log("AppShell useEffect - triggering redirect to /login");
         router.replace("/login");
       }
     } else {
       const isConfirmed = !!session.user.email_confirmed_at;
       if (!isConfirmed) {
         if (!isConfirmEmailPage) {
-          console.log("AppShell useEffect - redirecting unconfirmed user to /confirm-email");
           router.replace("/confirm-email");
         }
       } else {
         if (isConfirmEmailPage) {
-          console.log("AppShell useEffect - redirecting confirmed user away from /confirm-email");
           router.replace("/");
         }
       }
@@ -110,118 +90,55 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
     return <>{children}</>;
   }
 
-  // Pre-hydration rendering path: Match server HTML to prevent flashes
-  if (!isMounted) {
-    if (session && isOnboarded) {
-      return (
-        <div 
-          className="relative w-screen h-[100dvh] flex flex-col overflow-hidden bg-black text-white"
-        >
-          <div className="fixed left-0 top-1/2 -translate-y-1/2 w-[350px] aspect-square bg-[radial-gradient(ellipse_at_left,_rgba(200,255,0,0.12),_transparent_70%)] pointer-events-none z-0" />
-          <header 
-            style={{ paddingTop: "env(safe-area-inset-top)" }}
-            className="w-full max-w-4xl mx-auto px-4 pb-3 flex items-center justify-between z-20 border-b border-white/5 bg-[#0a0a0a]/50 backdrop-blur-md shrink-0 relative"
-          >
-            <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-[linear-gradient(to_left,_rgba(200,255,0,0.22),_transparent)] pointer-events-none z-0" />
-            <div className="relative z-10">
-              <Logo size="medium" showWordmark={true} />
-            </div>
-            <div className="relative z-10">
-              <AvatarDropdown user={currentUser} />
-            </div>
-          </header>
-          <main
-            style={{
-              paddingBottom: "calc(env(safe-area-inset-bottom) + 6rem)",
-            }}
-            className="flex-1 w-full flex flex-col relative z-10 overflow-y-auto"
-          >
-            <Suspense fallback={null}>
-              {children}
-            </Suspense>
-          </main>
-          <BottomNav />
-        </div>
-      );
-    }
-
-    return (
-      <div 
-        className="relative w-screen h-[100dvh] flex flex-col overflow-hidden bg-black text-white"
-      >
-        <div className="fixed left-0 top-1/2 -translate-y-1/2 w-[350px] aspect-square bg-[radial-gradient(ellipse_at_left,_rgba(200,255,0,0.12),_transparent_70%)] pointer-events-none z-0" />
-        <main
-          style={{
-            paddingBottom: "calc(env(safe-area-inset-bottom) + 6rem)",
-          }}
-          className="flex-1 w-full flex flex-col relative z-10 overflow-y-auto"
-        >
-          <Suspense fallback={null}>
-            {children}
-          </Suspense>
-        </main>
-      </div>
-    );
-  }
-
-  // Post-hydration loading state: Show full-screen loader if authenticating or fetching household info
-  if (isAuthLoading || (session && isDataLoading)) {
-    return (
-      <div className="flex h-[100dvh] w-screen items-center justify-center bg-black text-white">
-        <div className="flex flex-col items-center gap-6 animate-in fade-in duration-300">
-          <Logo size="large" showWordmark={true} />
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#c8ff00] border-t-transparent" />
-        </div>
-      </div>
-    );
-  }
-
-  // If auth resolved and no session exists, show loader until redirect fires
-  if (!session) {
-    return (
-      <div className="flex h-[100dvh] w-screen items-center justify-center bg-black text-white">
-        <div className="flex flex-col items-center gap-6 animate-in fade-in duration-300">
-          <Logo size="large" showWordmark={true} />
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#c8ff00] border-t-transparent" />
-        </div>
-      </div>
-    );
-  }
-
-  // Check onboarding status
-  if (!isOnboarded) {
+  // If fully loaded and we know user is not onboarded, show Onboarding
+  if (isMounted && !isAuthLoading && session && !isOnboarded) {
     return <Onboarding />;
   }
 
-  // Render normal layout
+  // Define loading state for the main content area
+  const isLoading = !isMounted || isAuthLoading || (session && isDataLoading) || !session;
+
   return (
-    <div 
-      className="relative w-screen h-[100dvh] flex flex-col overflow-hidden bg-black text-white"
-    >
-      <div className="fixed left-0 top-1/2 -translate-y-1/2 w-[350px] aspect-square bg-[radial-gradient(ellipse_at_left,_rgba(200,255,0,0.12),_transparent_70%)] pointer-events-none z-0" />
-      <header 
-        style={{ paddingTop: "env(safe-area-inset-top)" }}
-        className="w-full max-w-4xl mx-auto px-4 pb-3 flex items-center justify-between z-20 border-b border-white/5 bg-[#0a0a0a]/50 backdrop-blur-md shrink-0 relative"
+    <div className="flex-1 flex flex-col w-full relative overflow-hidden text-white">
+      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[350px] aspect-square bg-[radial-gradient(ellipse_at_left,_rgba(200,255,0,0.12),_transparent_70%)] pointer-events-none z-0" />
+      
+      {/* Header */}
+      {(!isLoading || session) && (
+        <header 
+          style={{ paddingTop: "env(safe-area-inset-top)" }}
+          className="w-full max-w-4xl mx-auto px-4 pb-3 flex items-center justify-between z-20 border-b border-white/5 bg-[#0a0a0a]/50 backdrop-blur-md shrink-0 relative"
+        >
+          <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-[linear-gradient(to_left,_rgba(200,255,0,0.22),_transparent)] pointer-events-none z-0" />
+          <div className="relative z-10">
+            <Logo size="medium" showWordmark={true} />
+          </div>
+          <div className="relative z-10">
+            {currentUser && <AvatarDropdown user={currentUser} />}
+          </div>
+        </header>
+      )}
+
+      {/* Main Content */}
+      <main 
+        className="flex-1 overflow-y-auto w-full relative z-10"
+        style={{ WebkitOverflowScrolling: 'touch' }}
       >
-        <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-[linear-gradient(to_left,_rgba(200,255,0,0.22),_transparent)] pointer-events-none z-0" />
-        <div className="relative z-10">
-          <Logo size="medium" showWordmark={true} />
-        </div>
-        <div className="relative z-10">
-          <AvatarDropdown user={currentUser} />
-        </div>
-      </header>
-      <main
-        style={{
-          paddingBottom: "calc(env(safe-area-inset-bottom) + 6rem)",
-        }}
-        className="flex-1 w-full flex flex-col relative z-10 overflow-y-auto"
-      >
-        <Suspense fallback={null}>
-          {children}
-        </Suspense>
+        {isLoading ? (
+          <div className="flex h-full w-full items-center justify-center">
+            <div className="flex flex-col items-center gap-6 animate-in fade-in duration-300">
+              <Logo size="large" showWordmark={true} />
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#c8ff00] border-t-transparent" />
+            </div>
+          </div>
+        ) : (
+          <Suspense fallback={null}>
+            {children}
+          </Suspense>
+        )}
       </main>
-      <BottomNav />
+
+      {/* Bottom Nav */}
+      {(!isLoading || session) && <BottomNav />}
     </div>
   );
 }
