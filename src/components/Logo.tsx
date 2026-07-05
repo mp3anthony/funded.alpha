@@ -30,7 +30,7 @@ export default function Logo({ size = "medium", showWordmark = false }: LogoProp
         style={{ width: wordmarkWidth, height: wordmarkHeight }}
       >
         <img
-          src="/logo-wordmark.svg"
+          src="/logo-wordmark.svg?v=3"
           alt="Funded"
           width={wordmarkWidth}
           height={wordmarkHeight}

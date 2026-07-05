@@ -1,4 +1,4 @@
-const CACHE_NAME = 'funded-pwa-cache-v2';
+const CACHE_NAME = 'funded-pwa-cache-v3';
 const OFFLINE_URL = '/offline';
 
 const ASSETS_TO_CACHE = [
