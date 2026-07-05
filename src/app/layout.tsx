@@ -115,24 +115,32 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
+              // Detect Standalone (PWA) Mode
+              if (window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches) {
+                document.documentElement.classList.add('standalone-mode');
+              }
+
+              // Force Service Worker Update and Cache Clear to bust stale PWA builds
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
                   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
                     navigator.serviceWorker.getRegistrations().then(function(registrations) {
                       for (var i = 0; i < registrations.length; i++) {
                         registrations[i].unregister();
-                        console.log('SW unregistered in development:', registrations[i].scope);
                       }
                     });
                   } else {
                     navigator.serviceWorker.register('/sw.js').then(
                       function(reg) {
-                        console.log('SW registered:', reg.scope);
-                      },
-                      function(err) {
-                        console.log('SW registration failed:', err);
+                        reg.update(); // Force update SW
                       }
                     );
+                    // Force clear all caches to guarantee fresh UI load on iOS PWA
+                    caches.keys().then(function(names) {
+                      for (let name of names) {
+                        caches.delete(name);
+                      }
+                    });
                   }
                 });
               }
