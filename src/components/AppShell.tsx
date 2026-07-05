@@ -165,10 +165,10 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
         >
           <div className="fixed left-0 top-1/2 -translate-y-1/2 w-[350px] aspect-square bg-[radial-gradient(ellipse_at_left,_rgba(200,255,0,0.12),_transparent_70%)] pointer-events-none z-0" />
           <header 
-            style={{ paddingTop: "calc(env(safe-area-inset-top) + 8px)" }}
+            style={{ paddingTop: "calc(env(safe-area-inset-top) + 12px)" }}
             className="w-full max-w-4xl mx-auto px-4 pb-3 flex items-center justify-between z-20 border-b border-white/5 bg-[#0a0a0a]/50 backdrop-blur-md shrink-0 relative overflow-hidden"
           >
-            <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-[linear-gradient(to_left,_rgba(200,255,0,0.15),_transparent)] pointer-events-none z-0" />
+            <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-[linear-gradient(to_left,_rgba(200,255,0,0.22),_transparent)] pointer-events-none z-0" />
             <div className="relative z-10">
               <Logo size="medium" showWordmark={true} />
             </div>
@@ -178,7 +178,7 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
           </header>
           <main
             style={{
-              paddingBottom: "calc(env(safe-area-inset-bottom) + 5.5rem)",
+              paddingBottom: "calc(env(safe-area-inset-bottom) + 6rem)",
             }}
             className="flex-1 w-full flex flex-col relative z-10 overflow-y-auto"
           >
@@ -199,7 +199,7 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
         <div className="fixed left-0 top-1/2 -translate-y-1/2 w-[350px] aspect-square bg-[radial-gradient(ellipse_at_left,_rgba(200,255,0,0.12),_transparent_70%)] pointer-events-none z-0" />
         <main
           style={{
-            paddingBottom: "calc(env(safe-area-inset-bottom) + 5.5rem)",
+            paddingBottom: "calc(env(safe-area-inset-bottom) + 6rem)",
           }}
           className="flex-1 w-full flex flex-col relative z-10 overflow-y-auto"
         >
@@ -248,10 +248,10 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
     >
       <div className="fixed left-0 top-1/2 -translate-y-1/2 w-[350px] aspect-square bg-[radial-gradient(ellipse_at_left,_rgba(200,255,0,0.12),_transparent_70%)] pointer-events-none z-0" />
       <header 
-        style={{ paddingTop: "calc(env(safe-area-inset-top) + 8px)" }}
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 12px)" }}
         className="w-full max-w-4xl mx-auto px-4 pb-3 flex items-center justify-between z-20 border-b border-white/5 bg-[#0a0a0a]/50 backdrop-blur-md shrink-0 relative overflow-hidden"
       >
-        <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-[linear-gradient(to_left,_rgba(200,255,0,0.15),_transparent)] pointer-events-none z-0" />
+        <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-[linear-gradient(to_left,_rgba(200,255,0,0.22),_transparent)] pointer-events-none z-0" />
         <div className="relative z-10">
           <Logo size="medium" showWordmark={true} />
         </div>
@@ -261,7 +261,7 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
       </header>
       <main
         style={{
-          paddingBottom: "calc(env(safe-area-inset-bottom) + 5.5rem)",
+          paddingBottom: "calc(env(safe-area-inset-bottom) + 6rem)",
         }}
         className="flex-1 w-full flex flex-col relative z-10 overflow-y-auto"
       >

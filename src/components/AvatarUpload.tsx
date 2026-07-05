@@ -91,7 +91,7 @@ export default function AvatarUpload({
   return (
     <div className="flex flex-col sm:flex-row items-center gap-5 p-4 bg-[#111111] border border-white/10 rounded-2xl">
       {/* Avatar Display wrapper */}
-      <div className="relative h-20 w-20 rounded-full overflow-hidden bg-zinc-800 border border-white/10 shrink-0 shadow-inner">
+      <div className="relative h-20 w-20 rounded-2xl overflow-hidden bg-zinc-800 border border-white/10 shrink-0 shadow-inner">
         {activeAvatar ? (
           <img
             src={activeAvatar}

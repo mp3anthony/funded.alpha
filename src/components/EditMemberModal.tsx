@@ -122,7 +122,7 @@ export default function EditMemberModal({
 
             {/* Member Info */}
             <div className="flex items-center gap-3 pb-4 border-b border-white/5">
-              <div className="h-10 w-10 rounded-full overflow-hidden bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-white font-bold text-sm shadow-sm shrink-0">
+              <div className="h-10 w-10 rounded-xl overflow-hidden bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-white font-bold text-sm shadow-sm shrink-0">
                 {member.avatar_url ? (
                   <img src={member.avatar_url} alt={member.name} className="h-full w-full object-cover" />
                 ) : (
