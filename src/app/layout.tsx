@@ -41,11 +41,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+// Async Server Component to access cookies and fetch session inside a Suspense boundary
+async function ServerAppProvider({ children }: { children: React.ReactNode }) {
   let session: Session | null = null;
   let initialIsOnboarded = false;
 
@@ -90,9 +87,21 @@ export default async function RootLayout({
       }
     }
   } catch (err) {
-    console.error("Error fetching session in RootLayout:", err);
+    console.error("Error fetching session in ServerAppProvider:", err);
   }
 
+  return (
+    <AppProvider initialSession={session} initialIsOnboarded={initialIsOnboarded}>
+      {children}
+    </AppProvider>
+  );
+}
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
     <html lang="en" className="h-full antialiased">
       <head>
@@ -132,11 +141,15 @@ export default async function RootLayout({
         />
       </head>
       <body className={`${syne.variable} ${instrument.variable} ${jetbrains.variable} font-body`}>
-        <AppProvider initialSession={session} initialIsOnboarded={initialIsOnboarded}>
-          <Suspense fallback={null}>
+        <Suspense fallback={
+          <div className="flex h-screen w-screen items-center justify-center bg-black text-white">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#c8ff00] border-t-transparent" />
+          </div>
+        }>
+          <ServerAppProvider>
             <AppShell>{children}</AppShell>
-          </Suspense>
-        </AppProvider>
+          </ServerAppProvider>
+        </Suspense>
       </body>
     </html>
   );
