@@ -102,7 +102,7 @@ export default function NavigationProgress() {
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-[60] pointer-events-none"
+      className="absolute top-[-3px] left-0 right-0 z-50 pointer-events-none"
       style={{ height: "3px" }}
     >
       <div

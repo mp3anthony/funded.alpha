@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import BottomNav from "@/components/BottomNav";
 import Onboarding from "@/components/Onboarding";
 import Logo from "./Logo";
-import NavigationProgress from "@/components/NavigationProgress";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const [isMounted, setIsMounted] = useState(false);
@@ -162,11 +161,13 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
           <main
             style={{
               paddingTop: "env(safe-area-inset-top)",
-              paddingBottom: "calc(env(safe-area-inset-bottom) + 5rem)",
+              paddingBottom: "calc(env(safe-area-inset-bottom) + 4.5rem)",
             }}
             className="flex-1 w-full flex flex-col relative z-10"
           >
-            {children}
+            <Suspense fallback={null}>
+              {children}
+            </Suspense>
           </main>
           <BottomNav />
         </div>
@@ -179,11 +180,13 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
         <main
           style={{
             paddingTop: "env(safe-area-inset-top)",
-            paddingBottom: "calc(env(safe-area-inset-bottom) + 5rem)",
+            paddingBottom: "calc(env(safe-area-inset-bottom) + 4.5rem)",
           }}
           className="flex-1 w-full flex flex-col relative z-10"
         >
-          {children}
+          <Suspense fallback={null}>
+            {children}
+          </Suspense>
         </main>
       </div>
     );
@@ -225,13 +228,14 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
       <main
         style={{
           paddingTop: "env(safe-area-inset-top)",
-          paddingBottom: "calc(env(safe-area-inset-bottom) + 5rem)",
+          paddingBottom: "calc(env(safe-area-inset-bottom) + 4.5rem)",
         }}
         className="flex-1 w-full flex flex-col relative z-10"
       >
-        {children}
+        <Suspense fallback={null}>
+          {children}
+        </Suspense>
       </main>
-      <NavigationProgress />
       <BottomNav />
     </div>
   );
