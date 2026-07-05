@@ -15,11 +15,11 @@ export default function BottomNav() {
   ];
 
   return (
-    <nav 
-      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-      className="z-50 w-full shrink-0 border-t border-white/10 bg-black backdrop-blur-lg"
-    >
-      <div className="mx-auto flex h-16 max-w-md items-center justify-around px-4 pt-2">
+    <nav className="z-50 w-full shrink-0 border-t border-white/10 bg-black backdrop-blur-lg">
+      <div 
+        className="mx-auto flex max-w-md items-center justify-around px-4 pt-3"
+        style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+      >
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.path;
