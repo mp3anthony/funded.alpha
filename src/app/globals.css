@@ -300,10 +300,207 @@ body.modal-open {
   }
 
   /* Ensure the footer doesn't touch the bottom or have disproportionate bottom padding */
+  --color-secondary: #7aaa00;
+  --color-secondary-light: rgba(100, 150, 0, 0.10);
+
+  --color-accent: #c07800;
+  --color-destructive: #cc2233;
+  --color-success: #00994a;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not(.dark):not([data-theme='dark']) {
+    --color-background: #f2f2ee;
+    --color-surface: #e8e8e4;
+    --color-surface-raised: #dcdcd8;
+    --color-surface-elevated: #d0d0cc;
+
+    --color-foreground: #0f0f0f;
+    --color-muted: #444444;
+    --color-subtle: #777777;
+
+    --color-border: rgba(0, 0, 0, 0.09);
+    --color-border-strong: rgba(0, 0, 0, 0.15);
+
+    --color-primary: #7aaa00;
+    --color-primary-light: rgba(100, 150, 0, 0.10);
+    --color-primary-mid: rgba(100, 150, 0, 0.22);
+
+    --color-secondary: #7aaa00;
+    --color-secondary-light: rgba(100, 150, 0, 0.10);
+
+    --color-accent: #c07800;
+    --color-destructive: #cc2233;
+    --color-success: #00994a;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   Tailwind v4 @theme — map tokens → utilities
+───────────────────────────────────────────── */
+@theme inline {
+  /* Fonts — matching prototype exactly */
+  --font-heading: var(--font-heading);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+
+  /* Brand colors */
+  --color-primary: var(--color-primary);
+  --color-primary-light: var(--color-primary-light);
+  --color-primary-mid: var(--color-primary-mid);
+  --color-primary-fg: var(--color-primary-fg);
+
+  --color-secondary: var(--color-secondary);
+  --color-secondary-light: var(--color-secondary-light);
+  --color-secondary-dark: var(--color-secondary-dark);
+  --color-secondary-fg: var(--color-secondary-fg);
+
+  --color-accent: var(--color-accent);
+  --color-accent-light: var(--color-accent-light);
+  --color-accent-fg: var(--color-accent-fg);
+
+  --color-destructive: var(--color-destructive);
+  --color-destructive-light: var(--color-destructive-light);
+  --color-destructive-fg: var(--color-destructive-fg);
+
+  --color-success: var(--color-success);
+  --color-success-light: var(--color-success-light);
+
+  /* Layout */
+  --color-background: var(--color-background);
+  --color-surface: var(--color-surface);
+  --color-surface-raised: var(--color-surface-raised);
+  --color-surface-elevated: var(--color-surface-elevated);
+
+  /* Text */
+  --color-foreground: var(--color-foreground);
+  --color-muted: var(--color-muted);
+  --color-subtle: var(--color-subtle);
+
+  /* Border */
+  --color-border: var(--color-border);
+  --color-border-strong: var(--color-border-strong);
+}
+
+/* ─────────────────────────────────────────────
+   Base Body Styles
+───────────────────────────────────────────── */
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Smooth focus rings */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Custom font utilities for dashboard components */
+.font-syne {
+  font-family: var(--font-heading), sans-serif;
+}
+.font-jetbrains {
+  font-family: var(--font-mono), monospace;
+}
+
+/* ── Mobile Layout & Zoom Fixes ── */
+html, body {
+  overflow: hidden !important;
+  overflow-x: hidden !important;
+  width: 100% !important;
+  height: 100% !important;
+  height: 100dvh !important;
+  overscroll-behavior: none !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+}
+
+/* Force 16px font-size on inputs for iOS Safari to prevent auto-zooming */
+input, textarea, select {
+  font-size: 16px !important;
+}
+
+/* Prevent double-tap zoom delay on interactive elements */
+button, a, select, input, textarea, [role="button"] {
+  touch-action: manipulation;
+}
+
+/* Ensure all form input fields are full-width, box-sized, and don't overflow */
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Fix native date input appearance and stretching on iOS Safari */
+input[type="date"] {
+  display: block !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
+
+/* Prevent background scrolling when a modal or sheet is open */
+html.modal-open,
+body.modal-open {
+  overflow: hidden !important;
+  overflow-x: hidden !important;
+  height: 100% !important;
+  height: 100dvh !important;
+  overscroll-behavior: none !important;
+}
+
+/* Base style for modal backdrops to position them relative to visual viewport */
+.modal-backdrop {
+  position: fixed !important;
+  top: var(--visual-viewport-offsetTop, 0px) !important;
+  height: var(--visual-viewport-height, 100dvh) !important;
+  left: 0 !important;
+  right: 0 !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain !important;
+}
+
+/* Limit modal content height and force scroll on mobile viewports */
+@media (max-width: 767px) {
+  /* Turn bottom sheets into floating centered card dialogs */
+  .modal-backdrop {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 16px !important;
+    overflow: hidden !important;
+    overflow-x: hidden !important;
+  }
+
+  .modal-backdrop > div:not(.absolute),
+  .modal-backdrop > form {
+    width: 100% !important;
+    max-width: 400px !important;
+    max-height: 85% !important;
+    max-height: 85dvh !important;
+    border-radius: 24px !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6) !important;
+    overflow: hidden !important;
+    margin: 0 auto !important;
+  }
+
+  /* Ensure the footer doesn't touch the bottom or have disproportionate bottom padding */
   .modal-backdrop > div:not(.absolute) > div:last-child,
   .modal-backdrop > form > div:last-child {
     padding-bottom: 16px !important;
     padding-top: 12px !important;
   }
-}. s t a n d a l o n e - m o d e   b o d y   {   h e i g h t :   1 0 0 v h   ! i m p o r t a n t ;   }  
- 
+}
+
+.standalone-mode body {
+  height: 100vh !important;
+}
