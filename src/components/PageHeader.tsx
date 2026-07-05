@@ -13,30 +13,28 @@ interface PageHeaderProps {
 
 export default function PageHeader({ title, subtitle, user, action }: PageHeaderProps) {
   return (
-    <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
-      <div className="flex items-center gap-3 flex-1 min-w-0">
-        {/* Responsive Logo */}
-        <div className="md:hidden shrink-0">
-          <Logo size="small" showWordmark={false} />
-        </div>
-        <div className="hidden md:block shrink-0">
+    <div className="flex flex-col gap-4 mb-6">
+      {/* Logo & Avatar Row */}
+      <div className="flex items-center justify-between">
+        <div className="shrink-0">
           <Logo size="medium" showWordmark={true} />
         </div>
-
-        <div className="min-w-0">
-          <h1 className="font-syne font-extrabold text-2xl tracking-tight text-white min-w-0 truncate">
-            {title}
-          </h1>
-          {subtitle && (
-            <p className="text-xs sm:text-sm text-muted mt-1 font-sans">
-              {subtitle}
-            </p>
-          )}
+        <div className="shrink-0 flex items-center gap-3">
+          {action && <div className="flex items-center">{action}</div>}
+          <AvatarDropdown user={user} />
         </div>
       </div>
-      <div className="shrink-0 pt-0.5 flex items-center gap-3">
-        {action && <div className="flex items-center">{action}</div>}
-        <AvatarDropdown user={user} />
+
+      {/* Header Title & Subtitle */}
+      <div className="min-w-0">
+        <h1 className="font-syne font-extrabold text-2xl tracking-tight text-white min-w-0 truncate">
+          {title}
+        </h1>
+        {subtitle && (
+          <p className="text-xs sm:text-sm text-muted mt-1 font-sans">
+            {subtitle}
+          </p>
+        )}
       </div>
     </div>
   );
