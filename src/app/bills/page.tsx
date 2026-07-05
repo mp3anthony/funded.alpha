@@ -72,11 +72,20 @@ export default function Bills() {
     // 1. Drastically reduced padding and spacing to fix the "oversized" feel
     <div className="flex-1 w-full max-w-4xl mx-auto px-4 py-4 sm:px-6 sm:py-6 space-y-4">
 
-      {/* 2. Clean Header - Removed the action slot to prevent vertical overflow */}
+      {/* 2. Clean Header - Action slot added to hold the Add Bill button next to avatar */}
       <PageHeader
         title="Bills"
         subtitle="All household costs, organised by category."
         user={currentUser}
+        action={
+          <button
+            onClick={() => setIsAddBillSheetOpen(true)}
+            className="flex items-center gap-2 bg-secondary hover:bg-secondary-dark active:scale-95 text-secondary-fg text-xs font-semibold px-3 py-2 rounded-xl shadow-md shadow-secondary/15 transition-all duration-200 cursor-pointer animate-in fade-in duration-200"
+          >
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">Add Bill</span>
+          </button>
+        }
       />
 
       {/* 3. Total Bar */}
@@ -128,15 +137,6 @@ export default function Bills() {
           </div>
         </div>
 
-        {/* 5. Add Bill Button - Moved here so it's NEVER cut off by the viewport */}
-        <button
-          onClick={() => setIsAddBillSheetOpen(true)}
-          className="flex items-center justify-center gap-1 bg-secondary hover:bg-secondary-dark active:scale-95 text-secondary-fg text-xs font-semibold px-3 py-2.5 rounded-lg shadow-md shadow-secondary/15 transition-all duration-200 cursor-pointer shrink-0"
-        >
-          <Plus className="h-4 w-4" />
-          {/* Hide text on mobile to save space, show on larger screens */}
-          <span className="hidden sm:inline">Add</span>
-        </button>
       </div>
 
       {/* Period Toggle */}
