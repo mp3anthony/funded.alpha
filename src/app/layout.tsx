@@ -148,7 +148,10 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`h-[100dvh] w-screen flex flex-col overflow-hidden bg-black ${syne.variable} ${instrument.variable} ${jetbrains.variable} font-body`}>
+      <body className={`h-[100dvh] w-screen flex flex-col overflow-hidden bg-black ${syne.variable} ${instrument.variable} ${jetbrains.variable} font-body relative`}>
+        {/* Green Haze Background */}
+        <div className="fixed bottom-0 right-0 w-[600px] h-[600px] bg-[#c8ff00] opacity-15 blur-[150px] pointer-events-none -z-10 translate-x-1/4 translate-y-1/4 rounded-full" />
+        
         <Suspense fallback={
           <div className="flex flex-1 w-full items-center justify-center bg-black text-white">
             <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#c8ff00] border-t-transparent" />

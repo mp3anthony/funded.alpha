@@ -175,16 +175,14 @@ export default function PaydayClient() {
             <p className="text-xs text-subtle mt-1">Create a schedule to automate or log household income.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
             {paySchedules.map((schedule) => {
               const member = householdMembers.find((m) => String(m.id) === String(schedule.member_id));
               const memberName = member ? member.name : "Unknown Member";
               const countdown = getCountdown(schedule);
               const isReady = isLoggable(schedule);
 
-              const contribution = isJointFund && member
-                ? householdContributions.find((c) => String(c.member_id) === String(member.id))
-                : null;
+
 
               const formattedAmount = schedule.is_fixed_amount && schedule.amount
                 ? `$${Number(schedule.amount).toLocaleString("en-US", { minimumFractionDigits: 2 })}`
@@ -229,7 +227,7 @@ export default function PaydayClient() {
                     {/* Meta info */}
                     <div className="flex items-center justify-between gap-2 flex-wrap text-xs text-muted font-mono pt-1">
                       <div className="flex items-center gap-1.5 uppercase min-w-0">
-                        <span className="truncate">{schedule.frequency}</span>
+                        <span className="truncate">{schedule.frequency === 'by-weekly' ? 'fortnightly' : schedule.frequency}</span>
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
                         <Calendar size={12} className="shrink-0" />
@@ -251,15 +249,7 @@ export default function PaydayClient() {
                       </div>
                     </div>
 
-                    {/* Expected Joint Fund Contribution */}
-                    {contribution && (
-                      <div className="mt-3 p-3 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-between gap-2 flex-wrap text-[10px] font-mono">
-                        <span className="text-muted uppercase min-w-0 truncate">Expected Contribution</span>
-                        <span className="text-primary font-bold whitespace-nowrap">
-                          ${Number(contribution.amount).toFixed(2)} per {contribution.frequency}
-                        </span>
-                      </div>
-                    )}
+
                   </div>
 
                   {/* Actions Bar — only shown when pay is due */}

@@ -2,8 +2,6 @@
 
 import React from "react";
 import Logo from "./Logo";
-import AvatarDropdown from "./AvatarDropdown";
-import { useCurrentUser } from "@/context/AppContext";
 
 interface PageHeaderProps {
   title: string;
@@ -12,16 +10,11 @@ interface PageHeaderProps {
 }
 
 export default function PageHeader({ title, subtitle, action }: PageHeaderProps) {
-  const currentUser = useCurrentUser();
-
   return (
     <div className="flex flex-col w-full mb-4 mt-2 space-y-4">
-      {/* Top Row: Logo & Avatar */}
+      {/* Top Row: Logo (Avatar is now a floating element in AppShell) */}
       <div className="flex items-center justify-between w-full">
         <Logo size="medium" showWordmark={true} />
-        <div className="shrink-0 flex items-center relative z-50">
-          {currentUser && <AvatarDropdown user={currentUser} />}
-        </div>
       </div>
       
       {/* Title & Subtitle */}
@@ -41,3 +34,4 @@ export default function PageHeader({ title, subtitle, action }: PageHeaderProps)
     </div>
   );
 }
+

@@ -17,10 +17,12 @@ export default function BillsClient() {
 
   const [isAddBillSheetOpen, setIsAddBillSheetOpen] = useState(false);
   const [filter, setFilter] = useState<"all" | "week" | "month" | "overdue">("all");
+  const [categoryFilter, setCategoryFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [displayFrequency, setDisplayFrequency] = useState<FrequencyType>("weekly");
 
   const [isMounted, setIsMounted] = useState(false);
+  const [isCompact, setIsCompact] = useState(false);
   useEffect(() => {
     setIsMounted(true);
   }, []);
@@ -28,7 +30,7 @@ export default function BillsClient() {
   const getFrequencyLabel = (freq: FrequencyType) => {
     switch (freq) {
       case "weekly": return "Weekly";
-      case "by-weekly": return "By-Weekly";
+      case "by-weekly": return "Fortnightly";
       case "monthly": return "Monthly";
       case "yearly": return "Yearly";
       default: return "Weekly";
@@ -51,6 +53,10 @@ export default function BillsClient() {
         if (!b.name.toLowerCase().includes(query)) return false;
       }
 
+      if (categoryFilter !== "All" && b.category !== categoryFilter) {
+        return false;
+      }
+
       const d = b.due_date ? new Date(b.due_date + "T00:00:00") : new Date(b.dueDate);
       if (isNaN(d.getTime())) return false;
       d.setHours(0, 0, 0, 0);
@@ -67,11 +73,12 @@ export default function BillsClient() {
 
   const emptyStateMessage = useMemo(() => {
     if (searchQuery.trim() !== "") return "No bills match your search";
+    if (categoryFilter !== "All") return `No bills in ${categoryFilter}`;
     if (filter === "week") return "No bills due this week";
     if (filter === "month") return "No bills due this month";
     if (filter === "overdue") return "No overdue bills";
     return "No bills found";
-  }, [filter, searchQuery]);
+  }, [filter, searchQuery, categoryFilter]);
 
   return (
     // 1. Drastically reduced padding and spacing to fix the "oversized" feel
@@ -102,15 +109,96 @@ export default function BillsClient() {
         </div>
       </div>
 
-      {/* 4. Compact Search, Filter, and Add Bill Button */}
-      <div className="flex gap-2 items-center">
-        <div className="relative flex-1">
+      {/* 4. Filters & Search */}
+      <div className="flex flex-col gap-3 bg-surface-raised p-3 rounded-2xl border border-border">
+        
+        {/* Filters Row */}
+        <div className="grid grid-cols-3 gap-2">
+          
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-muted uppercase tracking-wider ml-1">
+              Category
+            </label>
+            <div className="relative">
+              <select
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="w-full rounded-xl border border-white/10 bg-[#0a0a0a] px-2 py-2 text-[10px] font-semibold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-6"
+              >
+                <option value="All">All</option>
+                <option value="Housing">Housing</option>
+                <option value="Utilities">Utilities</option>
+                <option value="Groceries">Groceries</option>
+                <option value="Subscriptions">Subscriptions</option>
+                <option value="Transport">Transport</option>
+                <option value="Health">Health</option>
+                <option value="Personal">Personal</option>
+                <option value="Debt">Debt</option>
+                <option value="Other">Other</option>
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1 text-muted">
+                <svg className="h-3 w-3 fill-current" viewBox="0 0 20 20">
+                  <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-muted uppercase tracking-wider ml-1">
+              Due Date
+            </label>
+            <div className="relative">
+              <select
+                value={filter}
+                onChange={(e) => setFilter(e.target.value as "all" | "week" | "month" | "overdue")}
+                className="w-full rounded-xl border border-white/10 bg-[#0a0a0a] px-2 py-2 text-[10px] font-semibold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-6"
+              >
+                <option value="all">All Dates</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+                <option value="overdue">Overdue</option>
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1 text-muted">
+                <svg className="h-3 w-3 fill-current" viewBox="0 0 20 20">
+                  <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-muted uppercase tracking-wider ml-1">
+              Amounts As
+            </label>
+            <div className="relative">
+              <select
+                value={displayFrequency}
+                onChange={(e) => setDisplayFrequency(e.target.value as FrequencyType)}
+                className="w-full rounded-xl border border-white/10 bg-[#0a0a0a] px-2 py-2 text-[10px] font-semibold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-6"
+              >
+                <option value="weekly">Weekly</option>
+                <option value="by-weekly">Fortnightly</option>
+                <option value="monthly">Monthly</option>
+                <option value="yearly">Yearly</option>
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1 text-muted">
+                <svg className="h-3 w-3 fill-current" viewBox="0 0 20 20">
+                  <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Search */}
+        <div className="relative w-full">
           <input
             type="text"
-            placeholder="Search bills..."
+            placeholder="Search bills by name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-surface border border-border rounded-lg pl-4 pr-10 py-2.5 font-mono text-sm placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-primary/50 text-foreground"
+            className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl pl-4 pr-10 py-2.5 font-mono text-sm placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-primary/50 text-foreground"
           />
           {searchQuery && (
             <button
@@ -121,39 +209,21 @@ export default function BillsClient() {
             </button>
           )}
         </div>
-
-        {/* Compact Filter Dropdown */}
-        <div className="relative">
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value as "all" | "week" | "month" | "overdue")}
-            className="rounded-lg border border-border bg-surface px-3 py-2.5 text-xs font-bold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-8"
-          >
-            <option value="all">All</option>
-            <option value="week">Week</option>
-            <option value="month">Month</option>
-            <option value="overdue">Overdue</option>
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-muted">
-            <svg className="h-3 w-3 fill-current" viewBox="0 0 20 20">
-              <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-            </svg>
-          </div>
-        </div>
-
       </div>
-
-      {/* Period Toggle */}
-      <FrequencyToggle
-        selectedFrequency={displayFrequency}
-        onChange={setDisplayFrequency}
-      />
 
       {/* Bills Scrollable Container */}
       <div className="space-y-3">
-        <h2 className="text-xs font-bold text-subtle uppercase tracking-wider px-1">
-          Bills List
-        </h2>
+        <div className="flex items-center justify-between px-1">
+          <h2 className="text-xs font-bold text-subtle uppercase tracking-wider">
+            Bills List
+          </h2>
+          <button
+            onClick={() => setIsCompact(!isCompact)}
+            className="text-[10px] font-bold text-muted hover:text-foreground uppercase tracking-wider transition-colors"
+          >
+            {isCompact ? "Expand All" : "Minimize All"}
+          </button>
+        </div>
         {filteredBills.length === 0 ? (
           <div className="bg-surface border border-border rounded-2xl p-8 text-center shadow-sm">
             <p className="text-muted font-mono text-center py-4 text-sm">{emptyStateMessage}</p>
@@ -167,6 +237,7 @@ export default function BillsClient() {
                 splits={billSplits.filter(s => s.bill_id === bill.id)}
                 householdMembers={householdMembers}
                 displayFrequency={displayFrequency}
+                isCompact={isCompact}
               />
             ))}
           </div>

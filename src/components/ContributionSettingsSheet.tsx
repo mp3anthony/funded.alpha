@@ -228,7 +228,7 @@ function MemberContributionRow({
                   : "text-muted hover:text-foreground hover:bg-white/5"
               }`}
             >
-              {freq === "by-weekly" ? "By-Week" : freq === "weekly" ? "Week" : "Month"}
+              {freq === "by-weekly" ? "Fortnight" : freq === "weekly" ? "Week" : "Month"}
             </button>
           ))}
         </div>
@@ -283,7 +283,7 @@ function MemberContributionRow({
             Weekly: ${conversions.weekly.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </span>
           <span className={frequency === "by-weekly" ? "text-primary font-bold animate-pulse" : "text-muted"}>
-            By-Weekly: ${conversions["by-weekly"].toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            Fortnightly: ${conversions["by-weekly"].toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </span>
           <span className={frequency === "monthly" ? "text-primary font-bold animate-pulse" : "text-muted"}>
             Monthly: ${conversions.monthly.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}

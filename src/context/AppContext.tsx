@@ -30,6 +30,8 @@ export interface Bill {
   due_date?: string | null;
   notes?: string | null;
   is_recurring?: boolean;
+  is_paused?: boolean;
+  category?: string;
 }
 
 export interface Fund {
@@ -395,7 +397,9 @@ function mapBillFromDb(dbBill: any): Bill {
   );
 
   let mappedStatus = dbBill.status;
-  if (mappedStatus !== "Paid" && dbBill.payment_type?.toLowerCase() !== "auto") {
+  if (dbBill.is_paused) {
+    mappedStatus = "Paused";
+  } else if (mappedStatus !== "Paid" && dbBill.payment_type?.toLowerCase() !== "auto") {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     if (adjustedDueDate) {
@@ -427,6 +431,8 @@ function mapBillFromDb(dbBill: any): Bill {
     invoice_date: dbBill.invoice_date,
     due_date: adjustedDueDate,
     is_recurring: dbBill.is_recurring !== undefined ? dbBill.is_recurring : true,
+    is_paused: dbBill.is_paused || false,
+    category: dbBill.category || "Other",
   };
 }
 
@@ -495,6 +501,8 @@ interface AppContextValue {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updateBill: (billId: string | number, billData: any, splitsData: any[]) => Promise<void>;
   togglePaid: (id: string | number) => void;
+  markAsPaid: (bill: Bill) => Promise<void>;
+  togglePauseBill: (id: string | number, isPaused: boolean) => Promise<void>;
   deleteBill: (id: string | number) => void;
 
   /* Funds */
@@ -1045,6 +1053,8 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
         frequency: billData.frequency || "Monthly",
         notes: billData.notes || null,
         is_recurring: true,
+        is_paused: false,
+        category: billData.category || "Other",
       };
 
       const { data: newBill, error: billError } = await supabase
@@ -1124,6 +1134,8 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
         frequency: billData.frequency || "Monthly",
         notes: billData.notes || null,
         is_recurring: true,
+        is_paused: billData.is_paused || false,
+        category: billData.category || "Other",
       };
 
       console.log('updateBill - dbBillData payload:', dbBillData);
@@ -1280,6 +1292,69 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
       }
     } catch (err) {
       console.error("Failed to toggle paid:", err);
+    }
+  }
+
+  async function markAsPaid(bill: Bill) {
+    try {
+      let nextDueDateStr = bill.due_date || bill.dueDate;
+      
+      if (bill.is_recurring) {
+        const d = new Date(nextDueDateStr + "T00:00:00");
+        if (!isNaN(d.getTime())) {
+          const freq = (bill.frequency || "monthly").toLowerCase();
+          if (freq === "weekly") d.setDate(d.getDate() + 7);
+          else if (freq === "by-weekly" || freq === "fortnightly") d.setDate(d.getDate() + 14);
+          else if (freq === "yearly") d.setFullYear(d.getFullYear() + 1);
+          else d.setMonth(d.getMonth() + 1); // default monthly
+          
+          nextDueDateStr = d.toISOString().split("T")[0];
+        }
+      }
+
+      const { data, error } = await supabase
+        .from("bills")
+        .update({ status: "Paid", due_date: nextDueDateStr })
+        .eq("id", bill.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error updating bill as paid:", error);
+        return;
+      }
+
+      if (data) {
+        setBills((prev) =>
+          prev.map((b) => (b.id === bill.id ? mapBillFromDb(data) : b))
+        );
+      }
+    } catch (err) {
+      console.error("Failed to mark as paid:", err);
+    }
+  }
+
+  async function togglePauseBill(id: string | number, isPaused: boolean) {
+    try {
+      const { data, error } = await supabase
+        .from("bills")
+        .update({ is_paused: isPaused })
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error toggling pause status:", error);
+        return;
+      }
+
+      if (data) {
+        setBills((prev) =>
+          prev.map((bill) => (bill.id === id ? mapBillFromDb(data) : bill))
+        );
+      }
+    } catch (err) {
+      console.error("Failed to toggle pause status:", err);
     }
   }
 
@@ -2155,7 +2230,7 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
       const currentDate = new Date(schedule.next_pay_date + "T00:00:00");
       if (schedule.frequency === "weekly") {
         currentDate.setDate(currentDate.getDate() + 7);
-      } else if (schedule.frequency === "by-weekly" || schedule.frequency === "bi-weekly" as any) {
+      } else if (schedule.frequency === "by-weekly" || schedule.frequency === "by-weekly" as any) {
         currentDate.setDate(currentDate.getDate() + 14);
       } else if (schedule.frequency === "monthly") {
         currentDate.setMonth(currentDate.getMonth() + 1);
@@ -2284,7 +2359,7 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
           // Advance tempDate
           if (schedule.frequency === "weekly") {
             tempDate.setDate(tempDate.getDate() + 7);
-          } else if (schedule.frequency === "by-weekly" || schedule.frequency === "bi-weekly" as any) {
+          } else if (schedule.frequency === "by-weekly" || schedule.frequency === "by-weekly" as any) {
             tempDate.setDate(tempDate.getDate() + 14);
           } else if (schedule.frequency === "monthly") {
             tempDate.setMonth(tempDate.getMonth() + 1);

@@ -8,6 +8,9 @@ import Onboarding from "@/components/Onboarding";
 import Logo from "./Logo";
 import AvatarDropdown from "./AvatarDropdown";
 
+// NOTE: AvatarDropdown was moved here from PageHeader so it can float
+// as a fixed-position element that stays visible during scrolling.
+
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const [isMounted, setIsMounted] = useState(false);
   useEffect(() => {
@@ -103,6 +106,13 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
       className="flex-1 flex flex-col w-full relative overflow-hidden text-white"
       style={{ paddingTop: 'env(safe-area-inset-top)' }}
     >
+      {/* Floating Avatar — fixed position, always visible when authenticated */}
+      {!isLoading && currentUser && (
+        <div className="floating-avatar">
+          <AvatarDropdown user={currentUser} />
+        </div>
+      )}
+
       {/* Main Content */}
       <main 
         className="flex-1 overflow-y-auto w-full relative z-10 transform-gpu pb-6"

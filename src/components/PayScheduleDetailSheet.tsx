@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import { X, Calendar, User, Clock } from "lucide-react";
-import type { PaySchedule, Member } from "@/context/AppContext";
+import { useApp, type PaySchedule, type Member } from "@/context/AppContext";
 
 interface PayScheduleDetailSheetProps {
   isOpen: boolean;
@@ -21,6 +21,8 @@ export default function PayScheduleDetailSheet({
   onEdit,
   onDelete,
 }: PayScheduleDetailSheetProps) {
+  const { isJointFund, householdContributions } = useApp();
+
   useEffect(() => {
     if (!isOpen) return;
     document.body.classList.add("modal-open");
@@ -36,6 +38,10 @@ export default function PayScheduleDetailSheet({
 
   const member = householdMembers.find((m) => String(m.id) === String(paySchedule.member_id));
   const memberName = member ? member.name : "Unknown Member";
+
+  const contribution = isJointFund && member
+    ? householdContributions.find((c) => String(c.member_id) === String(member.id))
+    : null;
 
   const formattedAmount = paySchedule.is_fixed_amount && paySchedule.amount
     ? `$${Number(paySchedule.amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
@@ -108,7 +114,7 @@ export default function PayScheduleDetailSheet({
                 <span>{memberName}</span>
               </h3>
               <span className="shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-heading font-bold uppercase tracking-wider bg-white/5 text-muted border border-white/10">
-                {paySchedule.frequency}
+                {paySchedule.frequency === 'by-weekly' ? 'fortnightly' : paySchedule.frequency}
               </span>
             </div>
             <div className="flex items-baseline mt-2 text-2xl font-heading font-extrabold text-foreground">
@@ -139,6 +145,15 @@ export default function PayScheduleDetailSheet({
               </div>
             </div>
           </div>
+
+          {contribution && (
+            <div className="mt-4 p-4 rounded-xl bg-primary/5 border border-primary/10 flex flex-col space-y-1">
+              <span className="text-muted uppercase text-xs font-semibold">Expected Contribution</span>
+              <span className="text-primary font-bold text-lg font-heading tracking-tight">
+                ${Number(contribution.amount).toFixed(2)} <span className="text-sm font-normal font-mono text-muted tracking-normal">per {contribution.frequency}</span>
+              </span>
+            </div>
+          )}
 
         </div>
 

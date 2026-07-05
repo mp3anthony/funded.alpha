@@ -48,7 +48,7 @@ export function adjustAutopayBillDate(dueDateStr: string, frequency: string, pay
       limit++;
       if (freq === "weekly") {
         tempDate.setDate(tempDate.getDate() + 7);
-      } else if (freq === "by-weekly" || freq === "bi-weekly" || freq === "byweekly" || freq === "biweekly") {
+      } else if (freq === "by-weekly" || freq === "by-weekly" || freq === "by-weekly" || freq === "by-weekly") {
         tempDate.setDate(tempDate.getDate() + 14);
       } else if (freq === "monthly") {
         tempDate.setMonth(tempDate.getMonth() + 1);
@@ -223,7 +223,7 @@ export function convertAmount(amount: number, fromFrequency: string, toFrequency
       monthly = amount * 4.33;
       break;
     case "by-weekly":
-    case "bi-weekly":
+    case "by-weekly":
       monthly = amount * 2.16;
       break;
     case "monthly":
@@ -241,7 +241,7 @@ export function convertAmount(amount: number, fromFrequency: string, toFrequency
     case "weekly":
       return monthly / 4.33;
     case "by-weekly":
-    case "bi-weekly":
+    case "by-weekly":
       return monthly / 2.16;
     case "monthly":
       return monthly;

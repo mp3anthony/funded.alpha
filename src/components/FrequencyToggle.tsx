@@ -15,7 +15,7 @@ export default function FrequencyToggle({
 }: FrequencyToggleProps) {
   const options: { value: FrequencyType; label: string }[] = [
     { value: "weekly", label: "Weekly" },
-    { value: "by-weekly", label: "By-Weekly" },
+    { value: "by-weekly", label: "Fortnightly" },
     { value: "monthly", label: "Monthly" },
     { value: "yearly", label: "Yearly" },
   ];

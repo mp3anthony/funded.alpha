@@ -11,6 +11,7 @@ export interface BillCardProps {
   splits?: BillSplit[];
   householdMembers: Member[];
   displayFrequency?: "weekly" | "by-weekly" | "monthly" | "yearly";
+  isCompact?: boolean;
 }
 
 export default function BillCard({
@@ -18,6 +19,7 @@ export default function BillCard({
   splits = [],
   householdMembers,
   displayFrequency = "weekly",
+  isCompact = false,
 }: BillCardProps) {
   const { deleteBill } = useApp();
   const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -47,24 +49,7 @@ export default function BillCard({
     maximumFractionDigits: 2,
   });
 
-  // Calculate secondary label (alternative/original frequency)
-  const getSecondaryLabel = () => {
-    const originalFreq = (bill.frequency || "monthly").toLowerCase();
-    const currentFreq = displayFrequency.toLowerCase();
-    
-    if (currentFreq === originalFreq) {
-      if (currentFreq === "weekly") {
-        const monthlyAmount = convertAmount(bill.amount, bill.frequency || "monthly", "monthly");
-        return `($${monthlyAmount.toLocaleString("en-US", { minimumFractionDigits: 2 })} monthly)`;
-      } else {
-        const weeklyAmount = convertAmount(bill.amount, bill.frequency || "monthly", "weekly");
-        return `($${weeklyAmount.toLocaleString("en-US", { minimumFractionDigits: 2 })} weekly)`;
-      }
-    } else {
-      return `(originally $${Number(bill.amount).toLocaleString("en-US", { minimumFractionDigits: 2 })} ${originalFreq})`;
-    }
-  };
-
+  // Calculate secondary label logic moved to BillDetailSheet
   const handleDelete = async () => {
     if (confirm(`Are you sure you want to delete "${bill.name}"?`)) {
       try {
@@ -80,30 +65,23 @@ export default function BillCard({
     <>
       <button 
         onClick={() => setIsDetailOpen(true)}
-        className="w-full text-left rounded-2xl bg-surface border border-border p-5 flex flex-col space-y-4 hover:border-primary/30 hover:bg-surface-raised transition-all group focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
+        className={`w-full text-left rounded-2xl bg-surface border border-border flex hover:border-primary/30 hover:bg-surface-raised transition-all group focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background ${
+          isCompact ? "p-4 flex-row items-center justify-between" : "p-5 flex-col space-y-4"
+        }`}
       >
       {/* Top Row: Name & Badges */}
-      <div className="flex w-full items-center justify-between">
+      <div className={`flex items-center justify-between ${isCompact ? "flex-1" : "w-full"}`}>
         <h3 className="font-heading font-semibold text-lg text-foreground tracking-wide truncate pr-4">
           {bill.name}
         </h3>
         <div className="flex items-center gap-2 shrink-0">
-          {bill.is_recurring && (
-            <>
-              <span className="rounded-full px-2 py-0.5 text-[9px] font-heading font-bold uppercase tracking-wider bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                Recurring
-              </span>
-              <span className="rounded-full px-2 py-0.5 text-[9px] font-heading font-bold uppercase tracking-wider bg-white/5 text-neutral-400 border border-white/5">
-                {bill.frequency || "Monthly"}
-              </span>
-            </>
-          )}
+          {/* Removed Recurring/Frequency Badges */}
           <span 
             className={`shrink-0 rounded-full px-3 py-1 text-[10px] font-heading font-bold uppercase tracking-widest ${
               isAutoPay 
                 ? "bg-primary/10 text-primary border border-primary/20" 
                 : "bg-surface-elevated text-muted border border-border"
-            }`}
+            } ${isCompact ? "hidden" : ""}`}
           >
             {paymentTypeStr}
           </span>
@@ -111,41 +89,48 @@ export default function BillCard({
       </div>
 
       {/* Middle Row: Amount */}
-      <div className="flex w-full items-baseline gap-2.5">
-        <span className="font-jetbrains font-extrabold text-3xl text-foreground tracking-tight">
+      <div className={`flex items-baseline gap-2.5 ${isCompact ? "shrink-0 pl-4" : "w-full"}`}>
+        <span className={`font-jetbrains font-extrabold text-foreground tracking-tight ${isCompact ? "text-xl" : "text-3xl"}`}>
           ${formattedAmount}
-        </span>
-        <span className="text-xs text-muted font-mono">
-          {getSecondaryLabel()}
         </span>
       </div>
 
-      {/* Bottom Row: Due Date & Assignee */}
-      <div className="flex w-full items-center justify-between pt-2">
-        <div className="flex flex-col space-y-1">
-          <span 
-            className={`font-mono text-xs uppercase font-medium transition-colors ${
-              isUrgent ? "text-[#ff4500]" : "text-muted"
-            }`}
-          >
-            DUE {bill.dueDate}
-          </span>
-          {bill.notes && (
-            <p className="text-xs text-muted font-mono mt-1">
-              {bill.notes}
-            </p>
+      {/* Bottom Row: Due Date & Assignee - Hidden in compact view */}
+      {!isCompact && (
+        <div className="flex w-full items-center justify-between pt-2">
+          <div className="flex flex-col space-y-1">
+            <span 
+              className={`font-mono text-xs uppercase font-medium transition-colors ${
+                isUrgent ? "text-[#ff4500]" : "text-muted"
+              }`}
+            >
+              DUE {bill.dueDate}
+            </span>
+            {bill.notes && (
+              <p className="text-xs text-muted font-mono mt-1">
+                {bill.notes}
+              </p>
+            )}
+          </div>
+          
+          
+          {assignee && (
+            <div 
+              className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-elevated text-[10px] font-bold text-foreground border border-border group-hover:border-primary/30 transition-colors shadow-sm"
+              title={`Assignee: ${assignee.name}`}
+            >
+              {assignee.avatar || assignee.name.charAt(0).toUpperCase()}
+            </div>
           )}
         </div>
-        
-        {assignee && (
-          <div 
-            className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-elevated text-[10px] font-bold text-foreground border border-border group-hover:border-primary/30 transition-colors shadow-sm"
-            title={`Assignee: ${assignee.name}`}
-          >
-            {assignee.avatar || assignee.name.charAt(0).toUpperCase()}
-          </div>
-        )}
-      </div>
+      )}
+
+      {/* Tap for more prompt - Hidden in compact view */}
+      {!isCompact && (
+        <div className="w-full pt-3 mt-1 border-t border-border/50 text-center text-[10px] font-semibold text-primary/70 uppercase tracking-widest group-hover:text-primary transition-colors flex items-center justify-center gap-1">
+          Tap for more details
+        </div>
+      )}
       </button>
 
       <BillDetailSheet

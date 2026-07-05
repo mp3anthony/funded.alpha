@@ -22,6 +22,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
   const [amount, setAmount] = useState("");
   const [invoiceDate, setInvoiceDate] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [category, setCategory] = useState("Other");
   const [paymentType, setPaymentType] = useState<"Manual" | "Auto">("Manual");
   const [assignee, setAssignee] = useState("");
   const [splits, setSplits] = useState<SplitResult[]>([]);
@@ -50,6 +51,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
       setInvoiceDate(existingBill.invoice_date ? existingBill.invoice_date : "");
       setDueDate(existingBill.due_date ? existingBill.due_date : "");
       setPaymentType(existingBill.payment_type?.toLowerCase() === "auto" ? "Auto" : "Manual");
+      setCategory(existingBill.category || "Other");
       setAssignee(existingBill.assignee_id ? existingBill.assignee_id.toString() : "");
       setNotes(existingBill.notes ? existingBill.notes : "");
       setFrequency(existingBill.frequency ? existingBill.frequency.toLowerCase() : "monthly");
@@ -61,6 +63,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
       setAmount("");
       setInvoiceDate("");
       setDueDate("");
+      setCategory("Other");
       setPaymentType("Manual");
       setAssignee(currentUser.id ? String(currentUser.id) : "");
       setSplits([]);
@@ -94,6 +97,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
       const billData = {
         name,
         amount: Number(amount),
+        category,
         invoiceDate,
         dueDate,
         paymentType,
@@ -115,6 +119,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
       setAmount("");
       setInvoiceDate("");
       setDueDate("");
+      setCategory("Other");
       setPaymentType("Manual");
       setAssignee("");
       setSplits([]);
@@ -177,6 +182,35 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
             />
           </div>
 
+          {/* 1.5 Bill Category */}
+          <div className="flex flex-col space-y-2">
+            <label className="font-heading text-sm font-semibold text-subtle uppercase tracking-wider">
+              Category
+            </label>
+            <div className="relative">
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full rounded-xl border border-border bg-surface-raised px-4 py-2.5 md:py-3 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all appearance-none text-sm cursor-pointer"
+              >
+                <option value="Housing">Housing</option>
+                <option value="Utilities">Utilities</option>
+                <option value="Groceries">Groceries</option>
+                <option value="Subscriptions">Subscriptions</option>
+                <option value="Transport">Transport</option>
+                <option value="Health">Health</option>
+                <option value="Personal">Personal</option>
+                <option value="Debt">Debt</option>
+                <option value="Other">Other</option>
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-muted">
+                <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
+                  <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
           {/* 2. Bill Amount */}
           <div className="flex flex-col space-y-2">
             <label className="font-heading text-sm font-semibold text-subtle uppercase tracking-wider">
@@ -211,7 +245,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
                 className="w-full rounded-xl border border-white/10 bg-[#0a0a0a] px-4 py-2.5 md:py-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 appearance-none transition-all cursor-pointer pr-10"
               >
                 <option value="weekly">Weekly</option>
-                <option value="by-weekly">By-Weekly</option>
+                <option value="by-weekly">Fortnightly</option>
                 <option value="monthly">Monthly</option>
                 <option value="yearly">Yearly</option>
               </select>
