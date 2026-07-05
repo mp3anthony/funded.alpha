@@ -99,10 +99,13 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
   const isLoading = !isMounted || isAuthLoading || (session && isDataLoading) || !session;
 
   return (
-    <div className="flex-1 flex flex-col w-full relative overflow-hidden text-white">
+    <div 
+      className="flex-1 flex flex-col w-full relative overflow-hidden text-white"
+      style={{ paddingTop: 'env(safe-area-inset-top)' }}
+    >
       {/* Main Content */}
       <main 
-        className="flex-1 overflow-y-auto w-full relative z-10 transform-gpu"
+        className="flex-1 overflow-y-auto w-full relative z-10 transform-gpu pb-6"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
         {isLoading ? (

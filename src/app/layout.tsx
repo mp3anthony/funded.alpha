@@ -140,7 +140,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`fixed inset-0 w-full flex flex-col overflow-hidden bg-black ${syne.variable} ${instrument.variable} ${jetbrains.variable} font-body`}>
+      <body className={`h-[100dvh] w-screen flex flex-col overflow-hidden bg-black ${syne.variable} ${instrument.variable} ${jetbrains.variable} font-body`}>
         <Suspense fallback={
           <div className="flex flex-1 w-full items-center justify-center bg-black text-white">
             <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#c8ff00] border-t-transparent" />
