@@ -120,7 +120,7 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
 
       {/* Main Content */}
       <main 
-        className="flex-1 overflow-y-auto w-full relative z-10"
+        className="flex-1 overflow-y-auto w-full relative z-10 transform-gpu"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
         {isLoading ? (
