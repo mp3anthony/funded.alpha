@@ -89,9 +89,9 @@ export default function AvatarUpload({
   const activeAvatar = previewUrl || currentAvatarUrl;
 
   return (
-    <div className="flex flex-col sm:flex-row items-center gap-5 p-4 bg-[#111111] border border-white/10 rounded-2xl">
+    <div className="flex flex-col sm:flex-row items-center gap-5 p-4 bg-surface border border-border rounded-2xl">
       {/* Avatar Display wrapper */}
-      <div className="relative h-20 w-20 rounded-2xl overflow-hidden bg-zinc-800 border border-white/10 shrink-0 shadow-inner">
+      <div className="relative h-20 w-20 rounded-2xl overflow-hidden bg-surface-raised border border-border shrink-0 shadow-inner">
         {activeAvatar ? (
           <img
             src={activeAvatar}
@@ -103,13 +103,13 @@ export default function AvatarUpload({
             }}
           />
         ) : (
-          <div className="h-full w-full bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-white font-extrabold text-2xl">
+          <div className="h-full w-full bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-foreground font-extrabold text-2xl">
             {memberName.charAt(0).toUpperCase() || "?"}
           </div>
         )}
 
         {loading && (
-          <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+          <div className="absolute inset-0 bg-foreground/20 dark:bg-foreground/20 dark:bg-black/80 flex items-center justify-center">
             <Loader2 className="h-6 w-6 text-primary animate-spin" />
           </div>
         )}
@@ -140,7 +140,7 @@ export default function AvatarUpload({
               type="button"
               onClick={handleRemove}
               disabled={loading}
-              className="flex items-center justify-center gap-1.5 px-4 py-2 bg-white/5 border border-white/10 text-muted hover:text-destructive hover:bg-destructive/10 hover:border-destructive/20 text-xs font-bold uppercase tracking-wider rounded-xl transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+              className="flex items-center justify-center gap-1.5 px-4 py-2 bg-white/5 border border-border text-muted hover:text-destructive hover:bg-destructive/10 hover:border-destructive/20 text-xs font-bold uppercase tracking-wider rounded-xl transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
               title="Remove Photo"
             >
               <Trash2 size={14} />

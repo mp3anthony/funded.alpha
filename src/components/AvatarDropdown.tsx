@@ -67,7 +67,7 @@ export default function AvatarDropdown({ user }: AvatarDropdownProps) {
       <button
         onClick={() => setIsOpen((prev) => !prev)}
         type="button"
-        className="h-9 w-9 rounded-xl border-2 border-[#c8ff00] overflow-hidden bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-white font-bold text-sm cursor-pointer shadow-lg transition-transform duration-200 active:scale-95 hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-primary/50"
+        className="h-9 w-9 rounded-xl border-2 border-primary overflow-hidden bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-foreground font-bold text-sm cursor-pointer shadow-lg transition-transform duration-200 active:scale-95 hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-primary/50"
         aria-expanded={isOpen}
         aria-haspopup="true"
         aria-label="User menu"
@@ -84,10 +84,10 @@ export default function AvatarDropdown({ user }: AvatarDropdownProps) {
         <div
           role="menu"
           aria-orientation="vertical"
-          className="absolute right-0 mt-2 w-56 origin-top-right rounded-xl border border-white/10 bg-[#111111] shadow-lg shadow-black/40 ring-1 ring-black ring-opacity-5 focus:outline-none z-50 animate-in fade-in slide-in-from-top-1 duration-150"
+          className="absolute right-0 mt-2 w-56 origin-top-right rounded-xl border border-border bg-surface shadow-lg shadow-black/40 ring-1 ring-black ring-opacity-5 focus:outline-none z-50 animate-in fade-in slide-in-from-top-1 duration-150"
         >
           {/* User Information Header */}
-          <div className="px-5 py-3.5 border-b border-white/5 flex flex-col space-y-0.5">
+          <div className="px-5 py-3.5 border-b border-border-strong flex flex-col space-y-0.5">
             <span className="text-[10px] uppercase font-bold tracking-wider font-mono text-primary">
               Signed in as
             </span>

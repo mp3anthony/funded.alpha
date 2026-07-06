@@ -143,18 +143,18 @@ export default function AddGoalSheet({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] modal-backdrop flex items-end justify-center bg-black/80 backdrop-blur-sm md:items-stretch md:justify-end md:p-0 md:bg-black/60 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[100] modal-backdrop flex items-end justify-center bg-foreground/20 dark:bg-black/80 backdrop-blur-sm md:items-stretch md:justify-end md:p-0 md:bg-foreground/20 dark:bg-foreground/20 dark:bg-black/80 animate-in fade-in duration-200">
       {/* Overlay to close */}
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Sheet Content */}
       <form 
         onSubmit={handleSave}
-        className="relative w-full max-w-md max-h-[92dvh] md:h-screen md:max-h-screen bg-[#111111] border border-white/10 md:border-y-0 md:border-r-0 md:border-l rounded-t-3xl rounded-b-none md:rounded-none md:rounded-l-3xl flex flex-col shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-5 md:slide-in-from-right duration-250"
+        className="relative w-full max-w-md max-h-[92dvh] md:h-screen md:max-h-screen bg-surface border border-border md:border-y-0 md:border-r-0 md:border-l rounded-t-3xl rounded-b-none md:rounded-none md:rounded-l-3xl flex flex-col shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-5 md:slide-in-from-right duration-250"
       >
         
         {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-[#111111]/90 px-5 py-3 md:px-6 md:py-4 backdrop-blur">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-surface/90 px-5 py-3 md:px-6 md:py-4 backdrop-blur">
           <h2 className="font-syne text-xl font-bold text-foreground">
             {existingGoal ? "Edit Goal" : "Create Goal"}
           </h2>
@@ -233,7 +233,7 @@ export default function AddGoalSheet({
               type="date"
               value={deadline}
               onChange={(e) => setDeadline(e.target.value)}
-              className="w-full min-w-0 bg-[#111111] border border-white/10 rounded-lg p-2.5 md:p-3 font-mono text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+              className="w-full min-w-0 bg-surface border border-border rounded-lg p-2.5 md:p-3 font-mono text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
             />
           </div>
 
@@ -294,12 +294,12 @@ export default function AddGoalSheet({
         {/* Footer */}
         <div 
           style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
-          className="sticky bottom-0 z-10 border-t border-white/10 bg-[#111111]/95 px-5 pt-3 pb-3 md:px-6 md:pt-4 md:pb-4 backdrop-blur flex items-center gap-3 shrink-0"
+          className="sticky bottom-0 z-10 border-t border-border bg-surface/95 px-5 pt-3 pb-3 md:px-6 md:pt-4 md:pb-4 backdrop-blur flex items-center gap-3 shrink-0"
         >
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 py-3 md:py-4 rounded-xl border border-white/10 text-sm font-bold text-muted hover:text-foreground hover:bg-white/5 transition-all cursor-pointer"
+            className="flex-1 py-3 md:py-4 rounded-xl border border-border text-sm font-bold text-muted hover:text-foreground hover:bg-white/5 transition-all cursor-pointer"
           >
             Cancel
           </button>

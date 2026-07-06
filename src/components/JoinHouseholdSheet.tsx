@@ -93,14 +93,14 @@ export default function JoinHouseholdSheet({ isOpen, onClose }: JoinHouseholdShe
   };
 
   return (
-    <div className="fixed inset-0 z-[110] modal-backdrop flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[110] modal-backdrop flex items-center justify-center p-4 bg-foreground/20 dark:bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
       {/* Backdrop overlay click */}
       {!isJoining && !isSuccess && (
         <div className="absolute inset-0" onClick={onClose} />
       )}
 
       {/* Centered Modal Content */}
-      <div className="relative w-full max-w-sm bg-[#111111] border border-white/10 rounded-2xl p-6 flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-250">
+      <div className="relative w-full max-w-sm bg-surface border border-border rounded-2xl p-6 flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-250">
         
         {/* Close Button */}
         {!isJoining && !isSuccess && (
@@ -114,10 +114,10 @@ export default function JoinHouseholdSheet({ isOpen, onClose }: JoinHouseholdShe
 
         {isSuccess ? (
           <div className="flex flex-col items-center justify-center py-8 space-y-4 animate-in zoom-in-95 duration-300">
-            <div className="h-16 w-16 rounded-full bg-primary/20 flex items-center justify-center text-[#c8ff00] border border-primary/30 shadow-[0_0_20px_rgba(200,255,0,0.2)]">
+            <div className="h-16 w-16 rounded-full bg-primary/20 flex items-center justify-center text-primary border border-primary/30 shadow-[0_0_20px_rgba(200,255,0,0.2)]">
               <Check size={32} className="animate-bounce" />
             </div>
-            <h3 className="font-syne font-bold text-lg text-white text-center">
+            <h3 className="font-syne font-bold text-lg text-foreground text-center">
               Successfully Joined!
             </h3>
             <p className="text-xs text-muted text-center font-sans max-w-xs">
@@ -127,10 +127,10 @@ export default function JoinHouseholdSheet({ isOpen, onClose }: JoinHouseholdShe
         ) : (
           <form onSubmit={handleJoin} className="space-y-6">
             <div className="text-center space-y-1.5 pt-2">
-              <div className="mx-auto h-12 w-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-[#c8ff00] mb-2">
+              <div className="mx-auto h-12 w-12 rounded-xl bg-white/5 border border-border flex items-center justify-center text-primary mb-2">
                 <Sparkles size={20} />
               </div>
-              <h2 className="font-syne font-bold text-lg text-white">
+              <h2 className="font-syne font-bold text-lg text-foreground">
                 Join a Household
               </h2>
               <p className="text-xs text-muted font-sans max-w-xs mx-auto">
@@ -149,12 +149,12 @@ export default function JoinHouseholdSheet({ isOpen, onClose }: JoinHouseholdShe
                   value={getDisplayValue()}
                   onChange={handleInputChange}
                   disabled={isJoining}
-                  className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-center font-mono text-xl font-bold tracking-widest text-[#c8ff00] focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-all uppercase placeholder:text-zinc-700"
+                  className="w-full bg-background border border-border rounded-xl px-4 py-3 text-center font-mono text-xl font-bold tracking-widest text-primary focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none transition-all uppercase placeholder:text-zinc-700"
                 />
               </div>
 
               {errorMsg && (
-                <div className="flex items-center gap-2 text-xs font-semibold text-[#ff3d57] font-sans justify-center bg-[#ff3d57]/10 p-2.5 rounded-lg border border-[#ff3d57]/20">
+                <div className="flex items-center gap-2 text-xs font-semibold text-destructive font-sans justify-center bg-destructive/10 p-2.5 rounded-lg border border-destructive/20">
                   <ShieldAlert size={14} className="shrink-0" />
                   <span>{errorMsg}</span>
                 </div>
@@ -167,14 +167,14 @@ export default function JoinHouseholdSheet({ isOpen, onClose }: JoinHouseholdShe
                 type="button"
                 onClick={onClose}
                 disabled={isJoining}
-                className="flex-1 py-3 rounded-xl border border-white/10 text-xs font-bold text-muted hover:text-foreground hover:bg-white/5 transition-all cursor-pointer"
+                className="flex-1 py-3 rounded-xl border border-border text-xs font-bold text-muted hover:text-foreground hover:bg-white/5 transition-all cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isJoining || codeValue.length !== 6}
-                className="flex-1 py-3 bg-[#c8ff00] text-black font-bold rounded-xl text-xs uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer flex items-center justify-center gap-1.5"
+                className="flex-1 py-3 bg-primary text-black font-bold rounded-xl text-xs uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer flex items-center justify-center gap-1.5"
               >
                 {isJoining ? "Joining..." : "Join"}
               </button>

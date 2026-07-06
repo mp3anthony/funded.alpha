@@ -82,10 +82,10 @@ export default function PayHistoryCard({ history, onConfirmPending, hideMemberIn
 
   return (
     <div
-      className={`bg-[#111111] border rounded-2xl p-5 shadow-sm flex items-center justify-between gap-4 transition-all hover:border-white/20 ${
+      className={`bg-surface border rounded-2xl p-5 shadow-sm flex items-center justify-between gap-4 transition-all hover:border-white/20 ${
         isPending
           ? "border-yellow-500/50 bg-yellow-500/5"
-          : "border-white/10"
+          : "border-border"
       }`}
     >
       <div className="flex-1 min-w-0 space-y-2">
@@ -96,7 +96,7 @@ export default function PayHistoryCard({ history, onConfirmPending, hideMemberIn
               {member?.avatar_url ? (
                 <img src={member.avatar_url} alt={memberName} className="h-6 w-6 rounded-full object-cover shrink-0" />
               ) : (
-                <div className="h-6 w-6 rounded-full bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-white font-bold text-[10px] shrink-0">
+                <div className="h-6 w-6 rounded-full bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-foreground font-bold text-[10px] shrink-0">
                   {member?.avatar || memberName.charAt(0).toUpperCase()}
                 </div>
               )}
@@ -127,8 +127,8 @@ export default function PayHistoryCard({ history, onConfirmPending, hideMemberIn
             )}
 
             {history.rule_id && rule && (
-              <div className="flex items-center gap-1 bg-[#c8ff00]/10 border border-[#c8ff00]/20 text-[9px] text-[#c8ff00] font-mono rounded-full px-2.5 py-0.5 w-fit uppercase font-bold shrink-0">
-                <Sparkles size={10} className="shrink-0 animate-pulse text-[#c8ff00]" />
+              <div className="flex items-center gap-1 bg-primary/10 border border-primary/20 text-[9px] text-primary font-mono rounded-full px-2.5 py-0.5 w-fit uppercase font-bold shrink-0">
+                <Sparkles size={10} className="shrink-0 animate-pulse text-primary" />
                 <span>Rule: +${allocationAmount.toFixed(2)} to {allocationTargetName}</span>
               </div>
             )}
@@ -137,7 +137,7 @@ export default function PayHistoryCard({ history, onConfirmPending, hideMemberIn
 
         {/* Notes (Conditional) */}
         {history.notes && (
-          <div className="flex items-start gap-1.5 bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-xs text-subtle">
+          <div className="flex items-start gap-1.5 bg-white/5 border border-border-strong rounded-lg px-3 py-2 text-xs text-subtle">
             <FileText size={13} className="mt-0.5 shrink-0 text-muted" />
             <span className="break-words font-sans">{history.notes}</span>
           </div>
@@ -149,7 +149,7 @@ export default function PayHistoryCard({ history, onConfirmPending, hideMemberIn
         {isPending && (
           <button
             onClick={handleConfirm}
-            className="p-2.5 rounded-xl border border-[#c8ff00]/20 bg-[#c8ff00]/10 text-[#c8ff00] hover:bg-[#c8ff00]/20 hover:border-[#c8ff00]/40 transition-all active:scale-95 cursor-pointer"
+            className="p-2.5 rounded-xl border border-primary/20 bg-primary/10 text-primary hover:bg-primary/20 hover:border-primary/40 transition-all active:scale-95 cursor-pointer"
             title="Confirm this pay entry"
           >
             <CheckCircle2 size={16} />
@@ -158,7 +158,7 @@ export default function PayHistoryCard({ history, onConfirmPending, hideMemberIn
         <button
           onClick={handleDelete}
           disabled={isDeleting}
-          className="p-2.5 rounded-xl border border-white/10 bg-white/5 text-muted hover:text-destructive hover:bg-destructive/10 hover:border-destructive/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          className="p-2.5 rounded-xl border border-border bg-white/5 text-muted hover:text-destructive hover:bg-destructive/10 hover:border-destructive/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           title="Delete history entry"
         >
           <Trash2 size={16} />

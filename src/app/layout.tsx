@@ -103,7 +103,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased bg-black">
+    <html lang="en" className="h-full antialiased bg-background">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover" />
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png?v=2" />
@@ -111,7 +111,8 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512x512.png?v=2" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="theme-color" content="#000000" />
+        <meta name="theme-color" content="#f2f2ee" media="(prefers-color-scheme: light)" />
+        <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -148,13 +149,13 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`h-[100dvh] w-screen flex flex-col overflow-hidden bg-black ${syne.variable} ${instrument.variable} ${jetbrains.variable} font-body relative`}>
+      <body className={`h-[100dvh] w-screen flex flex-col overflow-hidden bg-background ${syne.variable} ${instrument.variable} ${jetbrains.variable} font-body relative`}>
         {/* Green Haze Background */}
-        <div className="fixed bottom-0 right-0 w-[600px] h-[600px] bg-[#c8ff00] opacity-15 blur-[150px] pointer-events-none -z-10 translate-x-1/4 translate-y-1/4 rounded-full" />
+        <div className="fixed bottom-0 right-0 w-[600px] h-[600px] bg-primary opacity-[0.08] dark:opacity-15 blur-[150px] pointer-events-none -z-10 translate-x-1/4 translate-y-1/4 rounded-full" />
         
         <Suspense fallback={
-          <div className="flex flex-1 w-full items-center justify-center bg-black text-white">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#c8ff00] border-t-transparent" />
+          <div className="flex flex-1 w-full items-center justify-center bg-background text-foreground">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           </div>
         }>
           <ServerAppProvider>

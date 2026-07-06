@@ -37,7 +37,7 @@ export default function RuleCard({
 
   return (
     <div
-      className={`bg-[#111111] border border-white/10 rounded-xl p-4 flex flex-col justify-between space-y-3 transition-all ${
+      className={`bg-surface border border-border rounded-xl p-4 flex flex-col justify-between space-y-3 transition-all ${
         rule.is_active ? "opacity-100" : "opacity-50"
       }`}
     >
@@ -60,13 +60,13 @@ export default function RuleCard({
       </div>
 
       {/* Card Actions & Status */}
-      <div className="flex items-center justify-between border-t border-white/5 pt-3 mt-1">
+      <div className="flex items-center justify-between border-t border-border-strong pt-3 mt-1">
         {/* Toggle Dropdown */}
         <div className="relative">
           <select
             value={rule.is_active ? "active" : "inactive"}
             onChange={onToggle}
-            className="rounded-lg border border-white/10 bg-[#0a0a0a] px-2.5 py-1 text-[10px] font-bold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-6 uppercase tracking-wider"
+            className="rounded-lg border border-border bg-background px-2.5 py-1 text-[10px] font-bold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-6 uppercase tracking-wider"
           >
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>

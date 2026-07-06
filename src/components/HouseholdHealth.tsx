@@ -31,11 +31,11 @@ export default function HouseholdHealth() {
 
   // 5. Grading logic & colors
   let grade = "Healthy";
-  let gradeColorClass = "text-[#c8ff00]"; // Lime Green
+  let gradeColorClass = "text-primary"; // Lime Green
 
   if (healthPercent > 20) {
     grade = "Healthy";
-    gradeColorClass = "text-[#c8ff00]";
+    gradeColorClass = "text-primary";
   } else if (healthPercent >= 10 && healthPercent <= 20) {
     grade = "Stable";
     gradeColorClass = "text-[#38bdf8]"; // Sky Blue

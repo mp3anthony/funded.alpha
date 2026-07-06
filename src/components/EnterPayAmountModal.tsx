@@ -104,17 +104,17 @@ export default function EnterPayAmountModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] modal-backdrop flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[100] modal-backdrop flex items-center justify-center bg-foreground/20 dark:bg-foreground/20 dark:bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       {/* Backdrop overlay */}
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Modal Container */}
       <form
         onSubmit={handleConfirm}
-        className="relative w-full max-w-sm bg-[#111111] border border-white/10 rounded-2xl shadow-2xl max-h-[92dvh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300"
+        className="relative w-full max-w-sm bg-surface border border-border rounded-2xl shadow-2xl max-h-[92dvh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300"
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-white/10 shrink-0">
+        <div className="flex items-center justify-between p-5 border-b border-border shrink-0">
           <h3 className="font-syne font-bold text-base text-foreground">
             {title || "Review & Log Pay"}
           </h3>
@@ -144,7 +144,7 @@ export default function EnterPayAmountModal({
                   min="0.01"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl pl-8 pr-4 py-3 font-mono text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+                  className="w-full bg-background border border-border rounded-xl pl-8 pr-4 py-3 font-mono text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
                   autoFocus
                   required
                 />
@@ -159,7 +159,7 @@ export default function EnterPayAmountModal({
                 placeholder="e.g. Regular monthly pay, overtime bonus"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 h-20 resize-none font-sans"
+                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 h-20 resize-none font-sans"
               />
             </div>
           </div>
@@ -168,12 +168,12 @@ export default function EnterPayAmountModal({
           {allocationPreview && (
             <div className="space-y-2 pt-1">
               <div className="flex items-center gap-1.5">
-                <Sparkles size={12} className="text-[#c8ff00]" />
+                <Sparkles size={12} className="text-primary" />
                 <span className="font-heading text-xs font-semibold text-subtle uppercase tracking-wider">
                   Allocation Preview
                 </span>
               </div>
-              <div className="bg-[#0a0a0a] border border-white/10 rounded-xl p-3.5 space-y-2.5 font-mono text-xs">
+              <div className="bg-background border border-border rounded-xl p-3.5 space-y-2.5 font-mono text-xs">
                 {/* Gross */}
                 <div className="flex items-center justify-between text-foreground">
                   <span className="text-muted uppercase">Gross Pay</span>
@@ -183,11 +183,11 @@ export default function EnterPayAmountModal({
                 </div>
 
                 {/* Divider */}
-                <div className="border-t border-white/5" />
+                <div className="border-t border-border-strong" />
 
                 {/* Rule allocations */}
                 {allocationPreview.allocations.map((alloc) => (
-                  <div key={alloc.id} className="flex items-center justify-between text-[#c8ff00]/80">
+                  <div key={alloc.id} className="flex items-center justify-between text-primary/80">
                     <span className="truncate mr-2">
                       → {alloc.targetName}
                       {alloc.isPercentage && (
@@ -201,7 +201,7 @@ export default function EnterPayAmountModal({
                 ))}
 
                 {/* Divider */}
-                <div className="border-t border-white/5" />
+                <div className="border-t border-border-strong" />
 
                 {/* Remaining */}
                 <div className="flex items-center justify-between text-foreground">
@@ -216,11 +216,11 @@ export default function EnterPayAmountModal({
         </div>
 
         {/* Actions Footer */}
-        <div className="flex gap-3 p-5 border-t border-white/10 shrink-0">
+        <div className="flex gap-3 p-5 border-t border-border shrink-0">
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 py-3 rounded-xl border border-white/10 text-xs font-bold text-muted hover:text-foreground hover:bg-white/5 transition-colors cursor-pointer uppercase tracking-wider"
+            className="flex-1 py-3 rounded-xl border border-border text-xs font-bold text-muted hover:text-foreground hover:bg-white/5 transition-colors cursor-pointer uppercase tracking-wider"
           >
             Cancel
           </button>
@@ -230,7 +230,7 @@ export default function EnterPayAmountModal({
             className={`flex-1 py-3 rounded-xl font-bold text-xs uppercase tracking-wider shadow-lg transition-all ${
               isValid
                 ? "bg-primary text-primary-fg hover:brightness-110 active:scale-95 cursor-pointer"
-                : "bg-zinc-800 text-zinc-500 cursor-not-allowed"
+                : "bg-surface-raised text-zinc-500 cursor-not-allowed"
             }`}
           >
             {submitLabel || "Confirm & Log Pay"}

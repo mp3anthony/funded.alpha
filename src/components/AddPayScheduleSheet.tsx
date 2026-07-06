@@ -104,16 +104,16 @@ export default function AddPayScheduleSheet({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] modal-backdrop flex items-end justify-center bg-black/80 backdrop-blur-sm md:items-stretch md:justify-end md:p-0 md:bg-black/60 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[100] modal-backdrop flex items-end justify-center bg-foreground/20 dark:bg-black/80 backdrop-blur-sm md:items-stretch md:justify-end md:p-0 md:bg-foreground/20 dark:bg-foreground/20 dark:bg-black/80 animate-in fade-in duration-200">
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Sheet Content */}
       <form
         onSubmit={handleSave}
-        className="relative w-full max-w-md max-h-[92dvh] md:h-screen md:max-h-screen bg-[#111111] border border-white/10 md:border-y-0 md:border-r-0 md:border-l rounded-t-3xl rounded-b-none md:rounded-none md:rounded-l-3xl flex flex-col shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-5 md:slide-in-from-right duration-250"
+        className="relative w-full max-w-md max-h-[92dvh] md:h-screen md:max-h-screen bg-surface border border-border md:border-y-0 md:border-r-0 md:border-l rounded-t-3xl rounded-b-none md:rounded-none md:rounded-l-3xl flex flex-col shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-5 md:slide-in-from-right duration-250"
       >
         {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-[#111111]/90 px-5 py-3 md:px-6 md:py-4 backdrop-blur">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-surface/90 px-5 py-3 md:px-6 md:py-4 backdrop-blur">
           <h2 className="font-syne text-lg font-bold text-foreground">
             {existingSchedule ? "Edit Pay Schedule" : "Add Pay Schedule"}
           </h2>
@@ -143,7 +143,7 @@ export default function AddPayScheduleSheet({
               <select
                 value={memberId}
                 onChange={(e) => setMemberId(e.target.value)}
-                className="w-full rounded-xl border border-white/10 bg-[#0a0a0a] px-4 py-2.5 md:py-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 appearance-none transition-all"
+                className="w-full rounded-xl border border-border bg-background px-4 py-2.5 md:py-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 appearance-none transition-all"
                 required
               >
                 <option value="" disabled>Select member...</option>
@@ -170,7 +170,7 @@ export default function AddPayScheduleSheet({
               <select
                 value={frequency}
                 onChange={(e) => setFrequency(e.target.value as "weekly" | "by-weekly" | "monthly")}
-                className="w-full rounded-xl border border-white/10 bg-[#0a0a0a] px-4 py-2.5 md:py-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 appearance-none transition-all cursor-pointer pr-10"
+                className="w-full rounded-xl border border-border bg-background px-4 py-2.5 md:py-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 appearance-none transition-all cursor-pointer pr-10"
               >
                 <option value="weekly">Weekly</option>
                 <option value="by-weekly">Fortnightly</option>
@@ -185,7 +185,7 @@ export default function AddPayScheduleSheet({
           </div>
 
           {/* Fixed Amount Dropdown */}
-          <div className="flex flex-col space-y-1.5 md:space-y-1.5 bg-[#0a0a0a] border border-white/10 rounded-xl p-3 md:p-4">
+          <div className="flex flex-col space-y-1.5 md:space-y-1.5 bg-background border border-border rounded-xl p-3 md:p-4">
             <div className="flex flex-col mb-2">
               <span className="text-xs md:text-sm font-semibold text-foreground">Pay Type</span>
               <span className="text-[10px] md:text-xs text-muted">Choose whether pay amount is fixed or varies each time</span>
@@ -194,7 +194,7 @@ export default function AddPayScheduleSheet({
               <select
                 value={isFixedAmount ? "fixed" : "variable"}
                 onChange={(e) => setIsFixedAmount(e.target.value === "fixed")}
-                className="w-full rounded-xl border border-white/10 bg-[#111111] px-4 py-2.5 md:py-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 appearance-none transition-all cursor-pointer pr-10"
+                className="w-full rounded-xl border border-border bg-surface px-4 py-2.5 md:py-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 appearance-none transition-all cursor-pointer pr-10"
               >
                 <option value="fixed">Fixed Pay Amount</option>
                 <option value="variable">Variable Pay Amount</option>
@@ -222,7 +222,7 @@ export default function AddPayScheduleSheet({
                   min="0.01"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl pl-8 pr-4 py-2.5 md:py-3 font-mono text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+                  className="w-full bg-background border border-border rounded-xl pl-8 pr-4 py-2.5 md:py-3 font-mono text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
                   required={isFixedAmount}
                 />
               </div>
@@ -239,7 +239,7 @@ export default function AddPayScheduleSheet({
                 type="date"
                 value={nextPayDate}
                 onChange={(e) => setNextPayDate(e.target.value)}
-                className="w-full min-w-0 bg-[#111111] border border-white/10 rounded-lg p-2.5 md:p-3 font-mono text-sm text-white [color-scheme:dark] focus:outline-none focus:ring-1 focus:ring-primary/50"
+                className="w-full min-w-0 bg-surface border border-border rounded-lg p-2.5 md:p-3 font-mono text-sm text-foreground [color-scheme:dark] focus:outline-none focus:ring-1 focus:ring-primary/50"
                 required
               />
             </div>
@@ -249,12 +249,12 @@ export default function AddPayScheduleSheet({
         {/* Footer */}
         <div 
           style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
-          className="sticky bottom-0 z-10 border-t border-white/10 bg-[#111111]/95 px-5 pt-3 pb-3 md:px-6 md:pt-4 md:pb-4 backdrop-blur flex items-center gap-3 shrink-0"
+          className="sticky bottom-0 z-10 border-t border-border bg-surface/95 px-5 pt-3 pb-3 md:px-6 md:pt-4 md:pb-4 backdrop-blur flex items-center gap-3 shrink-0"
         >
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 py-3 md:py-4 rounded-xl border border-white/10 text-sm font-bold text-muted hover:text-foreground hover:bg-white/5 transition-all cursor-pointer"
+            className="flex-1 py-3 md:py-4 rounded-xl border border-border text-sm font-bold text-muted hover:text-foreground hover:bg-white/5 transition-all cursor-pointer"
           >
             Cancel
           </button>
@@ -264,7 +264,7 @@ export default function AddPayScheduleSheet({
             className={`flex-1 rounded-xl py-3 md:py-4 text-sm font-bold uppercase tracking-wider transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:ring-primary cursor-pointer ${
               isFormValid && !isSaving
                 ? "bg-primary text-primary-fg hover:brightness-110 active:scale-[0.98]"
-                : "bg-zinc-800 text-zinc-500 cursor-not-allowed"
+                : "bg-surface-raised text-zinc-500 cursor-not-allowed"
             }`}
           >
             {existingSchedule

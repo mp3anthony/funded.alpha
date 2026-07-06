@@ -26,8 +26,8 @@ export default function Logo({ size = "medium", showWordmark = false }: LogoProp
   if (showWordmark) {
     return (
       <div 
-        className="flex items-center select-none shrink-0 transition-transform duration-200 hover:scale-[1.03]"
-        style={{ width: wordmarkWidth, height: wordmarkHeight }}
+        className="flex items-center select-none shrink-0 transition-transform duration-200 hover:scale-[1.03] rounded-lg p-1 border border-black/20 dark:border-black/0"
+        style={{ width: wordmarkWidth + 8, height: wordmarkHeight + 8 }}
       >
         <img
           src="/logo-wordmark.svg?v=3"
@@ -49,7 +49,7 @@ export default function Logo({ size = "medium", showWordmark = false }: LogoProp
         viewBox="0 0 32 32"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="w-full h-full text-[#c8ff00] fill-current"
+        className="w-full h-full text-primary fill-current"
       >
         {/* Sleek geometric lowercase 'f' */}
         <path d="M20 13H16V9.5C16 8.5 16.5 8 18 8H20V5H18C14.5 5 13 6.8 13 9.5V13H10V16H13V27H16V16H20V13Z" />

@@ -20,7 +20,7 @@ export default function PageHeader({ title, subtitle, action }: PageHeaderProps)
       {/* Title & Subtitle */}
       <div className="flex items-center justify-between">
         <div className="min-w-0">
-          <h1 className="font-syne font-extrabold text-2xl tracking-tight text-white min-w-0 truncate">
+          <h1 className="font-syne font-extrabold text-2xl tracking-tight text-foreground min-w-0 truncate">
             {title}
           </h1>
           {subtitle && (

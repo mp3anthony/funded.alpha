@@ -80,14 +80,14 @@ export default function PayScheduleDetailSheet({
   }
 
   return (
-    <div className="fixed inset-0 z-[100] modal-backdrop flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm md:items-stretch md:justify-end md:p-0 md:bg-black/60 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[100] modal-backdrop flex items-center justify-center p-4 bg-foreground/20 dark:bg-black/80 backdrop-blur-sm md:items-stretch md:justify-end md:p-0 md:bg-foreground/20 dark:bg-foreground/20 dark:bg-black/80 animate-in fade-in duration-200">
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Sheet Content */}
-      <div className="relative w-full max-w-md max-h-[90dvh] md:h-screen md:max-h-screen bg-[#111111] border border-white/10 md:border-y-0 md:border-r-0 md:border-l rounded-2xl md:rounded-none md:rounded-l-3xl flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 md:zoom-in-100 md:slide-in-from-right duration-250">
+      <div className="relative w-full max-w-md max-h-[90dvh] md:h-screen md:max-h-screen bg-surface border border-border md:border-y-0 md:border-r-0 md:border-l rounded-2xl md:rounded-none md:rounded-l-3xl flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 md:zoom-in-100 md:slide-in-from-right duration-250">
         
         {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-[#111111]/90 px-6 py-4 backdrop-blur">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-surface/90 px-6 py-4 backdrop-blur">
           <h2 className="font-syne text-lg font-bold text-foreground">Schedule Details</h2>
           <button 
             onClick={onClose}
@@ -107,13 +107,13 @@ export default function PayScheduleDetailSheet({
                 {member?.avatar_url ? (
                   <img src={member.avatar_url} alt={memberName} className="h-6 w-6 rounded-full object-cover shrink-0" />
                 ) : (
-                  <div className="h-6 w-6 rounded-full bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-white font-bold text-[10px] shrink-0">
+                  <div className="h-6 w-6 rounded-full bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-foreground font-bold text-[10px] shrink-0">
                     {member?.avatar || memberName.charAt(0).toUpperCase()}
                   </div>
                 )}
                 <span>{memberName}</span>
               </h3>
-              <span className="shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-heading font-bold uppercase tracking-wider bg-white/5 text-muted border border-white/10">
+              <span className="shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-heading font-bold uppercase tracking-wider bg-white/5 text-muted border border-border">
                 {paySchedule.frequency === 'by-weekly' ? 'fortnightly' : paySchedule.frequency}
               </span>
             </div>
@@ -128,7 +128,7 @@ export default function PayScheduleDetailSheet({
           </div>
 
           {/* Details Info Grid */}
-          <div className="grid grid-cols-2 gap-4 border-t border-white/5 pt-5 font-mono text-xs">
+          <div className="grid grid-cols-2 gap-4 border-t border-border-strong pt-5 font-mono text-xs">
             <div className="space-y-1">
               <span className="text-subtle uppercase font-semibold">Next Pay Date</span>
               <div className="flex items-center space-x-1.5 text-foreground">
@@ -160,11 +160,11 @@ export default function PayScheduleDetailSheet({
         {/* Footer Actions */}
         <div 
           style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1rem)" }}
-          className="sticky bottom-0 z-10 border-t border-white/10 bg-[#111111]/95 px-6 pt-4 pb-4 backdrop-blur flex space-x-3 shrink-0"
+          className="sticky bottom-0 z-10 border-t border-border bg-surface/95 px-6 pt-4 pb-4 backdrop-blur flex space-x-3 shrink-0"
         >
           <button
             onClick={onDelete}
-            className="flex-1 py-3 bg-destructive/15 text-destructive border border-destructive/20 rounded-xl font-heading font-bold uppercase tracking-wider text-xs hover:bg-destructive hover:text-white transition-all active:scale-[0.98] cursor-pointer"
+            className="flex-1 py-3 bg-destructive/15 text-destructive border border-destructive/20 rounded-xl font-heading font-bold uppercase tracking-wider text-xs hover:bg-destructive hover:text-foreground transition-all active:scale-[0.98] cursor-pointer"
           >
             Delete
           </button>

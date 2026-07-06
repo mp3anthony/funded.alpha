@@ -164,7 +164,7 @@ export default function ContributorSplits({
         <select
           value={splitMode}
           onChange={(e) => handleModeChange(e.target.value as "percentage" | "amount")}
-          className="w-full rounded-xl border border-border bg-[#0a0a0a] px-4 py-2.5 text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all appearance-none text-sm font-semibold cursor-pointer pr-10"
+          className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all appearance-none text-sm font-semibold cursor-pointer pr-10"
         >
           <option value="percentage">Split by Percentage (%)</option>
           <option value="amount">Split by Amount ($)</option>

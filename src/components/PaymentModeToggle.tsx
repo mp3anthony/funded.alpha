@@ -24,7 +24,7 @@ export default function PaymentModeToggle({ currentMode, onModeChange }: Payment
         <select
           value={currentMode ? "joint" : "direct"}
           onChange={(e) => onModeChange(e.target.value === "joint")}
-          className="w-full rounded-xl border border-border bg-[#0a0a0a] px-4 py-2.5 md:py-3 text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all appearance-none text-sm font-semibold cursor-pointer pr-10"
+          className="w-full rounded-xl border border-border bg-background px-4 py-2.5 md:py-3 text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all appearance-none text-sm font-semibold cursor-pointer pr-10"
         >
           <option value="direct">Direct Pay (Transfer directly per bill split)</option>
           <option value="joint">Joint Fund (Shared household bank account)</option>
@@ -36,7 +36,7 @@ export default function PaymentModeToggle({ currentMode, onModeChange }: Payment
         </div>
       </div>
 
-      <div className="flex items-start space-x-2 p-3 bg-[#111111] border border-white/10 rounded-xl">
+      <div className="flex items-start space-x-2 p-3 bg-surface border border-border rounded-xl">
         <Info className="h-4 w-4 text-subtle shrink-0 mt-0.5" />
         <p className="font-mono text-[10px] text-muted leading-normal">
           <strong>Tip:</strong> Direct Pay is great for houses where roommates split individual transfers. Joint Fund is ideal for couples or families who share a bank account.

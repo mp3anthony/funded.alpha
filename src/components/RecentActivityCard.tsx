@@ -101,11 +101,11 @@ export const RecentActivityCard = React.memo(function RecentActivityCard({
   }, [bills, payHistory, funds, members]);
 
   return (
-    <div className="bg-[#111111] border border-white/10 rounded-2xl p-6 shadow-xl transition-all duration-300 hover:border-white/20">
+    <div className="bg-surface border border-border rounded-2xl p-6 shadow-xl transition-all duration-300 hover:border-border-strong">
       {/* Header */}
       <div className="flex items-center gap-2 mb-5">
-        <Activity className="h-4 w-4 text-[#c8ff00]" />
-        <h3 className="font-syne font-bold text-base text-white tracking-wide">
+        <Activity className="h-4 w-4 text-primary" />
+        <h3 className="font-syne font-bold text-base text-foreground tracking-wide">
           Recent Activity
         </h3>
       </div>
@@ -114,12 +114,12 @@ export const RecentActivityCard = React.memo(function RecentActivityCard({
       <div className="flex flex-col justify-center">
         {activitiesList.length === 0 ? (
           <div className="py-8 text-center flex flex-col items-center justify-center space-y-2.5">
-            <div className="p-3 bg-white/[0.02] rounded-full border border-white/5">
+            <div className="p-3 bg-foreground/5 rounded-full border border-border">
               <Activity className="h-6 w-6 text-neutral-600" />
             </div>
             <div className="space-y-1">
-              <p className="text-sm font-semibold text-neutral-400">No activity yet</p>
-              <p className="text-xs text-neutral-500 font-sans max-w-[220px] mx-auto">
+              <p className="text-sm font-semibold text-muted">No activity yet</p>
+              <p className="text-xs text-subtle font-sans max-w-[220px] mx-auto">
                 Log your first paycheck to see activity here.
               </p>
             </div>
@@ -134,18 +134,18 @@ export const RecentActivityCard = React.memo(function RecentActivityCard({
               
               if (act.type === "bill") {
                 ActivityIcon = CreditCard;
-                iconColor = "text-[#c8ff00]"; // Lime Green positive accent
-                iconBg = "bg-[#c8ff00]/10";
+                iconColor = "text-primary"; // Lime Green positive accent
+                iconBg = "bg-primary/10";
               } else if (act.type === "contribution") {
                 ActivityIcon = PiggyBank;
-                iconColor = "text-[#c8ff00]"; // Lime Green positive accent
-                iconBg = "bg-[#c8ff00]/10";
+                iconColor = "text-primary"; // Lime Green positive accent
+                iconBg = "bg-primary/10";
               }
 
               return (
                 <div
                   key={act.id}
-                  className="py-3.5 flex items-center justify-between gap-4 hover:bg-white/[0.01] -mx-4 px-4 rounded-xl transition-all duration-200"
+                  className="py-3.5 flex items-center justify-between gap-4 hover:bg-foreground/5 -mx-4 px-4 rounded-xl transition-all duration-200"
                 >
                   <div className="flex items-center gap-3.5 min-w-0">
                     <div
@@ -153,11 +153,11 @@ export const RecentActivityCard = React.memo(function RecentActivityCard({
                     >
                       <ActivityIcon className="h-4.5 w-4.5" />
                     </div>
-                    <span className="font-sans font-medium text-sm text-neutral-300 min-w-0 truncate">
+                    <span className="font-sans font-medium text-sm text-foreground min-w-0 truncate">
                       {act.description}
                     </span>
                   </div>
-                  <span className="font-mono text-[10px] text-neutral-500 shrink-0 uppercase tracking-wider">
+                  <span className="font-mono text-[10px] text-muted shrink-0 uppercase tracking-wider">
                     {getRelativeTime(act.dateStr)}
                   </span>
                 </div>

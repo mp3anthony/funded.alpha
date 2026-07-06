@@ -48,15 +48,15 @@ export default function ContributionSettingsSheet({
   if (typeof document === "undefined") return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] modal-backdrop flex items-end justify-center bg-black/80 backdrop-blur-sm md:items-stretch md:justify-end md:p-0 md:bg-black/60 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[100] modal-backdrop flex items-end justify-center bg-foreground/20 dark:bg-black/80 backdrop-blur-sm md:items-stretch md:justify-end md:p-0 md:bg-foreground/20 dark:bg-foreground/20 dark:bg-black/80 animate-in fade-in duration-200">
       {/* Overlay to close */}
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Sheet Content */}
-      <div className="relative w-full max-w-md max-h-[92dvh] md:h-screen md:max-h-screen bg-[#111111] border border-white/10 md:border-y-0 md:border-r-0 md:border-l rounded-t-3xl rounded-b-none md:rounded-none md:rounded-l-3xl flex flex-col shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-5 md:slide-in-from-right duration-250">
+      <div className="relative w-full max-w-md max-h-[92dvh] md:h-screen md:max-h-screen bg-surface border border-border md:border-y-0 md:border-r-0 md:border-l rounded-t-3xl rounded-b-none md:rounded-none md:rounded-l-3xl flex flex-col shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-5 md:slide-in-from-right duration-250">
         
         {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-[#111111]/90 px-5 py-3 md:px-6 md:py-4 backdrop-blur">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-surface/90 px-5 py-3 md:px-6 md:py-4 backdrop-blur">
           <h2 className="font-syne text-lg font-bold text-foreground">Joint Fund Contributions</h2>
           <button
             onClick={onClose}
@@ -92,7 +92,7 @@ export default function ContributionSettingsSheet({
         {/* Bottom Total monthly summary */}
         <div 
           style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
-          className="sticky bottom-0 border-t border-white/10 bg-[#111111]/95 px-5 pt-3 pb-3 md:px-6 md:pt-4 md:pb-4 backdrop-blur flex items-center justify-between shrink-0"
+          className="sticky bottom-0 border-t border-border bg-surface/95 px-5 pt-3 pb-3 md:px-6 md:pt-4 md:pb-4 backdrop-blur flex items-center justify-between shrink-0"
         >
           <div className="space-y-0.5">
             <span className="text-[10px] font-bold text-subtle uppercase tracking-wider block font-mono">
@@ -103,7 +103,7 @@ export default function ContributionSettingsSheet({
             </span>
           </div>
           <div className="text-right">
-            <span className="text-xl font-heading font-extrabold text-[#c8ff00] font-mono block">
+            <span className="text-xl font-heading font-extrabold text-primary font-mono block">
               ${totalMonthly.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
             <span className="text-[10px] text-muted uppercase font-mono">
@@ -199,7 +199,7 @@ function MemberContributionRow({
           {member.avatar_url ? (
             <img src={member.avatar_url} alt={member.name} className="h-6 w-6 rounded-full object-cover shrink-0" />
           ) : (
-            <div className="h-6 w-6 rounded-full bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-white font-bold text-[10px] shrink-0">
+            <div className="h-6 w-6 rounded-full bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-foreground font-bold text-[10px] shrink-0">
               {member.avatar || member.name.charAt(0).toUpperCase()}
             </div>
           )}
@@ -217,7 +217,7 @@ function MemberContributionRow({
       {/* Inputs row */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         {/* Frequency Segmented Control */}
-        <div className="grid grid-cols-3 gap-1 bg-[#0a0a0a] border border-white/10 rounded-xl p-1 shrink-0">
+        <div className="grid grid-cols-3 gap-1 bg-background border border-border rounded-xl p-1 shrink-0">
           {(["weekly", "by-weekly", "monthly"] as const).map((freq) => (
             <button
               key={freq}
@@ -250,7 +250,7 @@ function MemberContributionRow({
               setAmount(e.target.value);
               setIsSaved(false);
             }}
-            className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl pl-6 pr-3 py-2 font-mono text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+            className="w-full bg-background border border-border rounded-xl pl-6 pr-3 py-2 font-mono text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
             required
           />
         </div>
@@ -261,10 +261,10 @@ function MemberContributionRow({
           disabled={!isValid || isSaving}
           className={`py-2 px-4 rounded-xl font-heading text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1 shrink-0 ${
             isSaved
-              ? "bg-[#c8ff00]/25 text-[#c8ff00] border border-[#c8ff00]/30"
+              ? "bg-primary/25 text-primary border border-primary/30"
               : isValid
               ? "bg-primary text-primary-fg hover:brightness-110 active:scale-95 cursor-pointer"
-              : "bg-zinc-800 text-zinc-500 cursor-not-allowed"
+              : "bg-surface-raised text-zinc-500 cursor-not-allowed"
           }`}
         >
           {isSaving ? (

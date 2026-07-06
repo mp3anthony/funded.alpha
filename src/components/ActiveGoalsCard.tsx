@@ -46,24 +46,24 @@ export const ActiveGoalsCard = React.memo(function ActiveGoalsCard({
   }, [funds]);
 
   return (
-    <div className={`bg-[#111111] border border-white/10 rounded-2xl p-6 flex flex-col shadow-xl transition-all duration-300 hover:border-white/20 ${isMinimised ? "h-fit" : "h-full"}`}>
+    <div className={`bg-surface border border-border rounded-2xl p-6 flex flex-col shadow-xl transition-all duration-300 hover:border-white/20 ${isMinimised ? "h-fit" : "h-full"}`}>
       {/* Header */}
       <div className={`flex items-center justify-between gap-3 ${isMinimised ? "" : "mb-5"}`}>
-        <h3 className="font-syne font-bold text-sm sm:text-base text-white tracking-wide flex items-start gap-2 min-w-0">
-          <Target className="h-4 w-4 text-[#c8ff00] shrink-0 mt-0.5" />
+        <h3 className="font-syne font-bold text-sm sm:text-base text-foreground tracking-wide flex items-start gap-2 min-w-0">
+          <Target className="h-4 w-4 text-primary shrink-0 mt-0.5" />
           <span className="break-words">Savings Goals</span>
         </h3>
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <Link
             href="/funds"
-            className="text-[10px] font-syne font-bold uppercase tracking-wider text-[#c8ff00] hover:text-white transition-colors flex items-center gap-1 group whitespace-nowrap"
+            className="text-[10px] font-syne font-bold uppercase tracking-wider text-primary hover:text-foreground transition-colors flex items-center gap-1 group whitespace-nowrap"
           >
             <span>View All</span>
             <ArrowUpRight className="h-3 w-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
           </Link>
           <button
             onClick={handleToggle}
-            className="text-neutral-400 hover:text-white transition-colors p-1 flex items-center justify-center focus:outline-none"
+            className="text-muted hover:text-foreground transition-colors p-1 flex items-center justify-center focus:outline-none"
             aria-label={isMinimised ? "Expand Savings Goals" : "Minimize Savings Goals"}
           >
             {isMinimised ? (
@@ -80,12 +80,12 @@ export const ActiveGoalsCard = React.memo(function ActiveGoalsCard({
         <div className="flex-1 flex flex-col justify-center">
           {activeGoalsList.length === 0 ? (
             <div className="py-8 text-center flex flex-col items-center justify-center space-y-2.5">
-              <div className="p-3 bg-white/[0.02] rounded-full border border-white/5">
+              <div className="p-3 bg-foreground/5 rounded-full border border-border-strong">
                 <Target className="h-6 w-6 text-neutral-600" />
               </div>
               <div className="space-y-1">
-                <p className="text-sm font-semibold text-neutral-400">No active goals</p>
-                <p className="text-xs text-neutral-500 font-sans max-w-[200px] mx-auto">
+                <p className="text-sm font-semibold text-muted">No active goals</p>
+                <p className="text-xs text-subtle font-sans max-w-[200px] mx-auto">
                   Set up your savings goals to track progress here.
                 </p>
               </div>
@@ -106,21 +106,21 @@ export const ActiveGoalsCard = React.memo(function ActiveGoalsCard({
                       <div className="flex items-center gap-2.5 min-w-0 pr-2">
                         <div
                           className={`h-7 w-7 rounded-lg flex items-center justify-center shrink-0 ${
-                            goal.bgLight || "bg-white/5 text-white"
+                            goal.bgLight || "bg-white/5 text-foreground"
                           }`}
                         >
                           <GoalIcon className="h-4 w-4" />
                         </div>
                         <div className="min-w-0">
-                          <h4 className="font-sans font-bold text-xs text-neutral-200 truncate group-hover:text-white transition-colors leading-none">
+                          <h4 className="font-sans font-bold text-xs text-foreground truncate group-hover:text-foreground transition-colors leading-none">
                             {goal.name}
                           </h4>
-                          <span className="text-[8px] font-bold font-mono text-neutral-500 uppercase tracking-wider block mt-0.5">
+                          <span className="text-[8px] font-bold font-mono text-subtle uppercase tracking-wider block mt-0.5">
                             {goal.category}
                           </span>
                         </div>
                       </div>
-                      <span className={`text-xs font-bold font-mono leading-none ${goal.accentText || "text-[#c8ff00]"}`}>
+                      <span className={`text-xs font-bold font-mono leading-none ${goal.accentText || "text-primary"}`}>
                         {roundedPercent}%
                       </span>
                     </div>
@@ -129,13 +129,13 @@ export const ActiveGoalsCard = React.memo(function ActiveGoalsCard({
                     <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
                       <div
                         className={`h-full rounded-full transition-all duration-500 ease-out ${
-                          goal.barColor || "bg-[#c8ff00]"
+                          goal.barColor || "bg-primary"
                         }`}
                         style={{ width: `${roundedPercent}%` }}
                       />
                     </div>
 
-                    <div className="flex items-center justify-between font-mono text-[9px] text-neutral-500">
+                    <div className="flex items-center justify-between font-mono text-[9px] text-subtle">
                       <span className="font-jetbrains">
                         ${goal.currentAmount.toLocaleString("en-US", {
                           minimumFractionDigits: 0,

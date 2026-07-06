@@ -103,7 +103,7 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
 
   return (
     <div 
-      className="flex-1 flex flex-col w-full relative overflow-hidden text-white"
+      className="flex-1 flex flex-col w-full relative overflow-hidden text-foreground"
       style={{ paddingTop: 'env(safe-area-inset-top)' }}
     >
       {/* Floating Avatar — fixed position, always visible when authenticated */}
@@ -122,7 +122,7 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
           <div className="flex h-full w-full items-center justify-center">
             <div className="flex flex-col items-center gap-6 animate-in fade-in duration-300">
               <Logo size="large" showWordmark={true} />
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#c8ff00] border-t-transparent" />
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
             </div>
           </div>
         ) : (

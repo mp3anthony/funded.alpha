@@ -29,7 +29,7 @@ export default function HealthScore() {
   }
 
   return (
-    <div className="bg-[#111111] border border-white/10 rounded-2xl p-5 shadow-sm space-y-4">
+    <div className="bg-surface border border-border rounded-2xl p-5 shadow-sm space-y-4">
       {/* Top Row: Title */}
       <div className="flex items-center justify-between">
         <span className="font-heading text-xs font-bold uppercase tracking-wider text-subtle font-mono">

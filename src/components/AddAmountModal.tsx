@@ -63,15 +63,15 @@ export default function AddAmountModal({
   const isValid = !isNaN(parseFloat(amountStr)) && parseFloat(amountStr) > 0;
 
   return (
-    <div className="fixed inset-0 z-[100] modal-backdrop flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[100] modal-backdrop flex items-center justify-center bg-foreground/20 dark:bg-foreground/20 dark:bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       {/* Backdrop click close */}
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Modal Container */}
-      <div className="relative w-full max-w-sm bg-[#111111] border border-white/10 rounded-2xl shadow-2xl max-h-[92dvh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+      <div className="relative w-full max-w-sm bg-surface border border-border rounded-2xl shadow-2xl max-h-[92dvh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
         
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-white/10 shrink-0">
+        <div className="flex items-center justify-between p-5 border-b border-border shrink-0">
           <h3 className="font-heading font-bold text-base text-foreground">
             Add to {goal.name}
           </h3>
@@ -92,7 +92,7 @@ export default function AddAmountModal({
               placeholder="$0.00"
               value={amountStr ? `$${amountStr}` : ""}
               onChange={(e) => handleInputChange(e.target.value)}
-              className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 font-mono text-center text-xl text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 placeholder:text-muted"
+              className="w-full bg-background border border-border rounded-xl px-4 py-3 font-mono text-center text-xl text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 placeholder:text-muted"
               autoFocus
             />
 
@@ -103,7 +103,7 @@ export default function AddAmountModal({
                   key={amt}
                   type="button"
                   onClick={() => setAmountStr(amt.toFixed(2))}
-                  className="rounded-xl border border-white/10 bg-white/5 py-2 font-mono text-xs text-foreground hover:bg-white/10 active:scale-95 transition-all"
+                  className="rounded-xl border border-border bg-white/5 py-2 font-mono text-xs text-foreground hover:bg-white/10 active:scale-95 transition-all"
                 >
                   +${amt}
                 </button>
@@ -113,10 +113,10 @@ export default function AddAmountModal({
         </div>
 
         {/* Actions Footer */}
-        <div className="flex gap-3 p-5 border-t border-white/10 shrink-0">
+        <div className="flex gap-3 p-5 border-t border-border shrink-0">
           <button
             onClick={onClose}
-            className="flex-1 py-3 rounded-xl border border-white/10 text-sm font-bold text-muted hover:text-foreground hover:bg-white/5 transition-colors cursor-pointer"
+            className="flex-1 py-3 rounded-xl border border-border text-sm font-bold text-muted hover:text-foreground hover:bg-white/5 transition-colors cursor-pointer"
           >
             Cancel
           </button>
@@ -126,7 +126,7 @@ export default function AddAmountModal({
             className={`flex-1 py-3 rounded-xl font-bold text-sm shadow-lg transition-all ${
               isValid 
                 ? "bg-primary text-primary-fg hover:brightness-110 active:scale-95 cursor-pointer" 
-                : "bg-zinc-800 text-zinc-500 cursor-not-allowed"
+                : "bg-surface-raised text-zinc-500 cursor-not-allowed"
             }`}
           >
             Confirm

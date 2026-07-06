@@ -38,9 +38,9 @@ export default function EditCategoryOrderModal({ isOpen, onClose, categories, on
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-[#111] border border-white/10 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b border-white/10">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-foreground/20 dark:bg-foreground/20 dark:bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="bg-[#111] border border-border rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl flex flex-col">
+        <div className="flex items-center justify-between p-4 border-b border-border">
           <h2 className="text-lg font-bold text-foreground">Category Order</h2>
           <button onClick={onClose} className="p-2 rounded-full hover:bg-white/5 text-muted hover:text-foreground transition-colors">
             <X className="h-5 w-5" />
@@ -49,7 +49,7 @@ export default function EditCategoryOrderModal({ isOpen, onClose, categories, on
         
         <div className="p-4 space-y-2 max-h-[60vh] overflow-y-auto">
           {order.map((cat, i) => (
-            <div key={cat} className="flex items-center justify-between bg-white/5 p-3 rounded-xl border border-white/5">
+            <div key={cat} className="flex items-center justify-between bg-white/5 p-3 rounded-xl border border-border-strong">
               <div className="flex items-center gap-3">
                 <GripVertical className="h-4 w-4 text-muted/50" />
                 <span className="text-sm font-semibold text-foreground">{cat}</span>
@@ -74,7 +74,7 @@ export default function EditCategoryOrderModal({ isOpen, onClose, categories, on
           ))}
         </div>
 
-        <div className="p-4 border-t border-white/10">
+        <div className="p-4 border-t border-border">
           <button 
             onClick={() => {
               onSave(order);

@@ -39,7 +39,7 @@ export default function UserProfileMenu() {
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="h-8 w-8 rounded-full bg-secondary text-white flex items-center justify-center text-sm font-bold cursor-pointer hover:brightness-110 active:scale-95 transition-all shadow-md shadow-secondary/25"
+        className="h-8 w-8 rounded-full bg-secondary text-foreground flex items-center justify-center text-sm font-bold cursor-pointer hover:brightness-110 active:scale-95 transition-all shadow-md shadow-secondary/25"
         aria-label="User menu"
       >
         {initial}

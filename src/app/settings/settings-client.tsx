@@ -240,7 +240,7 @@ export default function SettingsClient() {
               <select
                 value={pushNotifications ? "enabled" : "disabled"}
                 onChange={(e) => setPushNotifications(e.target.value === "enabled")}
-                className="rounded-lg border border-white/10 bg-[#0a0a0a] px-3 py-1.5 text-xs font-bold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-8 uppercase tracking-wider"
+                className="rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-bold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-8 uppercase tracking-wider"
               >
                 <option value="enabled">Enabled</option>
                 <option value="disabled">Disabled</option>
@@ -272,7 +272,7 @@ export default function SettingsClient() {
               <select
                 value={theme}
                 onChange={(e) => setTheme(e.target.value as "light" | "dark" | "system")}
-                className="w-full rounded-lg border border-white/10 bg-[#0a0a0a] px-3 py-1.5 text-xs font-bold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-8 uppercase tracking-wider"
+                className="w-full rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-bold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-8 uppercase tracking-wider"
               >
                 <option value="light">Light</option>
                 <option value="dark">Dark</option>
@@ -320,7 +320,7 @@ export default function SettingsClient() {
               </div>
 
               {/* Individual Contributions Display Tile */}
-              <div className="bg-[#111111] border border-white/10 rounded-2xl p-4 mt-4">
+              <div className="bg-surface border border-border rounded-2xl p-4 mt-4">
                 {!hasContributions ? (
                   <p className="text-muted text-sm font-mono text-center py-2">
                     No contributions set. Click &apos;Set Contributions&apos; to get started.
@@ -341,7 +341,7 @@ export default function SettingsClient() {
                         >
                           {/* Left: Avatar & Name */}
                           <div className="flex items-center gap-3 min-w-0">
-                            <div className="h-8 w-8 rounded-xl overflow-hidden bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-white font-bold text-xs shadow-sm shrink-0">
+                            <div className="h-8 w-8 rounded-xl overflow-hidden bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-foreground font-bold text-xs shadow-sm shrink-0">
                               {member?.avatar_url ? (
                                 <img src={member.avatar_url} alt={memberName} className="h-full w-full object-cover" />
                               ) : (
@@ -359,7 +359,7 @@ export default function SettingsClient() {
                           </span>
 
                           {/* Right: Selected Frequency highlighted in lime green */}
-                          <span className="text-[#c8ff00] text-xs font-bold uppercase tracking-wider font-mono">
+                          <span className="text-primary text-xs font-bold uppercase tracking-wider font-mono">
                             {contribution.frequency}
                           </span>
                         </div>
@@ -389,7 +389,7 @@ export default function SettingsClient() {
                 </div>
 
                 {/* Rules Summary Tile */}
-                <div className="bg-[#111111] border border-white/10 rounded-2xl p-4 mt-4">
+                <div className="bg-surface border border-border rounded-2xl p-4 mt-4">
                   {contributionRules.length === 0 ? (
                     <p className="text-muted text-xs font-mono text-center py-2">
                       No rules set. Click &apos;Manage Rules&apos; to automate excess pay allocation.
@@ -420,7 +420,7 @@ export default function SettingsClient() {
                               <span>
                                 When {mName}&apos;s pay &gt; ${rule.threshold_amount.toFixed(2)}
                               </span>
-                              <span className={rule.is_active ? "text-[#c8ff00] font-bold" : "text-muted"}>
+                              <span className={rule.is_active ? "text-primary font-bold" : "text-muted"}>
                                 Add {rule.amount_type === "percentage" ? `${rule.amount_to_add}% of surplus` : `$${rule.amount_to_add.toFixed(2)}`} to {targetName}
                               </span>
                             </div>
@@ -448,10 +448,10 @@ export default function SettingsClient() {
         </div>
 
         <div className="flex flex-col sm:flex-row items-center gap-3">
-          <div className="flex-1 w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 flex items-center justify-between font-mono">
+          <div className="flex-1 w-full bg-background border border-border rounded-xl px-4 py-3 flex items-center justify-between font-mono">
             {joinCode ? (
               <>
-                <span className="text-[#c8ff00] text-lg font-bold tracking-widest uppercase">
+                <span className="text-primary text-lg font-bold tracking-widest uppercase">
                   {joinCode}
                 </span>
                 <span className="text-[10px] text-muted font-sans">
@@ -470,7 +470,7 @@ export default function SettingsClient() {
                   navigator.clipboard.writeText(joinCode);
                   alert("Join code copied to clipboard!");
                 }}
-                className="flex-1 sm:flex-none px-4 py-3 rounded-xl border border-white/10 text-xs font-bold text-white bg-white/5 hover:bg-white/10 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                className="flex-1 sm:flex-none px-4 py-3 rounded-xl border border-border text-xs font-bold text-foreground bg-white/5 hover:bg-white/10 transition-all cursor-pointer flex items-center justify-center gap-1.5"
               >
                 Copy Code
               </button>
@@ -484,7 +484,7 @@ export default function SettingsClient() {
                   alert(err.message || "Failed to generate code.");
                 }
               }}
-              className="flex-1 sm:flex-none px-4 py-3 bg-[#c8ff00] text-black rounded-xl text-xs font-bold uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5 animate-pulse hover:animate-none"
+              className="flex-1 sm:flex-none px-4 py-3 bg-primary text-black rounded-xl text-xs font-bold uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-1.5 animate-pulse hover:animate-none"
             >
               Regenerate
             </button>
@@ -521,7 +521,7 @@ export default function SettingsClient() {
                   className="group p-4 sm:p-5 flex items-center justify-between hover:bg-surface-raised transition-colors"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-xl overflow-hidden bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-white font-bold text-sm shadow-sm shrink-0">
+                    <div className="h-10 w-10 rounded-xl overflow-hidden bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-foreground font-bold text-sm shadow-sm shrink-0">
                       {member.avatar_url ? (
                         <img src={member.avatar_url} alt={member.name} className="h-full w-full object-cover" />
                       ) : (
@@ -535,11 +535,11 @@ export default function SettingsClient() {
                         </h4>
                         {/* Role Badges */}
                         {isOwner ? (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#c8ff00]/10 text-[#c8ff00] border border-[#c8ff00]/20 font-syne">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 font-syne">
                             Owner
                           </span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/5 text-neutral-400 border border-white/10 font-syne">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/5 text-muted border border-border font-syne">
                             Member
                           </span>
                         )}
@@ -550,7 +550,7 @@ export default function SettingsClient() {
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-neutral-400 mt-0.5">{member.email}</p>
+                      <p className="text-xs text-muted mt-0.5">{member.email}</p>
                     </div>
                   </div>
 
@@ -559,7 +559,7 @@ export default function SettingsClient() {
                     <button
                       onClick={() => setMemberToEdit(member)}
                       aria-label={`Edit settings for ${member.name}`}
-                      className="flex h-9 w-9 items-center justify-center rounded-xl text-neutral-400 hover:text-[#c8ff00] hover:bg-[#c8ff00]/10 transition-colors border border-white/5 bg-white/[0.02] cursor-pointer"
+                      className="flex h-9 w-9 items-center justify-center rounded-xl text-muted hover:text-primary hover:bg-primary/10 transition-colors border border-border-strong bg-foreground/5 cursor-pointer"
                     >
                       <UserCog className="h-4.5 w-4.5" />
                     </button>
@@ -574,7 +574,7 @@ export default function SettingsClient() {
       {/* ── Danger Zone Section ────────────── */}
       <section className="bg-surface border border-red-500/20 rounded-2xl p-5 shadow-sm space-y-4">
         <div className="space-y-1">
-          <h2 className="text-base font-bold text-[#ff3d57] font-syne">
+          <h2 className="text-base font-bold text-destructive font-syne">
             Danger Zone
           </h2>
           <p className="text-xs text-muted leading-relaxed font-sans">
@@ -582,7 +582,7 @@ export default function SettingsClient() {
           </p>
         </div>
 
-        <div className="pt-2 border-t border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="pt-2 border-t border-border-strong flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-0.5">
             <h4 className="text-sm font-bold text-foreground font-syne">
               Leave &amp; Join New Household
@@ -598,7 +598,7 @@ export default function SettingsClient() {
                 setIsJoinSheetOpen(true);
               }
             }}
-            className="px-4 py-2.5 bg-red-500/10 hover:bg-red-500 text-[#ff3d57] hover:text-white border border-red-500/20 text-xs font-bold rounded-xl transition-all cursor-pointer font-heading uppercase tracking-wider shrink-0"
+            className="px-4 py-2.5 bg-red-500/10 hover:bg-red-500 text-destructive hover:text-foreground border border-red-500/20 text-xs font-bold rounded-xl transition-all cursor-pointer font-heading uppercase tracking-wider shrink-0"
           >
             Switch Households
           </button>
@@ -624,7 +624,7 @@ export default function SettingsClient() {
       {/* ── Mode Change Confirmation Modal ──────────── */}
       {showConfirm && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/20 dark:bg-foreground/20 dark:bg-black/80 backdrop-blur-sm px-4"
           onClick={handleCancelModeChange}
         >
           <div
@@ -658,7 +658,7 @@ export default function SettingsClient() {
               </button>
               <button
                 onClick={handleConfirmModeChange}
-                className="flex-1 py-3 rounded-xl bg-destructive text-white text-sm font-bold shadow-lg shadow-destructive/20 hover:brightness-110 active:scale-95 transition-all cursor-pointer"
+                className="flex-1 py-3 rounded-xl bg-destructive text-foreground text-sm font-bold shadow-lg shadow-destructive/20 hover:brightness-110 active:scale-95 transition-all cursor-pointer"
               >
                 Confirm
               </button>

@@ -66,13 +66,13 @@ export default function PaydayClient() {
     if (diffDays <= 0) {
       return {
         text: "Ready to Log",
-        color: "text-[#c8ff00] bg-[#c8ff00]/10 border-[#c8ff00]/20",
+        color: "text-primary bg-primary/10 border-primary/20",
         icon: CheckCircle2,
       };
     } else {
       return {
         text: `in ${diffDays} day${diffDays !== 1 ? "s" : ""}`,
-        color: "text-muted bg-white/5 border-white/5",
+        color: "text-muted bg-white/5 border-border-strong",
         icon: Clock,
       };
     }
@@ -187,7 +187,7 @@ export default function PaydayClient() {
         </h2>
 
         {paySchedules.length === 0 ? (
-          <div className="bg-[#111111] border border-white/10 rounded-2xl p-10 text-center shadow-sm">
+          <div className="bg-surface border border-border rounded-2xl p-10 text-center shadow-sm">
             <DollarSign className="h-10 w-10 text-muted mx-auto mb-3" />
             <p className="text-sm font-semibold text-muted">No pay schedules active.</p>
             <p className="text-xs text-subtle mt-1">Create a schedule to automate or log household income.</p>
@@ -215,7 +215,7 @@ export default function PaydayClient() {
                     setSelectedSchedule(schedule);
                     setIsDetailOpen(true);
                   }}
-                  className="bg-[#111111] border border-white/10 rounded-2xl p-5 shadow-sm flex flex-col justify-between space-y-4 hover:border-primary/30 hover:shadow-md transition-all cursor-pointer"
+                  className="bg-surface border border-border rounded-2xl p-5 shadow-sm flex flex-col justify-between space-y-4 hover:border-primary/30 hover:shadow-md transition-all cursor-pointer"
                 >
                   <div className="space-y-2">
                     {/* Member & Actions */}
@@ -224,7 +224,7 @@ export default function PaydayClient() {
                         {member?.avatar_url ? (
                           <img src={member.avatar_url} alt={memberName} className="h-6 w-6 rounded-full object-cover shrink-0" />
                         ) : (
-                          <div className="h-6 w-6 rounded-full bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-white font-bold text-[10px] shrink-0">
+                          <div className="h-6 w-6 rounded-full bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-foreground font-bold text-[10px] shrink-0">
                             {member?.avatar || memberName.charAt(0).toUpperCase()}
                           </div>
                         )}
@@ -272,7 +272,7 @@ export default function PaydayClient() {
 
                   {/* Actions Bar — only shown when pay is due */}
                   {isReady && (
-                    <div className="pt-2 border-t border-white/5">
+                    <div className="pt-2 border-t border-border-strong">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -298,7 +298,7 @@ export default function PaydayClient() {
         </h2>
 
         {recentHistory.length === 0 ? (
-          <div className="bg-[#111111] border border-white/10 rounded-2xl p-10 text-center shadow-sm">
+          <div className="bg-surface border border-border rounded-2xl p-10 text-center shadow-sm">
             <PiggyBank className="h-10 w-10 text-muted mx-auto mb-3" />
             <p className="text-sm font-semibold text-muted">No history logged yet.</p>
             <p className="text-xs text-subtle mt-1">Logged payday transactions will appear here.</p>
@@ -312,16 +312,16 @@ export default function PaydayClient() {
               const isMinimized = !!minimizedMembers[memberId];
 
               return (
-                <div key={memberId} className="bg-[#111111] border border-white/10 rounded-2xl overflow-hidden shadow-sm">
+                <div key={memberId} className="bg-surface border border-border rounded-2xl overflow-hidden shadow-sm">
                   <button
                     onClick={() => toggleMemberHistory(memberId)}
                     className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors cursor-pointer"
                   >
                     <div className="flex items-center gap-3">
                       {member?.avatar_url ? (
-                        <img src={member.avatar_url} alt={memberName} className="h-8 w-8 rounded-full object-cover shrink-0 border border-white/10" />
+                        <img src={member.avatar_url} alt={memberName} className="h-8 w-8 rounded-full object-cover shrink-0 border border-border" />
                       ) : (
-                        <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-white font-bold text-xs shrink-0 border border-white/10 shadow-inner">
+                        <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-foreground font-bold text-xs shrink-0 border border-border shadow-inner">
                           {member?.avatar || memberName.charAt(0).toUpperCase()}
                         </div>
                       )}
@@ -332,7 +332,7 @@ export default function PaydayClient() {
                   </button>
                   
                   {!isMinimized && (
-                    <div className="p-4 pt-0 border-t border-white/5">
+                    <div className="p-4 pt-0 border-t border-border-strong">
                       <div className="grid grid-cols-1 gap-3 pt-4">
                         {histories.map((history) => (
                           <PayHistoryCard

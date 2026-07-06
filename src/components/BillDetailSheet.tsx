@@ -57,15 +57,15 @@ export default function BillDetailSheet({
   if (typeof document === "undefined") return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] modal-backdrop flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[100] modal-backdrop flex items-center justify-center p-4 bg-foreground/20 dark:bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
       {/* Backdrop overlay */}
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Sheet Content */}
-      <div className="relative w-full max-w-md max-h-[90dvh] bg-[#111111] border border-white/10 rounded-2xl flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-250">
+      <div className="relative w-full max-w-md max-h-[90dvh] bg-surface border border-border rounded-2xl flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-250">
         
         {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-[#111111]/90 px-6 py-4 backdrop-blur">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-surface/90 px-6 py-4 backdrop-blur">
           <h2 className="font-syne text-xl font-bold text-foreground">Bill Details</h2>
           <button 
             onClick={onClose}
@@ -154,7 +154,7 @@ export default function BillDetailSheet({
               <div className="flex items-center space-x-2.5 p-3.5 bg-surface-raised rounded-xl border border-border">
                 {isJointFund ? (
                   <>
-                    <div className="h-2 w-2 rounded-full bg-[#c8ff00] animate-pulse shrink-0" />
+                    <div className="h-2 w-2 rounded-full bg-primary animate-pulse shrink-0" />
                     <p className="text-xs text-muted font-mono">Paid directly from the household Joint Fund.</p>
                   </>
                 ) : (
@@ -214,7 +214,7 @@ export default function BillDetailSheet({
               <h4 className="font-heading text-sm font-semibold text-subtle uppercase tracking-wider">
                 Notes
               </h4>
-              <p className="text-sm text-muted bg-[#111111] p-3 rounded-xl border border-white/5 font-mono leading-relaxed whitespace-pre-wrap">
+              <p className="text-sm text-muted bg-surface p-3 rounded-xl border border-border-strong font-mono leading-relaxed whitespace-pre-wrap">
                 {bill.notes}
               </p>
             </div>
@@ -224,7 +224,7 @@ export default function BillDetailSheet({
 
         <div 
           style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1rem)" }}
-          className="sticky bottom-0 z-10 border-t border-white/10 bg-[#111111]/95 px-6 pt-4 pb-4 backdrop-blur flex flex-col space-y-3 shrink-0"
+          className="sticky bottom-0 z-10 border-t border-border bg-surface/95 px-6 pt-4 pb-4 backdrop-blur flex flex-col space-y-3 shrink-0"
         >
           {bill.status !== "Paid" && (
             <button
@@ -232,7 +232,7 @@ export default function BillDetailSheet({
                 markAsPaid(bill);
                 onClose();
               }}
-              className="w-full rounded-xl py-3.5 bg-emerald-500/20 text-emerald-500 border border-emerald-500/30 font-heading font-bold uppercase tracking-wider text-xs hover:bg-emerald-500 hover:text-white transition-all active:scale-[0.98] cursor-pointer"
+              className="w-full rounded-xl py-3.5 bg-emerald-500/20 text-emerald-500 border border-emerald-500/30 font-heading font-bold uppercase tracking-wider text-xs hover:bg-emerald-500 hover:text-foreground transition-all active:scale-[0.98] cursor-pointer"
             >
               Mark as Paid
             </button>
@@ -241,7 +241,7 @@ export default function BillDetailSheet({
           <div className="flex space-x-2 w-full">
             <button
               onClick={onDelete}
-              className="flex-1 rounded-xl py-3 bg-destructive/15 text-destructive border border-destructive/20 font-heading font-bold uppercase tracking-wider text-[10px] hover:bg-destructive hover:text-white transition-all active:scale-[0.98] cursor-pointer"
+              className="flex-1 rounded-xl py-3 bg-destructive/15 text-destructive border border-destructive/20 font-heading font-bold uppercase tracking-wider text-[10px] hover:bg-destructive hover:text-foreground transition-all active:scale-[0.98] cursor-pointer"
             >
               Delete
             </button>

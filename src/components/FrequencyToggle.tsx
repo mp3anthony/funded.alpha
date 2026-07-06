@@ -25,7 +25,7 @@ export default function FrequencyToggle({
       <select
         value={selectedFrequency}
         onChange={(e) => onChange(e.target.value as FrequencyType)}
-        className="w-full rounded-xl border border-white/10 bg-[#0a0a0a] px-4 py-2.5 md:py-3 text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all appearance-none text-sm font-semibold cursor-pointer pr-10"
+        className="w-full rounded-xl border border-border bg-background px-4 py-2.5 md:py-3 text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all appearance-none text-sm font-semibold cursor-pointer pr-10"
       >
         {options.map((opt) => (
           <option key={opt.value} value={opt.value} className="bg-surface text-foreground">

@@ -28,16 +28,16 @@ export const HealthScoreCard = React.memo(function HealthScoreCard() {
 
   // 2. Status Label Logic
   let statusText = "Needs Attention";
-  let dotColor = "bg-[#ff3d57]"; // Red
+  let dotColor = "bg-destructive"; // Red
   let glowColor = "#ff3d57";
 
   if (score >= 80) {
     statusText = "Fully Funded";
-    dotColor = "bg-[#c8ff00]"; // Lime Green
+    dotColor = "bg-primary"; // Lime Green
     glowColor = "#c8ff00";
   } else if (score >= 60) {
     statusText = "On Track";
-    dotColor = "bg-[#ffab00]"; // Amber
+    dotColor = "bg-accent"; // Amber
     glowColor = "#ffab00";
   }
 
@@ -55,7 +55,7 @@ export const HealthScoreCard = React.memo(function HealthScoreCard() {
   }, [bills]);
 
   const weeklySurplus = weeklyIncome - weeklyBills;
-  const surplusColor = weeklySurplus >= 0 ? "text-[#c8ff00]" : "text-[#ff3d57]";
+  const surplusColor = weeklySurplus >= 0 ? "text-primary" : "text-destructive";
 
   const sinkingFundsTotal = useMemo(() => {
     return funds.reduce((sum, fund) => sum + (fund.currentAmount || 0), 0);
@@ -73,12 +73,12 @@ export const HealthScoreCard = React.memo(function HealthScoreCard() {
   };
 
   return (
-    <div className="bg-[#111111] border border-white/10 rounded-[28px] p-6 flex flex-col gap-7 shadow-xl relative overflow-hidden">
+    <div className="bg-surface border border-border rounded-[28px] p-6 flex flex-col gap-7 shadow-xl relative overflow-hidden">
       {/* Top Header */}
       <div className="relative z-10 flex flex-col space-y-1.5">
         <button 
           onClick={() => setIsHealthExpanded(prev => !prev)}
-          className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-muted font-bold hover:text-white transition-colors text-left focus:outline-none w-fit"
+          className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-muted font-bold hover:text-foreground transition-colors text-left focus:outline-none w-fit"
         >
           Household Health
           {isHealthExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
@@ -88,7 +88,7 @@ export const HealthScoreCard = React.memo(function HealthScoreCard() {
             className={`w-3.5 h-3.5 rounded-full ${dotColor} transition-colors duration-700`}
             style={{ boxShadow: `0 0 12px ${glowColor}80` }}
           />
-          <h2 className="font-syne font-extrabold text-3xl tracking-tight text-white">
+          <h2 className="font-syne font-extrabold text-3xl tracking-tight text-foreground">
             {statusText}
           </h2>
         </div>
@@ -103,24 +103,24 @@ export const HealthScoreCard = React.memo(function HealthScoreCard() {
       {isHealthExpanded && (
       <div className="relative z-10 grid grid-cols-2 gap-3 sm:gap-4">
         {/* Tile 1 */}
-        <div className="bg-[#181818] rounded-[20px] p-4 sm:p-5 flex flex-col justify-center gap-1.5 transition-colors hover:bg-[#202020]">
+        <div className="bg-surface-raised rounded-[20px] p-4 sm:p-5 flex flex-col justify-center gap-1.5 transition-colors hover:bg-surface-elevated">
           <span className="font-mono text-[10px] uppercase tracking-widest text-muted font-bold">Weekly Income</span>
-          <span className="font-mono font-bold text-[22px] text-[#c8ff00] tracking-tight">{formatCurrency(weeklyIncome)}</span>
+          <span className="font-mono font-bold text-[22px] text-primary tracking-tight">{formatCurrency(weeklyIncome)}</span>
         </div>
         {/* Tile 2 */}
-        <div className="bg-[#181818] rounded-[20px] p-4 sm:p-5 flex flex-col justify-center gap-1.5 transition-colors hover:bg-[#202020]">
+        <div className="bg-surface-raised rounded-[20px] p-4 sm:p-5 flex flex-col justify-center gap-1.5 transition-colors hover:bg-surface-elevated">
           <span className="font-mono text-[10px] uppercase tracking-widest text-muted font-bold">Weekly Bills</span>
-          <span className="font-mono font-bold text-[22px] text-white tracking-tight">{formatCurrency(weeklyBills)}</span>
+          <span className="font-mono font-bold text-[22px] text-foreground tracking-tight">{formatCurrency(weeklyBills)}</span>
         </div>
         {/* Tile 3 */}
-        <div className="bg-[#181818] rounded-[20px] p-4 sm:p-5 flex flex-col justify-center gap-1.5 transition-colors hover:bg-[#202020]">
+        <div className="bg-surface-raised rounded-[20px] p-4 sm:p-5 flex flex-col justify-center gap-1.5 transition-colors hover:bg-surface-elevated">
           <span className="font-mono text-[10px] uppercase tracking-widest text-muted font-bold">Surplus</span>
           <span className={`font-mono font-bold text-[22px] ${surplusColor} tracking-tight`}>{formatCurrency(weeklySurplus)}</span>
         </div>
         {/* Tile 4 */}
-        <div className="bg-[#181818] rounded-[20px] p-4 sm:p-5 flex flex-col justify-center gap-1.5 transition-colors hover:bg-[#202020]">
+        <div className="bg-surface-raised rounded-[20px] p-4 sm:p-5 flex flex-col justify-center gap-1.5 transition-colors hover:bg-surface-elevated">
           <span className="font-mono text-[10px] uppercase tracking-widest text-muted font-bold">Sinking Funds</span>
-          <span className="font-mono font-bold text-[22px] text-[#c8ff00] tracking-tight">{formatCurrency(sinkingFundsTotal)}</span>
+          <span className="font-mono font-bold text-[22px] text-primary tracking-tight">{formatCurrency(sinkingFundsTotal)}</span>
         </div>
       </div>
       )}
@@ -130,7 +130,7 @@ export const HealthScoreCard = React.memo(function HealthScoreCard() {
         <div className="relative z-10 pt-1 flex flex-col space-y-4">
           <button 
             onClick={() => setIsContributorsExpanded(prev => !prev)}
-            className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-muted font-bold hover:text-white transition-colors text-left focus:outline-none w-fit"
+            className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-muted font-bold hover:text-foreground transition-colors text-left focus:outline-none w-fit"
           >
             Contributors
             {isContributorsExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
@@ -142,8 +142,8 @@ export const HealthScoreCard = React.memo(function HealthScoreCard() {
               const weeklyAmount = contribution ? convertAmount(contribution.amount, contribution.frequency, 'weekly') : 0;
               
               return (
-                <div key={member.id} className="bg-[#181818] rounded-[20px] p-3 sm:p-4 flex items-center gap-3 transition-colors hover:bg-[#202020] overflow-hidden">
-                  <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border-2 border-white/5 bg-[#111111]">
+                <div key={member.id} className="bg-surface-raised rounded-[20px] p-3 sm:p-4 flex items-center gap-3 transition-colors hover:bg-surface-elevated overflow-hidden">
+                  <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border-2 border-border-strong bg-surface">
                     {member.avatar_url ? (
                       <img src={member.avatar_url} alt={member.name} className="w-full h-full object-cover" />
                     ) : (
@@ -153,7 +153,7 @@ export const HealthScoreCard = React.memo(function HealthScoreCard() {
                   <div className="flex flex-col min-w-0 gap-0.5">
                     <span className="font-mono text-[10px] uppercase tracking-widest text-muted font-bold truncate">{member.name}</span>
                     <div className="flex items-baseline gap-1">
-                      <span className="font-mono font-bold text-[15px] sm:text-[18px] text-[#c8ff00] truncate">{formatCurrency(weeklyAmount)}</span>
+                      <span className="font-mono font-bold text-[15px] sm:text-[18px] text-primary truncate">{formatCurrency(weeklyAmount)}</span>
                       <span className="font-mono text-[9px] sm:text-[10px] text-muted/80">/wk</span>
                     </div>
                     {contribution ? (

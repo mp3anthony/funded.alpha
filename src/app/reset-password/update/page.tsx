@@ -57,7 +57,7 @@ export default function UpdatePasswordPage() {
           <div className="flex justify-center mb-6">
             <Logo size="large" showWordmark={true} />
           </div>
-          <h1 className="font-syne text-2xl font-extrabold text-white tracking-tight">
+          <h1 className="font-syne text-2xl font-extrabold text-foreground tracking-tight">
             Update your password
           </h1>
           <p className="text-sm text-muted mt-2">
@@ -73,7 +73,7 @@ export default function UpdatePasswordPage() {
         )}
 
         {successMsg && (
-          <div className="mb-6 p-4 rounded-xl bg-[#c8ff00]/10 border border-[#c8ff00]/20 text-[#c8ff00] text-sm font-semibold flex items-center gap-3">
+          <div className="mb-6 p-4 rounded-xl bg-primary/10 border border-primary/20 text-primary text-sm font-semibold flex items-center gap-3">
             <Check className="h-5 w-5 shrink-0" />
             <p>{successMsg}</p>
           </div>

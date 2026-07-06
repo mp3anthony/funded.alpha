@@ -144,7 +144,7 @@ export default function Onboarding() {
                   key={i}
                   className={`flex items-center justify-center h-10 w-10 rounded-xl transition-all duration-300 ${
                     isActive
-                      ? "bg-secondary text-white shadow-lg shadow-secondary/30 scale-110"
+                      ? "bg-secondary text-foreground shadow-lg shadow-secondary/30 scale-110"
                       : isDone
                         ? "bg-primary/10 text-primary"
                         : "bg-surface-raised text-subtle"
@@ -179,7 +179,7 @@ export default function Onboarding() {
                       <button
                         type="button"
                         onClick={() => setFlowMode("create")}
-                        className="flex flex-col items-center justify-center p-5 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-primary/50 transition-all text-center cursor-pointer group"
+                        className="flex flex-col items-center justify-center p-5 rounded-2xl border border-border bg-white/5 hover:bg-white/10 hover:border-primary/50 transition-all text-center cursor-pointer group"
                       >
                         <span className="font-syne font-bold text-sm text-foreground group-hover:text-primary transition-colors">
                           Create a Household
@@ -191,7 +191,7 @@ export default function Onboarding() {
                       <button
                         type="button"
                         onClick={() => setIsJoinSheetOpen(true)}
-                        className="flex flex-col items-center justify-center p-5 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 hover:border-primary/50 transition-all text-center cursor-pointer group"
+                        className="flex flex-col items-center justify-center p-5 rounded-2xl border border-border bg-white/5 hover:bg-white/10 hover:border-primary/50 transition-all text-center cursor-pointer group"
                       >
                         <span className="font-syne font-bold text-sm text-foreground group-hover:text-primary transition-colors">
                           Join via Code
@@ -210,7 +210,7 @@ export default function Onboarding() {
                       <div className="flex justify-center h-[40px]">
                         <Logo size="medium" showWordmark={true} />
                       </div>
-                      <h2 className="font-syne font-bold text-lg text-white">Create your Household</h2>
+                      <h2 className="font-syne font-bold text-lg text-foreground">Create your Household</h2>
                     </div>
                     {createError && (
                       <div className="bg-red-500/10 border border-red-500/50 rounded-xl p-3 text-red-500 text-xs font-mono break-words whitespace-pre-wrap">
@@ -238,7 +238,7 @@ export default function Onboarding() {
                       <button
                         type="button"
                         onClick={() => setFlowMode("choose")}
-                        className="text-xs text-muted hover:text-white transition-colors underline block mx-auto pt-2 cursor-pointer"
+                        className="text-xs text-muted hover:text-foreground transition-colors underline block mx-auto pt-2 cursor-pointer"
                       >
                         Back to selection
                       </button>
@@ -262,7 +262,7 @@ export default function Onboarding() {
             {currentStep === 3 && (
               <div className="flex-1 flex flex-col justify-center space-y-6">
                 <div className="text-center space-y-2">
-                  <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-gradient-to-br from-secondary to-indigo-600 text-white mx-auto shadow-lg shadow-secondary/25">
+                  <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-gradient-to-br from-secondary to-indigo-600 text-foreground mx-auto shadow-lg shadow-secondary/25">
                     <Calendar className="h-7 w-7" />
                   </div>
                   <h2 className="text-2xl font-extrabold text-foreground tracking-tight">
@@ -317,7 +317,7 @@ export default function Onboarding() {
             {currentStep === 4 && (
               <div className="flex-1 flex flex-col justify-center space-y-6">
                 <div className="text-center space-y-2">
-                  <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-gradient-to-br from-accent to-amber-500 text-white mx-auto shadow-lg shadow-accent/25">
+                  <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-gradient-to-br from-accent to-amber-500 text-foreground mx-auto shadow-lg shadow-accent/25">
                     <Receipt className="h-7 w-7" />
                   </div>
                   <h2 className="text-2xl font-extrabold text-foreground tracking-tight">
@@ -394,10 +394,10 @@ export default function Onboarding() {
             {currentStep === 5 && (
               <div className="flex-1 flex flex-col items-center justify-center text-center space-y-6">
                 <div className="relative">
-                  <div className="inline-flex items-center justify-center h-20 w-20 rounded-3xl bg-gradient-to-br from-primary to-emerald-500 text-white shadow-xl shadow-primary/30">
+                  <div className="inline-flex items-center justify-center h-20 w-20 rounded-3xl bg-gradient-to-br from-primary to-emerald-500 text-foreground shadow-xl shadow-primary/30">
                     <Sparkles className="h-9 w-9" />
                   </div>
-                  <div className="absolute -top-1 -right-1 h-6 w-6 bg-secondary text-white rounded-full flex items-center justify-center shadow-md">
+                  <div className="absolute -top-1 -right-1 h-6 w-6 bg-secondary text-foreground rounded-full flex items-center justify-center shadow-md">
                     <Check className="h-3.5 w-3.5" />
                   </div>
                 </div>
@@ -412,7 +412,7 @@ export default function Onboarding() {
                 </div>
                 <button
                   onClick={completeOnboarding}
-                  className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-gradient-to-r from-primary to-emerald-500 text-white text-sm font-bold shadow-lg shadow-primary/25 hover:brightness-110 active:scale-95 transition-all cursor-pointer"
+                  className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-gradient-to-r from-primary to-emerald-500 text-foreground text-sm font-bold shadow-lg shadow-primary/25 hover:brightness-110 active:scale-95 transition-all cursor-pointer"
                 >
                   Enter App
                   <ArrowRight className="h-4 w-4" />
@@ -439,7 +439,7 @@ export default function Onboarding() {
                 <button
                   onClick={handleNext}
                   disabled={!canProceed()}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-emerald-500 text-white text-sm font-bold shadow-lg shadow-primary/25 hover:brightness-110 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-emerald-500 text-foreground text-sm font-bold shadow-lg shadow-primary/25 hover:brightness-110 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
                 >
                   Next
                   <ArrowRight className="h-4 w-4" />
@@ -454,8 +454,8 @@ export default function Onboarding() {
         <div className="fixed inset-0 z-[120] flex flex-col items-center justify-center bg-black/85 backdrop-blur-md">
           <div className="flex flex-col items-center gap-6 animate-in fade-in duration-300">
             <Logo size="large" showWordmark={true} />
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#c8ff00] border-t-transparent" />
-            <p className="text-sm font-bold text-white uppercase tracking-wider font-mono animate-pulse">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <p className="text-sm font-bold text-foreground uppercase tracking-wider font-mono animate-pulse">
               Creating your Household...
             </p>
           </div>
