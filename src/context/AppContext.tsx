@@ -1273,7 +1273,7 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
   async function markAsPaid(bill: Bill) {
     try {
       let nextDueDateStr = bill.due_date || bill.dueDate;
-      
+
       if (bill.is_recurring) {
         const d = new Date(nextDueDateStr + "T00:00:00");
         if (!isNaN(d.getTime())) {
@@ -1282,7 +1282,7 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
           else if (freq === "by-weekly" || freq === "fortnightly") d.setDate(d.getDate() + 14);
           else if (freq === "yearly") d.setFullYear(d.getFullYear() + 1);
           else d.setMonth(d.getMonth() + 1); // default monthly
-          
+
           nextDueDateStr = d.toISOString().split("T")[0];
         }
       }
@@ -2687,6 +2687,8 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
     }
   }
 
+  const sortedMembers = [...members].sort((a, b) => a.name.localeCompare(b.name));
+
   /* ── Value ─────────────────────────────────── */
   const value: AppContextValue = {
     isOnboarded,
@@ -2714,8 +2716,8 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
     paydays,
     addPayday,
     deletePayday,
-    members,
-    householdMembers: members,
+    members: sortedMembers,
+    householdMembers: sortedMembers,
     addMember,
     removeMember,
     updateMember,

@@ -90,8 +90,8 @@ export default function PayHistoryCard({ history, onConfirmPending, hideMemberIn
     >
       <div className="flex-1 min-w-0 space-y-2">
         {/* Top Row: Member & Amount */}
-        <div className={`flex items-center ${hideMemberInfo ? 'justify-end' : 'justify-between'}`}>
-          {!hideMemberInfo && (
+        {!hideMemberInfo ? (
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-foreground font-semibold text-sm truncate">
               {member?.avatar_url ? (
                 <img src={member.avatar_url} alt={memberName} className="h-6 w-6 rounded-full object-cover shrink-0" />
@@ -102,11 +102,15 @@ export default function PayHistoryCard({ history, onConfirmPending, hideMemberIn
               )}
               <span className="truncate">{memberName}</span>
             </div>
-          )}
-          <span className="font-mono font-extrabold text-primary text-base whitespace-nowrap">
+            <span className="font-mono font-extrabold text-primary text-base whitespace-nowrap">
+              ${formattedAmount}
+            </span>
+          </div>
+        ) : (
+          <div className="font-mono font-extrabold text-primary text-base whitespace-nowrap mb-1">
             ${formattedAmount}
-          </span>
-        </div>
+          </div>
+        )}
 
         {/* Date & Status / Automation rule allocations row */}
         <div className="flex items-center justify-between gap-2 pt-0.5">
