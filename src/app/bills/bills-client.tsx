@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { Plus, X } from "lucide-react";
+import { Plus, X, ChevronDown, ChevronRight } from "lucide-react";
 import { useApp, useCurrentUser } from "@/context/AppContext";
 import AddBillSheet from "@/components/AddBillSheet";
 import BillCard from "@/components/BillCard";
+import EditCategoryOrderModal from "@/components/EditCategoryOrderModal";
 import PageHeader from "@/components/PageHeader";
 import FrequencyToggle from "@/components/FrequencyToggle";
 import { convertAmount } from "@/lib/utils";
@@ -23,8 +24,24 @@ export default function BillsClient() {
 
   const [isMounted, setIsMounted] = useState(false);
   const [isCompact, setIsCompact] = useState(false);
+  const [collapsedCategories, setCollapsedCategories] = useState<Record<string, boolean>>({});
+  const [isEditCategoryOrderOpen, setIsEditCategoryOrderOpen] = useState(false);
+  const [categoryOrder, setCategoryOrder] = useState<string[]>([]);
+
+  const toggleCategory = (category: string) => {
+    setCollapsedCategories(prev => ({
+      ...prev,
+      [category]: !prev[category]
+    }));
+  };
   useEffect(() => {
     setIsMounted(true);
+    const savedOrder = localStorage.getItem("billCategoryOrder");
+    if (savedOrder) {
+      try {
+        setCategoryOrder(JSON.parse(savedOrder));
+      } catch (e) {}
+    }
   }, []);
 
   const getFrequencyLabel = (freq: FrequencyType) => {
@@ -69,7 +86,32 @@ export default function BillsClient() {
       if (filter === "overdue") return d.getTime() < today.getTime() && b.status !== "Paid";
       return true;
     });
-  }, [bills, filter, searchQuery]);
+  }, [bills, filter, searchQuery, categoryFilter]);
+
+  const groupedBills = useMemo(() => {
+    const groups: Record<string, typeof filteredBills> = {};
+    filteredBills.forEach(bill => {
+      const cat = bill.category || "Other";
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(bill);
+    });
+
+    Object.keys(groups).forEach(cat => {
+      groups[cat].sort((a, b) => {
+        const amountA = convertAmount(a.amount, a.frequency || "monthly", displayFrequency);
+        const amountB = convertAmount(b.amount, b.frequency || "monthly", displayFrequency);
+        return amountB - amountA;
+      });
+    });
+
+    return groups;
+  }, [filteredBills, displayFrequency]);
+
+  const allCategories = useMemo(() => {
+    const defaultCats = ["Housing", "Utilities", "Groceries", "Subscriptions", "Transport", "Health", "Personal", "Debt", "Other"];
+    const currentCats = Object.keys(groupedBills);
+    return Array.from(new Set([...categoryOrder, ...defaultCats, ...currentCats]));
+  }, [groupedBills, categoryOrder]);
 
   const emptyStateMessage = useMemo(() => {
     if (searchQuery.trim() !== "") return "No bills match your search";
@@ -154,7 +196,7 @@ export default function BillsClient() {
                 onChange={(e) => setFilter(e.target.value as "all" | "week" | "month" | "overdue")}
                 className="w-full rounded-xl border border-white/10 bg-[#0a0a0a] px-2 py-2 text-[10px] font-semibold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-6"
               >
-                <option value="all">All Dates</option>
+                <option value="all">All</option>
                 <option value="week">This Week</option>
                 <option value="month">This Month</option>
                 <option value="overdue">Overdue</option>
@@ -217,28 +259,67 @@ export default function BillsClient() {
           <h2 className="text-xs font-bold text-subtle uppercase tracking-wider">
             Bills List
           </h2>
-          <button
-            onClick={() => setIsCompact(!isCompact)}
-            className="text-[10px] font-bold text-muted hover:text-foreground uppercase tracking-wider transition-colors"
-          >
-            {isCompact ? "Expand All" : "Minimize All"}
-          </button>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setIsEditCategoryOrderOpen(true)}
+              className="text-[10px] font-bold text-muted hover:text-foreground uppercase tracking-wider transition-colors"
+            >
+              Edit Order
+            </button>
+            <button
+              onClick={() => setIsCompact(!isCompact)}
+              className="text-[10px] font-bold text-muted hover:text-foreground uppercase tracking-wider transition-colors"
+            >
+              {isCompact ? "Expand All" : "Minimize All"}
+            </button>
+          </div>
         </div>
         {filteredBills.length === 0 ? (
           <div className="bg-surface border border-border rounded-2xl p-8 text-center shadow-sm">
             <p className="text-muted font-mono text-center py-4 text-sm">{emptyStateMessage}</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-3">
-            {filteredBills.map((bill) => (
-              <BillCard
-                key={bill.id}
-                bill={bill}
-                splits={billSplits.filter(s => s.bill_id === bill.id)}
-                householdMembers={householdMembers}
-                displayFrequency={displayFrequency}
-                isCompact={isCompact}
-              />
+          <div className="space-y-6">
+            {Object.entries(groupedBills)
+              .sort(([a], [b]) => {
+                const idxA = allCategories.indexOf(a);
+                const idxB = allCategories.indexOf(b);
+                if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+                if (idxA !== -1) return -1;
+                if (idxB !== -1) return 1;
+                return a.localeCompare(b);
+              })
+              .map(([category, categoryBills]) => (
+              <div key={category} className="space-y-2">
+                <button
+                  onClick={() => toggleCategory(category)}
+                  className="flex items-center gap-2 w-full text-left px-1 focus:outline-none group"
+                >
+                  {collapsedCategories[category] ? (
+                    <ChevronRight className="h-4 w-4 text-muted group-hover:text-foreground transition-colors" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4 text-muted group-hover:text-foreground transition-colors" />
+                  )}
+                  <h3 className="text-xs font-bold text-subtle uppercase tracking-wider group-hover:text-foreground transition-colors">
+                    {category} <span className="text-muted font-normal ml-1">({categoryBills.length})</span>
+                  </h3>
+                </button>
+                
+                {!collapsedCategories[category] && (
+                  <div className="grid grid-cols-1 gap-3">
+                    {categoryBills.map((bill) => (
+                      <BillCard
+                        key={bill.id}
+                        bill={bill}
+                        splits={billSplits.filter(s => s.bill_id === bill.id)}
+                        householdMembers={householdMembers}
+                        displayFrequency={displayFrequency}
+                        isCompact={isCompact}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         )}
@@ -247,6 +328,16 @@ export default function BillsClient() {
       <AddBillSheet
         isOpen={isAddBillSheetOpen}
         onClose={() => setIsAddBillSheetOpen(false)}
+      />
+      
+      <EditCategoryOrderModal
+        isOpen={isEditCategoryOrderOpen}
+        onClose={() => setIsEditCategoryOrderOpen(false)}
+        categories={allCategories}
+        onSave={(newOrder) => {
+          setCategoryOrder(newOrder);
+          localStorage.setItem("billCategoryOrder", JSON.stringify(newOrder));
+        }}
       />
     </div>
   );

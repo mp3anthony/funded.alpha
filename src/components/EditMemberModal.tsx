@@ -49,7 +49,7 @@ export default function EditMemberModal({
 
   // Determine if the name is editable by the owner 
   // (editable if they haven't set their own custom name in their profile yet, i.e., user_id is null or name is email prefix)
-  const emailPrefix = member.email.split("@")[0];
+  const emailPrefix = member.email ? member.email.split("@")[0] : "";
   const isNameEditable = !member.user_id || member.name === emailPrefix;
 
   async function handleSave(e: React.FormEvent) {

@@ -92,7 +92,6 @@ export default function SettingsClient() {
 
   /* Preferences */
   const [pushNotifications, setPushNotifications] = useState(true);
-  const [emailAlerts, setEmailAlerts] = useState(false);
 
   /* Invite, Edit, and Remove member modals */
   const [showInvite, setShowInvite] = useState(false);
@@ -215,10 +214,10 @@ export default function SettingsClient() {
         </div>
       </section>
 
-      {/* ── Preferences Section ──────────────────── */}
+      {/* ── App Settings Section ──────────────────── */}
       <section className="space-y-3">
         <h2 className="text-base font-bold text-subtle uppercase tracking-wider px-1">
-          Preferences
+          App Settings
         </h2>
 
         <div className="bg-surface border border-border rounded-2xl shadow-sm overflow-hidden divide-y divide-border">
@@ -241,38 +240,6 @@ export default function SettingsClient() {
               <select
                 value={pushNotifications ? "enabled" : "disabled"}
                 onChange={(e) => setPushNotifications(e.target.value === "enabled")}
-                className="rounded-lg border border-white/10 bg-[#0a0a0a] px-3 py-1.5 text-xs font-bold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-8 uppercase tracking-wider"
-              >
-                <option value="enabled">Enabled</option>
-                <option value="disabled">Disabled</option>
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-muted">
-                <svg className="h-3 w-3 fill-current" viewBox="0 0 20 20">
-                  <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          {/* Email Alerts */}
-          <div className="p-4 sm:p-5 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-10 w-10 rounded-xl bg-secondary/10 text-secondary items-center justify-center shrink-0">
-                <Mail className="h-5 w-5" />
-              </div>
-              <div>
-                <h4 className="text-sm sm:text-base font-bold text-foreground">
-                  Email Alerts
-                </h4>
-                <p className="text-xs text-muted mt-0.5">
-                  Receive weekly summaries and reminders via email.
-                </p>
-              </div>
-            </div>
-            <div className="relative shrink-0">
-              <select
-                value={emailAlerts ? "enabled" : "disabled"}
-                onChange={(e) => setEmailAlerts(e.target.value === "enabled")}
                 className="rounded-lg border border-white/10 bg-[#0a0a0a] px-3 py-1.5 text-xs font-bold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-8 uppercase tracking-wider"
               >
                 <option value="enabled">Enabled</option>

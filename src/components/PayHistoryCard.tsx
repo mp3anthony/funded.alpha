@@ -7,9 +7,10 @@ import { useApp, type PayHistory } from "@/context/AppContext";
 interface PayHistoryCardProps {
   history: PayHistory;
   onConfirmPending?: (history: PayHistory) => void;
+  hideMemberInfo?: boolean;
 }
 
-export default function PayHistoryCard({ history, onConfirmPending }: PayHistoryCardProps) {
+export default function PayHistoryCard({ history, onConfirmPending, hideMemberInfo }: PayHistoryCardProps) {
   const { householdMembers, deletePayHistory, funds, contributionRules } = useApp();
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -89,17 +90,19 @@ export default function PayHistoryCard({ history, onConfirmPending }: PayHistory
     >
       <div className="flex-1 min-w-0 space-y-2">
         {/* Top Row: Member & Amount */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-foreground font-semibold text-sm truncate">
-            {member?.avatar_url ? (
-              <img src={member.avatar_url} alt={memberName} className="h-6 w-6 rounded-full object-cover shrink-0" />
-            ) : (
-              <div className="h-6 w-6 rounded-full bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-white font-bold text-[10px] shrink-0">
-                {member?.avatar || memberName.charAt(0).toUpperCase()}
-              </div>
-            )}
-            <span className="truncate">{memberName}</span>
-          </div>
+        <div className={`flex items-center ${hideMemberInfo ? 'justify-end' : 'justify-between'}`}>
+          {!hideMemberInfo && (
+            <div className="flex items-center gap-2 text-foreground font-semibold text-sm truncate">
+              {member?.avatar_url ? (
+                <img src={member.avatar_url} alt={memberName} className="h-6 w-6 rounded-full object-cover shrink-0" />
+              ) : (
+                <div className="h-6 w-6 rounded-full bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-white font-bold text-[10px] shrink-0">
+                  {member?.avatar || memberName.charAt(0).toUpperCase()}
+                </div>
+              )}
+              <span className="truncate">{memberName}</span>
+            </div>
+          )}
           <span className="font-mono font-extrabold text-primary text-base whitespace-nowrap">
             ${formattedAmount}
           </span>

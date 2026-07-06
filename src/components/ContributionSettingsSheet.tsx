@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X, Check } from "lucide-react";
 import { useApp, type Member } from "@/context/AppContext";
 import { type HouseholdContribution } from "@/types";
@@ -44,7 +45,9 @@ export default function ContributionSettingsSheet({
     return sum + monthlyAmount;
   }, 0);
 
-  return (
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <div className="fixed inset-0 z-[100] modal-backdrop flex items-end justify-center bg-black/80 backdrop-blur-sm md:items-stretch md:justify-end md:p-0 md:bg-black/60 animate-in fade-in duration-200">
       {/* Overlay to close */}
       <div className="absolute inset-0" onClick={onClose} />
@@ -64,7 +67,7 @@ export default function ContributionSettingsSheet({
         </div>
 
         {/* Members Rows */}
-        <div className="flex-1 overflow-y-auto divide-y divide-white/5 px-5 md:px-6">
+        <div className="flex-1 overflow-y-auto divide-y divide-white/5 px-5 md:px-6 pb-20">
           {householdMembers.length === 0 ? (
             <div className="py-8 text-center text-xs text-muted">
               No household members added yet.
@@ -110,7 +113,8 @@ export default function ContributionSettingsSheet({
         </div>
 
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

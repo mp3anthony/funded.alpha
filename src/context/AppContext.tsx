@@ -465,11 +465,11 @@ function mapPaydayFromDb(dbPayday: any): Payday {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapMemberFromDb(dbMember: any): Member {
-  const name = dbMember.name || dbMember.email.split("@")[0];
+  const name = dbMember.name || (dbMember.email ? dbMember.email.split("@")[0] : "Member");
   return {
     id: dbMember.id,
     name,
-    email: dbMember.email,
+    email: dbMember.email || "",
     role: dbMember.role || "member",
     avatar: name.charAt(0).toUpperCase(),
     avatar_url: dbMember.avatar_url || null,
@@ -627,16 +627,7 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
         root.setAttribute("data-theme", activeTheme);
       }
 
-      // Update BODY tag classes/dataset
-      if (body) {
-        if (!body.classList.contains(activeTheme)) {
-          body.classList.remove("light", "dark");
-          body.classList.add(activeTheme);
-        }
-        if (body.getAttribute("data-theme") !== activeTheme) {
-          body.setAttribute("data-theme", activeTheme);
-        }
-      }
+
 
       console.log("[ThemeManager] applied:", activeTheme, "HTML classes:", root.className, "data-theme:", root.getAttribute("data-theme"));
     };
@@ -656,17 +647,6 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
       attributeFilter: ["class", "data-theme"]
     });
 
-    let bodyObserver: MutationObserver | null = null;
-    if (body) {
-      bodyObserver = new MutationObserver(() => {
-        applyTheme(theme);
-      });
-      bodyObserver.observe(body, {
-        attributes: true,
-        attributeFilter: ["class", "data-theme"]
-      });
-    }
-
     let cleanupSystemListener: (() => void) | undefined;
     if (theme === "system") {
       const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
@@ -677,7 +657,6 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
 
     return () => {
       observer.disconnect();
-      if (bodyObserver) bodyObserver.disconnect();
       if (cleanupSystemListener) cleanupSystemListener();
     };
   }, [theme]);

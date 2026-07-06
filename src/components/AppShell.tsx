@@ -64,7 +64,7 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
       document.body.classList.remove("modal-open");
       document.documentElement.classList.remove("modal-open");
     };
-  }, []);
+  }, [pathname]);
 
   // 3. Navigation/Auth Guard Redirects
   useEffect(() => {
@@ -115,7 +115,7 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
 
       {/* Main Content */}
       <main 
-        className="flex-1 overflow-y-auto w-full relative z-10 transform-gpu pb-6"
+        className="flex-1 overflow-y-auto w-full relative z-10 pb-6"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
         {isLoading ? (

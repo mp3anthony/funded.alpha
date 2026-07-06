@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Plus, Calendar, User, Trash2, CheckCircle2, AlertCircle, Clock, PiggyBank, DollarSign } from "lucide-react";
+import { Plus, Calendar, User, Trash2, CheckCircle2, AlertCircle, Clock, PiggyBank, DollarSign, ChevronDown, ChevronUp } from "lucide-react";
 import { useApp, useCurrentUser, type PaySchedule, type PayHistory } from "@/context/AppContext";
 import AddPayScheduleSheet from "@/components/AddPayScheduleSheet";
 import EnterPayAmountModal from "@/components/EnterPayAmountModal";
@@ -25,6 +25,12 @@ export default function PaydayClient() {
     surplusAmount: number;
   } | null>(null);
   const [pendingHistoryToConfirm, setPendingHistoryToConfirm] = useState<PayHistory | null>(null);
+
+  const [minimizedMembers, setMinimizedMembers] = useState<Record<string, boolean>>({});
+
+  const toggleMemberHistory = (memberId: string) => {
+    setMinimizedMembers(prev => ({ ...prev, [memberId]: !prev[memberId] }));
+  };
 
   const [isMounted, setIsMounted] = useState(false);
   useEffect(() => {
@@ -145,6 +151,18 @@ export default function PaydayClient() {
   };
 
   const recentHistory = payHistory.slice(0, 10);
+
+  const groupedHistory = React.useMemo(() => {
+    const groups: Record<string, PayHistory[]> = {};
+    recentHistory.forEach((history) => {
+      const id = String(history.member_id);
+      if (!groups[id]) {
+        groups[id] = [];
+      }
+      groups[id].push(history);
+    });
+    return groups;
+  }, [recentHistory]);
 
   return (
     <div className="flex-1 w-full max-w-4xl mx-auto px-4 pt-4 pb-24 sm:px-6 md:pt-6 space-y-8">
@@ -286,14 +304,50 @@ export default function PaydayClient() {
             <p className="text-xs text-subtle mt-1">Logged payday transactions will appear here.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-3">
-            {recentHistory.map((history) => (
-              <PayHistoryCard
-                key={history.id}
-                history={history}
-                onConfirmPending={handleConfirmPendingClick}
-              />
-            ))}
+          <div className="space-y-3">
+            {Object.entries(groupedHistory).map(([memberId, histories]) => {
+              const member = householdMembers.find((m) => String(m.id) === String(memberId));
+              const memberName = member ? member.name : "Unknown Member";
+              // True means collapsed (minimized)
+              const isMinimized = !!minimizedMembers[memberId];
+
+              return (
+                <div key={memberId} className="bg-[#111111] border border-white/10 rounded-2xl overflow-hidden shadow-sm">
+                  <button
+                    onClick={() => toggleMemberHistory(memberId)}
+                    className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3">
+                      {member?.avatar_url ? (
+                        <img src={member.avatar_url} alt={memberName} className="h-8 w-8 rounded-full object-cover shrink-0 border border-white/10" />
+                      ) : (
+                        <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-white font-bold text-xs shrink-0 border border-white/10 shadow-inner">
+                          {member?.avatar || memberName.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <span className="font-semibold text-foreground">{memberName}'s History</span>
+                      <span className="text-xs text-muted font-mono bg-white/5 px-2 py-0.5 rounded-full">{histories.length}</span>
+                    </div>
+                    {isMinimized ? <ChevronDown size={18} className="text-muted" /> : <ChevronUp size={18} className="text-muted" />}
+                  </button>
+                  
+                  {!isMinimized && (
+                    <div className="p-4 pt-0 border-t border-white/5">
+                      <div className="grid grid-cols-1 gap-3 pt-4">
+                        {histories.map((history) => (
+                          <PayHistoryCard
+                            key={history.id}
+                            history={history}
+                            onConfirmPending={handleConfirmPendingClick}
+                            hideMemberInfo={true}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
