@@ -43,13 +43,28 @@ export const HealthScoreCard = React.memo(function HealthScoreCard() {
 
   // 3. Weekly Stats Calculations
   const weeklyIncome = useMemo(() => {
-    return paySchedules.reduce((sum, schedule) => {
-      return sum + convertAmount(schedule.amount || 0, schedule.frequency, "weekly");
-    }, 0);
-  }, [paySchedules]);
+    if (isJointFund) {
+      return householdContributions.reduce((sum, contribution) => {
+        return sum + convertAmount(contribution.amount, contribution.frequency, 'weekly');
+      }, 0);
+    } else {
+      return paySchedules.reduce((sum, schedule) => {
+        let amount = schedule.amount || 0;
+        if (!schedule.is_fixed_amount) {
+          const historyItems = payHistory.filter(h => h.pay_schedule_id === schedule.id);
+          if (historyItems.length > 0) {
+            historyItems.sort((a, b) => new Date(b.pay_date).getTime() - new Date(a.pay_date).getTime());
+            amount = historyItems[0].amount;
+          }
+        }
+        return sum + convertAmount(amount, schedule.frequency, "weekly");
+      }, 0);
+    }
+  }, [paySchedules, isJointFund, householdContributions, payHistory]);
 
   const weeklyBills = useMemo(() => {
     return bills.reduce((sum, bill) => {
+      if (bill.is_paused) return sum;
       return sum + convertAmount(bill.amount || 0, bill.frequency || "monthly", "weekly");
     }, 0);
   }, [bills]);
@@ -119,7 +134,7 @@ export const HealthScoreCard = React.memo(function HealthScoreCard() {
         </div>
         {/* Tile 4 */}
         <div className="bg-surface-raised rounded-[20px] p-4 sm:p-5 flex flex-col justify-center gap-1.5 transition-colors hover:bg-surface-elevated">
-          <span className="font-mono text-[10px] uppercase tracking-widest text-muted font-bold">Sinking Funds</span>
+          <span className="font-mono text-[10px] uppercase tracking-widest text-muted font-bold">Goals Total Added (Weekly)</span>
           <span className="font-mono font-bold text-[22px] text-primary tracking-tight">{formatCurrency(sinkingFundsTotal)}</span>
         </div>
       </div>

@@ -83,16 +83,18 @@ export function calculateHealthScore(
   isJointFund: boolean,
   billSplits: BillSplit[]
 ): number {
+  const activeBills = bills.filter(b => !b.is_paused);
+
   // 1. Bills Management (40% weight)
   // - If no bills are overdue: 100%
   // - For each overdue bill: deduct 20 points (max deduction 100)
   // - If all bills are due in the future: 100%
   let billsScore = 100;
-  const overdueBills = bills.filter((b) => b.status === "Overdue");
+  const overdueBills = activeBills.filter((b) => b.status === "Overdue");
   
   const now = new Date();
   now.setHours(0, 0, 0, 0);
-  const allInFuture = bills.length > 0 && bills.every((b) => {
+  const allInFuture = activeBills.length > 0 && activeBills.every((b) => {
     const dStr = b.dueDate || b.due_date || "";
     if (!dStr) return false;
     return parseBillDate(dStr).getTime() > now.getTime();
@@ -129,7 +131,7 @@ export function calculateHealthScore(
   // - If isJointFund is false: compare split assignments to bills
   let budgetScore = 0;
 
-  const totalMonthlyExpenses = bills.reduce((sum, bill) => {
+  const totalMonthlyExpenses = activeBills.reduce((sum, bill) => {
     const amount = bill.amount || 0;
     const freq = bill.frequency || "monthly";
     return sum + convertAmount(amount, freq, "monthly");
@@ -149,8 +151,9 @@ export function calculateHealthScore(
   } else {
     // Direct Pay mode: sum up all split amounts, normalized to monthly based on parent bill's frequency
     const totalMonthlySplits = billSplits.reduce((sum, split) => {
-      const parentBill = bills.find((b) => String(b.id) === String(split.bill_id));
-      const freq = parentBill?.frequency || "monthly";
+      const parentBill = activeBills.find((b) => String(b.id) === String(split.bill_id));
+      if (!parentBill) return sum;
+      const freq = parentBill.frequency || "monthly";
       const amount = split.amount || 0;
       return sum + convertAmount(amount, freq, "monthly");
     }, 0);
