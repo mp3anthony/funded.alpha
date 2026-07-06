@@ -44,6 +44,8 @@ export default function SettingsClient() {
     joinCode,
     codeExpiresAt,
     regenerateJoinCode,
+    notificationSettings,
+    updateNotificationSettings,
   } = useApp();
   const currentUser = useCurrentUser();
 
@@ -89,9 +91,6 @@ export default function SettingsClient() {
       setEmail(session.user.email || "");
     }
   }, [currentMember, session]);
-
-  /* Preferences */
-  const [pushNotifications, setPushNotifications] = useState(true);
 
   /* Invite, Edit, and Remove member modals */
   const [showInvite, setShowInvite] = useState(false);
@@ -238,8 +237,8 @@ export default function SettingsClient() {
             </div>
             <div className="relative shrink-0">
               <select
-                value={pushNotifications ? "enabled" : "disabled"}
-                onChange={(e) => setPushNotifications(e.target.value === "enabled")}
+                value={notificationSettings?.all_enabled ? "enabled" : "disabled"}
+                onChange={(e) => updateNotificationSettings({ all_enabled: e.target.value === "enabled" })}
                 className="rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-bold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-8 uppercase tracking-wider"
               >
                 <option value="enabled">Enabled</option>

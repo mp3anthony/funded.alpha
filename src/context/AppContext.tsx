@@ -111,6 +111,28 @@ export interface BillSplit {
   is_assignee?: boolean;
 }
 
+export interface NotificationSettings {
+  id?: string;
+  user_id?: string;
+  all_enabled: boolean;
+  manual_bill_reminders: boolean;
+  lodge_payment_reminders: boolean;
+  auto_pay_reminders: boolean;
+  manual_bill_reminder_days: number;
+  auto_pay_reminder_days: number;
+}
+
+export interface Notification {
+  id: string;
+  user_id: string;
+  type: string;
+  title: string;
+  message: string;
+  is_read: boolean;
+  related_entity_id?: string | null;
+  created_at: string;
+}
+
 /* ═══════════════════════════════════════════════
    Initial Mock Data (Retained for reference)
    ═══════════════════════════════════════════════ */
@@ -573,6 +595,12 @@ interface AppContextValue {
   isAuthLoading: boolean;
   isDataLoading: boolean;
 
+  /* Notifications */
+  notifications: Notification[];
+  notificationSettings: NotificationSettings | null;
+  markNotificationRead: (id: string) => Promise<void>;
+  updateNotificationSettings: (settings: Partial<NotificationSettings>) => Promise<void>;
+
   /* Theme */
   theme: "light" | "dark" | "system";
   setTheme: (theme: "light" | "dark" | "system") => void;
@@ -717,6 +745,8 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
   const [payHistory, setPayHistory] = useState<PayHistory[]>([]);
   const [householdContributions, setHouseholdContributions] = useState<HouseholdContribution[]>([]);
   const [contributionRules, setContributionRules] = useState<ContributionRule[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notificationSettings, setNotificationSettings] = useState<NotificationSettings | null>(null);
 
   /* ── Sync/Load Data ─────────────────────────── */
   // Only load data AFTER auth has resolved and we have a valid session.
@@ -805,7 +835,8 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
       await Promise.all([
         fetchPayData(household.id),
         fetchHouseholdContributions(household.id),
-        fetchContributionRules(household.id)
+        fetchContributionRules(household.id),
+        fetchNotifications(session.user.id, household.id)
       ]);
     } catch (err) {
       console.error('[loadData] Failed loading all household data:', err);
@@ -2687,6 +2718,162 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
     }
   }
 
+  /* ── Notifications ─────────────────────────── */
+  async function fetchNotifications(userId: string, householdId: string) {
+    try {
+      const [notifsRes, settingsRes] = await Promise.all([
+        supabase.from('notifications').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+        supabase.from('notification_settings').select('*').eq('user_id', userId).maybeSingle()
+      ]);
+
+      if (notifsRes.data) setNotifications(notifsRes.data);
+      if (settingsRes.data) {
+        setNotificationSettings(settingsRes.data);
+      } else {
+        // Create default settings if none exist
+        const defaultSettings = {
+          user_id: userId,
+          all_enabled: true,
+          manual_bill_reminders: true,
+          lodge_payment_reminders: true,
+          auto_pay_reminders: true,
+          manual_bill_reminder_days: 3,
+          auto_pay_reminder_days: 1
+        };
+        const { data: newSettings } = await supabase.from('notification_settings').insert(defaultSettings).select().single();
+        if (newSettings) setNotificationSettings(newSettings);
+      }
+    } catch (err) {
+      console.error("Failed to fetch notifications:", err);
+    }
+  }
+
+  async function markNotificationRead(id: string) {
+    if (!session?.user) return;
+    try {
+      const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', id).eq('user_id', session.user.id);
+      if (!error) {
+        setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+      }
+    } catch (err) {
+      console.error("Failed to mark notification read:", err);
+    }
+  }
+
+  async function updateNotificationSettings(settings: Partial<NotificationSettings>) {
+    if (!session?.user || !notificationSettings) return;
+    try {
+      const { data: updated, error } = await supabase
+        .from('notification_settings')
+        .update(settings)
+        .eq('user_id', session.user.id)
+        .select()
+        .single();
+        
+      if (!error && updated) {
+        setNotificationSettings(updated);
+      }
+    } catch (err) {
+      console.error("Failed to update notification settings:", err);
+    }
+  }
+
+  // Client-side notification generation
+  useEffect(() => {
+    if (!session?.user || !notificationSettings || !notificationSettings.all_enabled || isDataLoading) return;
+    
+    const generateClientNotifications = async () => {
+      const newNotifications: any[] = [];
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // Check Manual Bills
+      if (notificationSettings.manual_bill_reminders) {
+        for (const bill of bills) {
+          if (bill.payment_type !== 'auto' && bill.status !== 'Paid') {
+            const dueDate = new Date(bill.due_date + "T00:00:00");
+            const diffTime = dueDate.getTime() - today.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays >= 0 && diffDays <= (notificationSettings.manual_bill_reminder_days || 3)) {
+              // Check if ANY notification already exists for this entity to avoid duplicates
+              const exists = notifications.some(n => n.related_entity_id === bill.id?.toString() && n.type === 'manual_bill');
+              if (!exists) {
+                newNotifications.push({
+                  user_id: session.user.id,
+                  household_id: dbHouseholdId,
+                  type: 'manual_bill',
+                  title: 'Manual Bill Due Soon',
+                  message: `Your bill for ${bill.name} is due in ${diffDays} days.`,
+                  related_entity_id: bill.id?.toString()
+                });
+              }
+            }
+          }
+        }
+      }
+
+      // Check Auto-Pay Bills
+      if (notificationSettings.auto_pay_reminders) {
+        for (const bill of bills) {
+          if (bill.payment_type === 'auto' && bill.status !== 'Paid') {
+            const dueDate = new Date(bill.due_date + "T00:00:00");
+            const diffTime = dueDate.getTime() - today.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays <= (notificationSettings.auto_pay_reminder_days || 1)) {
+              const exists = notifications.some(n => n.related_entity_id === bill.id?.toString() && n.type === 'auto_pay');
+              if (!exists) {
+                const message = diffDays < 0 
+                  ? `Your auto-paid bill ${bill.name} was due on ${bill.dueDate}. Ensure it was paid.`
+                  : `Your auto-paid bill ${bill.name} will be processed in ${diffDays} days.`;
+                newNotifications.push({
+                  user_id: session.user.id,
+                  household_id: dbHouseholdId,
+                  type: 'auto_pay',
+                  title: diffDays < 0 ? 'Auto-Pay Bill Passed' : 'Auto-Pay Upcoming',
+                  message,
+                  related_entity_id: bill.id?.toString()
+                });
+              }
+            }
+          }
+        }
+      }
+
+      // Check Lodge Payment
+      if (notificationSettings.lodge_payment_reminders) {
+         const currentMember = members.find(m => m.user_id === session.user.id);
+         if (currentMember) {
+           for (const hist of payHistory) {
+             if (hist.status === 'pending' && hist.member_id === currentMember.id.toString()) {
+                const exists = notifications.some(n => n.related_entity_id === hist.id && n.type === 'lodge_payment');
+                if (!exists) {
+                  newNotifications.push({
+                    user_id: session.user.id,
+                    household_id: dbHouseholdId,
+                    type: 'lodge_payment',
+                    title: 'Payment Requires Confirmation',
+                    message: `You have an unconfirmed payment logged on ${hist.pay_date}.`,
+                    related_entity_id: hist.id
+                  });
+                }
+             }
+           }
+         }
+      }
+
+      if (newNotifications.length > 0) {
+        const { data, error } = await supabase.from('notifications').insert(newNotifications).select();
+        if (!error && data) {
+           setNotifications(prev => [...data, ...prev].sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+        }
+      }
+    };
+
+    generateClientNotifications();
+  }, [bills, payHistory, notificationSettings, isDataLoading, session, dbHouseholdId, members, notifications]);
+
   const sortedMembers = [...members].sort((a, b) => a.name.localeCompare(b.name));
 
   /* ── Value ─────────────────────────────────── */
@@ -2754,6 +2941,10 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
     toggleRuleActive,
     checkAndApplyRules,
     applyRuleAllocation,
+    notifications,
+    notificationSettings,
+    markNotificationRead,
+    updateNotificationSettings,
     session,
     isAuthLoading,
     isDataLoading,
