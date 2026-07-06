@@ -26,16 +26,13 @@ export default function Logo({ size = "medium", showWordmark = false }: LogoProp
   if (showWordmark) {
     return (
       <div 
-        className="flex items-center select-none shrink-0 transition-transform duration-200 hover:scale-[1.03] rounded-lg p-1 border border-black/20 dark:border-black/0"
-        style={{ width: wordmarkWidth + 8, height: wordmarkHeight + 8 }}
+        className="flex items-center select-none shrink-0 transition-transform duration-200 hover:scale-[1.03]"
+        style={{ width: wordmarkWidth, height: wordmarkHeight }}
       >
-        <img
-          src="/logo-wordmark.svg?v=3"
-          alt="Funded"
-          width={wordmarkWidth}
-          height={wordmarkHeight}
-          className="object-contain w-full h-full"
-        />
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 156 50" className="w-full h-full text-primary fill-current">
+          <text x="0" y="40" fill="currentColor" fontFamily="system-ui, -apple-system, sans-serif" fontWeight="bold" fontSize="40">funded</text>
+          <circle cx="148" cy="35" r="4.5" fill="currentColor" />
+        </svg>
       </div>
     );
   }
