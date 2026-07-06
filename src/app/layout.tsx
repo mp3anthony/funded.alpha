@@ -103,7 +103,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased">
+    <html lang="en" className="h-full antialiased bg-black">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover" />
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png?v=2" />
@@ -111,7 +111,7 @@ export default function RootLayout({
         <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512x512.png?v=2" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="theme-color" content="#c8ff00" />
+        <meta name="theme-color" content="#000000" />
         <script
           dangerouslySetInnerHTML={{
             __html: `

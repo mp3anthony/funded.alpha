@@ -18,7 +18,7 @@ export default function BottomNav() {
     <nav className="z-50 w-full shrink-0 border-t border-white/10 bg-black backdrop-blur-lg">
       <div 
         className="mx-auto flex max-w-md items-center justify-around px-4 pt-2"
-        style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))' }}
+        style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
       >
         {navItems.map((item) => {
           const Icon = item.icon;
