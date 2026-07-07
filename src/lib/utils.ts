@@ -48,7 +48,7 @@ export function adjustAutopayBillDate(dueDateStr: string, frequency: string, pay
       limit++;
       if (freq === "weekly") {
         tempDate.setDate(tempDate.getDate() + 7);
-      } else if (freq === "by-weekly" || freq === "by-weekly" || freq === "by-weekly" || freq === "by-weekly") {
+      } else if (freq === "fortnightly" || freq === "fortnightly" || freq === "fortnightly" || freq === "fortnightly") {
         tempDate.setDate(tempDate.getDate() + 14);
       } else if (freq === "monthly") {
         tempDate.setMonth(tempDate.getMonth() + 1);
@@ -208,7 +208,7 @@ export function getRelativeTime(dateStr: string): string {
 }
 
 /**
- * Converts a dollar amount from one billing frequency (weekly, by-weekly, monthly, yearly) to another.
+ * Converts a dollar amount from one billing frequency (weekly, fortnightly, monthly, yearly) to another.
  * Uses budgeting coefficients: 4.33 weeks per month, 2.16 by-weeks per month.
  */
 export function convertAmount(amount: number, fromFrequency: string, toFrequency: string): number {
@@ -225,8 +225,8 @@ export function convertAmount(amount: number, fromFrequency: string, toFrequency
     case "weekly":
       monthly = amount * 4.33;
       break;
-    case "by-weekly":
-    case "by-weekly":
+    case "fortnightly":
+    case "fortnightly":
       monthly = amount * 2.16;
       break;
     case "monthly":
@@ -243,8 +243,8 @@ export function convertAmount(amount: number, fromFrequency: string, toFrequency
   switch (to) {
     case "weekly":
       return monthly / 4.33;
-    case "by-weekly":
-    case "by-weekly":
+    case "fortnightly":
+    case "fortnightly":
       return monthly / 2.16;
     case "monthly":
       return monthly;

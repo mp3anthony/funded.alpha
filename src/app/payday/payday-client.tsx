@@ -245,7 +245,7 @@ export default function PaydayClient() {
                     {/* Meta info */}
                     <div className="flex items-center justify-between gap-2 flex-wrap text-xs text-muted font-mono pt-1">
                       <div className="flex items-center gap-1.5 uppercase min-w-0">
-                        <span className="truncate">{schedule.frequency === 'by-weekly' ? 'fortnightly' : schedule.frequency}</span>
+                        <span className="truncate">{schedule.frequency === 'fortnightly' ? 'fortnightly' : schedule.frequency}</span>
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
                         <Calendar size={12} className="shrink-0" />

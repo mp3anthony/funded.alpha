@@ -8,10 +8,6 @@ import Onboarding from "@/components/Onboarding";
 import Logo from "./Logo";
 import AvatarDropdown from "./AvatarDropdown";
 import NotificationCenter from "./NotificationCenter";
-import { Bell } from "lucide-react";
-
-// NOTE: AvatarDropdown was moved here from PageHeader so it can float
-// as a fixed-position element that stays visible during scrolling.
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const [isMounted, setIsMounted] = useState(false);
@@ -30,9 +26,6 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
   const pathname = usePathname();
   const currentUser = useCurrentUser();
   const [isNotificationCenterOpen, setIsNotificationCenterOpen] = useState(false);
-  const unreadCount = notifications ? notifications.filter(n => !n.is_read).length : 0;
-
-  // Skip auth guards on the login and email confirmation pages
   const isLoginPage = pathname === "/login";
   const isConfirmEmailPage = pathname === "/confirm-email";
   const isResetPasswordPage = pathname?.startsWith("/reset-password");
@@ -113,18 +106,6 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
       {/* Floating Avatar — fixed position, always visible when authenticated */}
       {!isLoading && currentUser && (
         <div className="floating-avatar flex items-center gap-4">
-          <button
-            onClick={() => setIsNotificationCenterOpen(true)}
-            className="relative h-10 w-10 rounded-xl bg-surface-elevated/80 backdrop-blur border border-border flex items-center justify-center text-foreground hover:bg-surface-elevated transition-colors shadow-lg"
-            aria-label="Notifications"
-          >
-            <Bell size={20} />
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white shadow-sm ring-2 ring-background">
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
-            )}
-          </button>
           <AvatarDropdown user={currentUser} />
         </div>
       )}
@@ -150,11 +131,6 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
 
       {/* Bottom Nav */}
       {(!isLoading || session) && <BottomNav />}
-
-      <NotificationCenter 
-        isOpen={isNotificationCenterOpen} 
-        onClose={() => setIsNotificationCenterOpen(false)} 
-      />
     </div>
   );
 }

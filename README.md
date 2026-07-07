@@ -30,7 +30,7 @@ Funded is a household cash-flow app that answers one question per payday: *how m
 ## Features
 
 - **Payday transfers** — enter income per contributor and the app calculates exact weekly transfer amounts to cover household bills in full
-- **Bill tracking** — manage bills across any frequency (weekly, bi-weekly, monthly, yearly) with paid/due-soon/overdue status tracking
+- **Bill tracking** — manage bills across any frequency (weekly, fortnightly, monthly, yearly) with paid/due-soon/overdue status tracking
 - **Frequency normalisation** — all bills convert to a common frequency for apples-to-apples comparison
 - **Savings goals** — sinking funds with targets, progress tracking, and manual top-ups
 - **Contribution rules** — define rules that auto-allocate surplus income above a threshold to goals or increased contributions
@@ -290,7 +290,7 @@ All colours are defined as CSS custom properties in `globals.css` and mapped int
 
 ### Frequency conversion
 
-`convertAmount(amount, fromFrequency, toFrequency)` normalises any amount between `weekly`, `bi-weekly`, `monthly`, and `yearly` using standard budgeting coefficients (4.33 weeks/month, 2.16 bi-weeks/month).
+`convertAmount(amount, fromFrequency, toFrequency)` normalises any amount between `weekly`, `fortnightly`, `monthly`, and `yearly` using standard budgeting coefficients (4.33 weeks/month, 2.16 bi-weeks/month).
 
 ### Health score
 

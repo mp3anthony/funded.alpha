@@ -61,7 +61,7 @@ export interface PaySchedule {
   household_id: string;
   member_id: string;
   amount: number | null;
-  frequency: "weekly" | "by-weekly" | "monthly";
+  frequency: "weekly" | "fortnightly" | "monthly";
   is_fixed_amount: boolean;
   next_pay_date: string; // YYYY-MM-DD
   created_at: string;
@@ -556,7 +556,7 @@ interface AppContextValue {
   /* Household Contributions */
   householdContributions: HouseholdContribution[];
   fetchHouseholdContributions: (householdId?: string) => Promise<void>;
-  setContribution: (memberId: string, amount: number, frequency: "weekly" | "by-weekly" | "monthly") => Promise<void>;
+  setContribution: (memberId: string, amount: number, frequency: "weekly" | "fortnightly" | "monthly") => Promise<void>;
   deleteContribution: (id: string) => Promise<void>;
 
   /* Contribution Rules */
@@ -1310,7 +1310,7 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
         if (!isNaN(d.getTime())) {
           const freq = (bill.frequency || "monthly").toLowerCase();
           if (freq === "weekly") d.setDate(d.getDate() + 7);
-          else if (freq === "by-weekly" || freq === "fortnightly") d.setDate(d.getDate() + 14);
+          else if (freq === "fortnightly" || freq === "fortnightly") d.setDate(d.getDate() + 14);
           else if (freq === "yearly") d.setFullYear(d.getFullYear() + 1);
           else d.setMonth(d.getMonth() + 1); // default monthly
 
@@ -2236,7 +2236,7 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
       const currentDate = new Date(schedule.next_pay_date + "T00:00:00");
       if (schedule.frequency === "weekly") {
         currentDate.setDate(currentDate.getDate() + 7);
-      } else if (schedule.frequency === "by-weekly" || schedule.frequency === "by-weekly" as any) {
+      } else if (schedule.frequency === "fortnightly" || schedule.frequency === "fortnightly" as any) {
         currentDate.setDate(currentDate.getDate() + 14);
       } else if (schedule.frequency === "monthly") {
         currentDate.setMonth(currentDate.getMonth() + 1);
@@ -2365,7 +2365,7 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
           // Advance tempDate
           if (schedule.frequency === "weekly") {
             tempDate.setDate(tempDate.getDate() + 7);
-          } else if (schedule.frequency === "by-weekly" || schedule.frequency === "by-weekly" as any) {
+          } else if (schedule.frequency === "fortnightly" || schedule.frequency === "fortnightly" as any) {
             tempDate.setDate(tempDate.getDate() + 14);
           } else if (schedule.frequency === "monthly") {
             tempDate.setMonth(tempDate.getMonth() + 1);
@@ -2478,7 +2478,7 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
     }
   }
 
-  async function setContribution(memberId: string, amount: number, frequency: "weekly" | "by-weekly" | "monthly") {
+  async function setContribution(memberId: string, amount: number, frequency: "weekly" | "fortnightly" | "monthly") {
     try {
       const hId = await ensureHousehold();
 

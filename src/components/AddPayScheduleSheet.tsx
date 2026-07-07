@@ -19,7 +19,7 @@ export default function AddPayScheduleSheet({
   const currentUser = useCurrentUser();
 
   const [memberId, setMemberId] = useState("");
-  const [frequency, setFrequency] = useState<"weekly" | "by-weekly" | "monthly">("monthly");
+  const [frequency, setFrequency] = useState<"weekly" | "fortnightly" | "monthly">("monthly");
   const [isFixedAmount, setIsFixedAmount] = useState(true);
   const [amount, setAmount] = useState("");
   const [nextPayDate, setNextPayDate] = useState("");
@@ -169,11 +169,11 @@ export default function AddPayScheduleSheet({
             <div className="relative">
               <select
                 value={frequency}
-                onChange={(e) => setFrequency(e.target.value as "weekly" | "by-weekly" | "monthly")}
+                onChange={(e) => setFrequency(e.target.value as "weekly" | "fortnightly" | "monthly")}
                 className="w-full rounded-xl border border-border bg-background px-4 py-2.5 md:py-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 appearance-none transition-all cursor-pointer pr-10"
               >
                 <option value="weekly">Weekly</option>
-                <option value="by-weekly">Fortnightly</option>
+                <option value="fortnightly">Fortnightly</option>
                 <option value="monthly">Monthly</option>
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-muted">

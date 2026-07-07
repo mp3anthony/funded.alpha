@@ -114,7 +114,7 @@ export default function PayScheduleDetailSheet({
                 <span>{memberName}</span>
               </h3>
               <span className="shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-heading font-bold uppercase tracking-wider bg-white/5 text-muted border border-border">
-                {paySchedule.frequency === 'by-weekly' ? 'fortnightly' : paySchedule.frequency}
+                {paySchedule.frequency === 'fortnightly' ? 'fortnightly' : paySchedule.frequency}
               </span>
             </div>
             <div className="flex items-baseline mt-2 text-2xl font-heading font-extrabold text-foreground">

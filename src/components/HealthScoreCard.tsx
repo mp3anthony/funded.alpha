@@ -87,6 +87,22 @@ export const HealthScoreCard = React.memo(function HealthScoreCard() {
     return `${isNegative ? "-" : ""}$${formatted}`;
   };
 
+  // 4. Calculate Visible Members
+  const visibleMembers = useMemo(() => {
+    if (!members) return [];
+    
+    return members.filter(member => {
+      if (isJointFund) {
+        const contribution = householdContributions.find(c => String(c.member_id) === String(member.id));
+        return contribution && contribution.amount > 0;
+      } else {
+        const hasPaySchedule = paySchedules.some(ps => String(ps.member_id) === String(member.id) && (ps.amount || 0) > 0);
+        const hasBillSplit = billSplits.some(bs => String(bs.member_id) === String(member.id) && (bs.amount || 0) > 0);
+        return hasPaySchedule || hasBillSplit;
+      }
+    });
+  }, [members, isJointFund, householdContributions, paySchedules, billSplits]);
+
   return (
     <div className="bg-surface border border-border rounded-[28px] p-6 flex flex-col gap-7 shadow-xl relative overflow-hidden">
       {/* Top Header */}
@@ -140,8 +156,8 @@ export const HealthScoreCard = React.memo(function HealthScoreCard() {
       </div>
       )}
 
-      {/* Contributors Row (Only if Joint Fund) */}
-      {isJointFund && members && members.length > 0 && (
+      {/* Contributors Row */}
+      {visibleMembers.length > 0 && (
         <div className="relative z-10 pt-1 flex flex-col space-y-4">
           <button 
             onClick={() => setIsContributorsExpanded(prev => !prev)}
@@ -152,9 +168,48 @@ export const HealthScoreCard = React.memo(function HealthScoreCard() {
           </button>
           {isContributorsExpanded && (
           <div className="grid grid-cols-2 gap-3 sm:gap-4">
-            {members.map(member => {
-              const contribution = householdContributions.find(c => String(c.member_id) === String(member.id));
-              const weeklyAmount = contribution ? convertAmount(contribution.amount, contribution.frequency, 'weekly') : 0;
+            {visibleMembers.map(member => {
+              let weeklyAmount = 0;
+              let detailText1 = "";
+              let detailText2 = "";
+
+              if (isJointFund) {
+                const contribution = householdContributions.find(c => String(c.member_id) === String(member.id));
+                if (contribution) {
+                  weeklyAmount = convertAmount(contribution.amount, contribution.frequency, 'weekly');
+                  detailText1 = formatCurrency(contribution.amount);
+                  detailText2 = contribution.frequency.replace("fortnightly", "fortnightly");
+                }
+              } else {
+                // Direct Pay
+                const memberPaySchedules = paySchedules.filter(ps => String(ps.member_id) === String(member.id));
+                const memberBillSplits = billSplits.filter(bs => String(bs.member_id) === String(member.id));
+                
+                if (memberPaySchedules.length > 0) {
+                  weeklyAmount = memberPaySchedules.reduce((sum, schedule) => {
+                    let amount = schedule.amount || 0;
+                    if (!schedule.is_fixed_amount) {
+                      const historyItems = payHistory.filter(h => h.pay_schedule_id === schedule.id);
+                      if (historyItems.length > 0) {
+                        historyItems.sort((a, b) => new Date(b.pay_date).getTime() - new Date(a.pay_date).getTime());
+                        amount = historyItems[0].amount;
+                      }
+                    }
+                    return sum + convertAmount(amount, schedule.frequency, "weekly");
+                  }, 0);
+                  
+                  detailText1 = `${memberPaySchedules.length} Income`;
+                  detailText2 = memberPaySchedules.length === 1 ? "Source" : "Sources";
+                } else if (memberBillSplits.length > 0) {
+                  weeklyAmount = memberBillSplits.reduce((sum, split) => {
+                    const bill = bills.find(b => b.id === split.bill_id);
+                    if (!bill || bill.is_paused) return sum;
+                    return sum + convertAmount(split.amount, bill.frequency || "monthly", "weekly");
+                  }, 0);
+                  detailText1 = `${memberBillSplits.length} Bill`;
+                  detailText2 = memberBillSplits.length === 1 ? "Split" : "Splits";
+                }
+              }
               
               return (
                 <div key={member.id} className="bg-surface-raised rounded-[20px] p-3 sm:p-4 flex items-center gap-3 transition-colors hover:bg-surface-elevated overflow-hidden">
@@ -171,25 +226,14 @@ export const HealthScoreCard = React.memo(function HealthScoreCard() {
                       <span className="font-mono font-bold text-[15px] sm:text-[18px] text-primary truncate">{formatCurrency(weeklyAmount)}</span>
                       <span className="font-mono text-[9px] sm:text-[10px] text-muted/80">/wk</span>
                     </div>
-                    {contribution ? (
-                      <div className="flex flex-col mt-0.5">
-                        <span className="font-mono text-[9px] sm:text-[10px] text-muted/60 leading-tight">
-                          {formatCurrency(contribution.amount)}
-                        </span>
-                        <span className="font-mono text-[9px] sm:text-[10px] text-muted/60 leading-tight">
-                          {contribution.frequency.replace("by-weekly", "by-weekly")}
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col mt-0.5">
-                        <span className="font-mono text-[9px] sm:text-[10px] text-muted/60 leading-tight">
-                          No contribution
-                        </span>
-                        <span className="font-mono text-[9px] sm:text-[10px] text-muted/60 leading-tight">
-                          set
-                        </span>
-                      </div>
-                    )}
+                    <div className="flex flex-col mt-0.5">
+                      <span className="font-mono text-[9px] sm:text-[10px] text-muted/60 leading-tight">
+                        {detailText1}
+                      </span>
+                      <span className="font-mono text-[9px] sm:text-[10px] text-muted/60 leading-tight">
+                        {detailText2}
+                      </span>
+                    </div>
                   </div>
                 </div>
               );

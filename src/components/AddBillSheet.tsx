@@ -245,7 +245,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
                 className="w-full rounded-xl border border-border bg-background px-4 py-2.5 md:py-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 appearance-none transition-all cursor-pointer pr-10"
               >
                 <option value="weekly">Weekly</option>
-                <option value="by-weekly">Fortnightly</option>
+                <option value="fortnightly">Fortnightly</option>
                 <option value="monthly">Monthly</option>
                 <option value="yearly">Yearly</option>
               </select>

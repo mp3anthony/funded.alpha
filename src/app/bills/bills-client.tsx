@@ -10,7 +10,7 @@ import PageHeader from "@/components/PageHeader";
 import FrequencyToggle from "@/components/FrequencyToggle";
 import { convertAmount } from "@/lib/utils";
 
-type FrequencyType = "weekly" | "by-weekly" | "monthly" | "yearly";
+type FrequencyType = "weekly" | "fortnightly" | "monthly" | "yearly";
 
 export default function BillsClient() {
   const { bills, billSplits, members: householdMembers } = useApp();
@@ -47,7 +47,7 @@ export default function BillsClient() {
   const getFrequencyLabel = (freq: FrequencyType) => {
     switch (freq) {
       case "weekly": return "Weekly";
-      case "by-weekly": return "Fortnightly";
+      case "fortnightly": return "Fortnightly";
       case "monthly": return "Monthly";
       case "yearly": return "Yearly";
       default: return "Weekly";
@@ -220,7 +220,7 @@ export default function BillsClient() {
                 className="w-full rounded-xl border border-border bg-background px-2 py-2 text-[10px] font-semibold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-6"
               >
                 <option value="weekly">Weekly</option>
-                <option value="by-weekly">Fortnightly</option>
+                <option value="fortnightly">Fortnightly</option>
                 <option value="monthly">Monthly</option>
                 <option value="yearly">Yearly</option>
               </select>

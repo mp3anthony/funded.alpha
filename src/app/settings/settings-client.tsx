@@ -23,6 +23,7 @@ import AvatarUpload from "@/components/AvatarUpload";
 import RemoveMemberModal from "@/components/RemoveMemberModal";
 import EditMemberModal from "@/components/EditMemberModal";
 import JoinHouseholdSheet from "@/components/JoinHouseholdSheet";
+import NotificationCenter from "@/components/NotificationCenter";
 import { type Member } from "@/types";
 
 /* ── Page Component ──────────────────────────── */
@@ -54,6 +55,7 @@ export default function SettingsClient() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [isContributionOpen, setIsContributionOpen] = useState(false);
   const [isRulesOpen, setIsRulesOpen] = useState(false);
+  const [isNotificationCenterOpen, setIsNotificationCenterOpen] = useState(false);
 
   /* Contribution Totals */
   const contributionWeekly = householdContributions
@@ -61,7 +63,7 @@ export default function SettingsClient() {
     .reduce((sum, c) => sum + Number(c.amount), 0);
 
   const contributionByWeekly = householdContributions
-    .filter((c) => c.frequency === "by-weekly")
+    .filter((c) => c.frequency === "fortnightly")
     .reduce((sum, c) => sum + Number(c.amount), 0);
 
   const contributionMonthly = householdContributions
@@ -220,7 +222,7 @@ export default function SettingsClient() {
         </h2>
 
         <div className="bg-surface border border-border rounded-2xl shadow-sm overflow-hidden divide-y divide-border">
-          {/* Push Notifications */}
+          {/* Notifications */}
           <div className="p-4 sm:p-5 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="flex h-10 w-10 rounded-xl bg-accent/10 text-accent items-center justify-center shrink-0">
@@ -228,28 +230,19 @@ export default function SettingsClient() {
               </div>
               <div>
                 <h4 className="text-sm sm:text-base font-bold text-foreground">
-                  Push Notifications
+                  Notifications
                 </h4>
                 <p className="text-xs text-muted mt-0.5">
-                  Get alerts for payday, upcoming bills, and low balances.
+                  View your inbox and manage alert preferences.
                 </p>
               </div>
             </div>
-            <div className="relative shrink-0">
-              <select
-                value={notificationSettings?.all_enabled ? "enabled" : "disabled"}
-                onChange={(e) => updateNotificationSettings({ all_enabled: e.target.value === "enabled" })}
-                className="rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-bold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-8 uppercase tracking-wider"
-              >
-                <option value="enabled">Enabled</option>
-                <option value="disabled">Disabled</option>
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-muted">
-                <svg className="h-3 w-3 fill-current" viewBox="0 0 20 20">
-                  <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                </svg>
-              </div>
-            </div>
+            <button
+              onClick={() => setIsNotificationCenterOpen(true)}
+              className="px-4 py-2 bg-surface-raised border border-border rounded-xl text-xs font-bold text-foreground hover:bg-white/5 transition-colors cursor-pointer whitespace-nowrap shrink-0"
+            >
+              Open Notifications
+            </button>
           </div>
 
           {/* App Theme Mode Toggle */}
@@ -293,158 +286,160 @@ export default function SettingsClient() {
           Household Settings
         </h2>
 
-        <div className="bg-surface border border-border rounded-2xl shadow-sm p-5 sm:p-6 space-y-6">
-          <PaymentModeToggle
-            currentMode={tempMode !== null ? tempMode : isJointFund}
-            onModeChange={handleModeChangeClick}
-          />
+        <div className="bg-surface border border-border rounded-2xl shadow-sm p-5 sm:p-6 space-y-8">
+          
+          {/* Payment Mode & Contributions */}
+          <div className="space-y-6">
+            <PaymentModeToggle
+              currentMode={tempMode !== null ? tempMode : isJointFund}
+              onModeChange={handleModeChangeClick}
+            />
 
-          {isJointFund && (
-            <div className="border-t border-border pt-6 space-y-5">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <h4 className="text-sm font-bold text-foreground">
-                    Joint Fund Contributions
-                  </h4>
-                  <p className="text-xs text-muted">
-                    Configure how much each household member contributes per pay cycle.
-                  </p>
-                </div>
-                <button
-                  onClick={() => setIsContributionOpen(true)}
-                  className="px-4 py-2.5 bg-primary text-primary-fg text-xs font-bold rounded-xl shadow-md hover:brightness-110 active:scale-95 transition-all cursor-pointer font-heading uppercase tracking-wider shrink-0"
-                >
-                  Set Contributions
-                </button>
-              </div>
-
-              {/* Individual Contributions Display Tile */}
-              <div className="bg-surface border border-border rounded-2xl p-4 mt-4">
-                {!hasContributions ? (
-                  <p className="text-muted text-sm font-mono text-center py-2">
-                    No contributions set. Click &apos;Set Contributions&apos; to get started.
-                  </p>
-                ) : (
-                  <div className="divide-y divide-white/5">
-                    {householdContributions.map((contribution, idx) => {
-                      const member = members.find((m) => String(m.id) === String(contribution.member_id));
-                      const memberName = member ? member.name : "Unknown Member";
-                      const memberAvatar = member ? member.avatar : "?";
-
-                      return (
-                        <div
-                          key={contribution.id}
-                          className={`flex items-center justify-between py-3 ${
-                            idx > 0 ? "pt-3" : "pt-0"
-                          } ${idx < householdContributions.length - 1 ? "pb-3" : "pb-0"}`}
-                        >
-                          {/* Left: Avatar & Name */}
-                          <div className="flex items-center gap-3 min-w-0">
-                            <div className="h-8 w-8 rounded-xl overflow-hidden bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-foreground font-bold text-xs shadow-sm shrink-0">
-                              {member?.avatar_url ? (
-                                <img src={member.avatar_url} alt={memberName} className="h-full w-full object-cover" />
-                              ) : (
-                                memberAvatar
-                              )}
-                            </div>
-                            <span className="font-syne text-sm font-bold text-foreground truncate">
-                              {memberName}
-                            </span>
-                          </div>
-
-                          {/* Center: Contribution Amount */}
-                          <span className="font-jetbrains text-sm font-semibold text-foreground">
-                            ${Number(contribution.amount).toFixed(2)}
-                          </span>
-
-                          {/* Right: Selected Frequency highlighted in lime green */}
-                          <span className="text-primary text-xs font-bold uppercase tracking-wider font-mono">
-                            {contribution.frequency}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* Contribution Rules Section */}
+            {isJointFund && (
               <div className="border-t border-border pt-6 space-y-5">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="space-y-1">
                     <h4 className="text-sm font-bold text-foreground">
-                      Contribution Rules
+                      Joint Fund Contributions
                     </h4>
                     <p className="text-xs text-muted">
-                      Automatically allocate excess pay when you earn above a threshold.
+                      Configure how much each household member contributes per pay cycle.
                     </p>
                   </div>
                   <button
-                    onClick={() => setIsRulesOpen(true)}
+                    onClick={() => setIsContributionOpen(true)}
                     className="px-4 py-2.5 bg-primary text-primary-fg text-xs font-bold rounded-xl shadow-md hover:brightness-110 active:scale-95 transition-all cursor-pointer font-heading uppercase tracking-wider shrink-0"
                   >
-                    Manage Rules
+                    Set Contributions
                   </button>
                 </div>
 
-                {/* Rules Summary Tile */}
+                {/* Individual Contributions Display Tile */}
                 <div className="bg-surface border border-border rounded-2xl p-4 mt-4">
-                  {contributionRules.length === 0 ? (
-                    <p className="text-muted text-xs font-mono text-center py-2">
-                      No rules set. Click &apos;Manage Rules&apos; to automate excess pay allocation.
+                  {!hasContributions ? (
+                    <p className="text-muted text-sm font-mono text-center py-2">
+                      No contributions set. Click &apos;Set Contributions&apos; to get started.
                     </p>
                   ) : (
-                    <div className="space-y-3">
-                      <span className="text-[10px] font-bold text-primary uppercase tracking-wider block font-mono">
-                        {contributionRules.filter(r => r.is_active).length} Active Automation Rules
-                      </span>
-                      <div className="divide-y divide-white/5 font-mono text-[11px] text-muted">
-                        {contributionRules.map((rule, idx) => {
-                          const m = members.find((member) => String(member.id) === String(rule.member_id));
-                          const mName = m ? m.name : "Member";
-                          
-                          let targetName = "contribution";
-                          if (rule.action_type === "goal") {
-                            const goal = funds.find((g) => String(g.id) === String(rule.action_target_id));
-                            targetName = goal ? goal.name : "goal";
-                          }
+                    <div className="divide-y divide-white/5">
+                      {householdContributions.map((contribution, idx) => {
+                        const member = members.find((m) => String(m.id) === String(contribution.member_id));
+                        const memberName = member ? member.name : "Unknown Member";
+                        const memberAvatar = member ? member.avatar : "?";
 
-                          return (
-                            <div
-                              key={rule.id}
-                              className={`flex items-center justify-between py-2 ${
-                                idx > 0 ? "pt-2" : "pt-0"
-                              } ${idx < contributionRules.length - 1 ? "pb-2" : "pb-0"}`}
-                            >
-                              <span>
-                                When {mName}&apos;s pay &gt; ${rule.threshold_amount.toFixed(2)}
-                              </span>
-                              <span className={rule.is_active ? "text-primary font-bold" : "text-muted"}>
-                                Add {rule.amount_type === "percentage" ? `${rule.amount_to_add}% of surplus` : `$${rule.amount_to_add.toFixed(2)}`} to {targetName}
+                        return (
+                          <div
+                            key={contribution.id}
+                            className={`flex items-center justify-between py-3 ${
+                              idx > 0 ? "pt-3" : "pt-0"
+                            } ${idx < householdContributions.length - 1 ? "pb-3" : "pb-0"}`}
+                          >
+                            {/* Left: Avatar & Name */}
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="h-8 w-8 rounded-xl overflow-hidden bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-foreground font-bold text-xs shadow-sm shrink-0">
+                                {member?.avatar_url ? (
+                                  <img src={member.avatar_url} alt={memberName} className="h-full w-full object-cover" />
+                                ) : (
+                                  memberAvatar
+                                )}
+                              </div>
+                              <span className="font-syne text-sm font-bold text-foreground truncate">
+                                {memberName}
                               </span>
                             </div>
-                          );
-                        })}
-                      </div>
+
+                            {/* Center: Contribution Amount */}
+                            <span className="font-jetbrains text-sm font-semibold text-foreground">
+                              ${Number(contribution.amount).toFixed(2)}
+                            </span>
+
+                            {/* Right: Selected Frequency highlighted in lime green */}
+                            <span className="text-primary text-xs font-bold uppercase tracking-wider font-mono">
+                              {contribution.frequency}
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
 
-      {/* ── Household Join Code Section ────────────── */}
-      <section className="bg-surface border border-border rounded-2xl p-5 shadow-sm space-y-4">
-        <div className="space-y-1">
-          <h2 className="text-base font-bold text-foreground font-syne">
-            Household Join Code
-          </h2>
-          <p className="text-xs text-muted leading-relaxed font-sans">
-            Share this 6-digit code with other members of your household to invite them. The code expires in 24 hours.
-          </p>
-        </div>
+                {/* Contribution Rules Section */}
+                <div className="border-t border-border pt-6 space-y-5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <h4 className="text-sm font-bold text-foreground">
+                        Contribution Rules
+                      </h4>
+                      <p className="text-xs text-muted">
+                        Automatically allocate excess pay when you earn above a threshold.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setIsRulesOpen(true)}
+                      className="px-4 py-2.5 bg-primary text-primary-fg text-xs font-bold rounded-xl shadow-md hover:brightness-110 active:scale-95 transition-all cursor-pointer font-heading uppercase tracking-wider shrink-0"
+                    >
+                      Manage Rules
+                    </button>
+                  </div>
+
+                  {/* Rules Summary Tile */}
+                  <div className="bg-surface border border-border rounded-2xl p-4 mt-4">
+                    {contributionRules.length === 0 ? (
+                      <p className="text-muted text-xs font-mono text-center py-2">
+                        No rules set. Click &apos;Manage Rules&apos; to automate excess pay allocation.
+                      </p>
+                    ) : (
+                      <div className="space-y-3">
+                        <span className="text-[10px] font-bold text-primary uppercase tracking-wider block font-mono">
+                          {contributionRules.filter(r => r.is_active).length} Active Automation Rules
+                        </span>
+                        <div className="divide-y divide-white/5 font-mono text-[11px] text-muted">
+                          {contributionRules.map((rule, idx) => {
+                            const m = members.find((member) => String(member.id) === String(rule.member_id));
+                            const mName = m ? m.name : "Member";
+                            
+                            let targetName = "contribution";
+                            if (rule.action_type === "goal") {
+                              const goal = funds.find((g) => String(g.id) === String(rule.action_target_id));
+                              targetName = goal ? goal.name : "goal";
+                            }
+
+                            return (
+                              <div
+                                key={rule.id}
+                                className={`flex items-center justify-between py-2 ${
+                                  idx > 0 ? "pt-2" : "pt-0"
+                                } ${idx < contributionRules.length - 1 ? "pb-2" : "pb-0"}`}
+                              >
+                                <span>
+                                  When {mName}&apos;s pay &gt; ${rule.threshold_amount.toFixed(2)}
+                                </span>
+                                <span className={rule.is_active ? "text-primary font-bold" : "text-muted"}>
+                                  Add {rule.amount_type === "percentage" ? `${rule.amount_to_add}% of surplus` : `$${rule.amount_to_add.toFixed(2)}`} to {targetName}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Household Join Code Section */}
+          <div className="border-t border-border pt-8 space-y-4">
+            <div className="space-y-1">
+              <h3 className="text-sm font-bold text-foreground font-syne">
+                Household Join Code
+              </h3>
+              <p className="text-xs text-muted leading-relaxed font-sans">
+                Share this 6-digit code with other members of your household to invite them. The code expires in 24 hours.
+              </p>
+            </div>
 
         <div className="flex flex-col sm:flex-row items-center gap-3">
           <div className="flex-1 w-full bg-background border border-border rounded-xl px-4 py-3 flex items-center justify-between font-mono">
@@ -488,16 +483,15 @@ export default function SettingsClient() {
               Regenerate
             </button>
           </div>
-        </div>
-      </section>
-
-      {/* ── Household Members Section ────────────── */}
-      <section className="space-y-3">
-        <div className="flex items-center justify-between px-1">
-          <h2 className="text-base font-bold text-subtle uppercase tracking-wider">
-            Household Members
-          </h2>
-        </div>
+          </div>
+          </div>
+          {/* Household Members Section */}
+          <div className="border-t border-border pt-8 space-y-4">
+            <div className="space-y-1">
+              <h3 className="text-sm font-bold text-foreground font-syne">
+                Household Members
+              </h3>
+            </div>
 
         <div className="bg-surface border border-border rounded-2xl shadow-sm overflow-hidden divide-y divide-border font-sans">
           {members.length === 0 ? (
@@ -567,6 +561,8 @@ export default function SettingsClient() {
               );
             })
           )}
+        </div>
+        </div>
         </div>
       </section>
 
@@ -682,6 +678,12 @@ export default function SettingsClient() {
         rules={contributionRules}
         goals={funds}
         contributions={householdContributions}
+      />
+
+      {/* Notification Center */}
+      <NotificationCenter 
+        isOpen={isNotificationCenterOpen} 
+        onClose={() => setIsNotificationCenterOpen(false)} 
       />
 
       {/* Join Household Sheet */}
