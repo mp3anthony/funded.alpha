@@ -599,6 +599,8 @@ interface AppContextValue {
   notifications: Notification[];
   notificationSettings: NotificationSettings | null;
   markNotificationRead: (id: string) => Promise<void>;
+  deleteNotification: (id: string) => Promise<void>;
+  clearAllNotifications: () => Promise<void>;
   updateNotificationSettings: (settings: Partial<NotificationSettings>) => Promise<void>;
 
   /* Theme */
@@ -1334,6 +1336,15 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
         setBills((prev) =>
           prev.map((b) => (b.id === bill.id ? mapBillFromDb(data) : b))
         );
+
+        // Delete any notifications related to this bill
+        const { error: deleteNotifError } = await supabase
+          .from("notifications")
+          .delete()
+          .eq("related_entity_id", bill.id.toString());
+        if (!deleteNotifError) {
+          setNotifications((prev) => prev.filter((n) => n.related_entity_id !== bill.id.toString()));
+        }
       }
     } catch (err) {
       console.error("Failed to mark as paid:", err);
@@ -2760,6 +2771,67 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
     }
   }
 
+  async function deleteNotification(id: string) {
+    if (!session?.user) return;
+    const notif = notifications.find(n => n.id === id);
+    try {
+      const { error } = await supabase.from('notifications').delete().eq('id', id).eq('user_id', session.user.id);
+      if (!error) {
+        setNotifications(prev => prev.filter(n => n.id !== id));
+        if (notif && notif.related_entity_id) {
+          let clearedKey = '';
+          if (notif.type === 'manual_bill' || notif.type === 'auto_pay') {
+            const bill = bills.find(b => b.id.toString() === notif.related_entity_id);
+            const dueDate = bill ? (bill.due_date || bill.dueDate) : '';
+            clearedKey = `${notif.related_entity_id}-${dueDate}-${notif.type}`;
+          } else if (notif.type === 'lodge_payment') {
+            clearedKey = `${notif.related_entity_id}-lodge_payment`;
+          }
+          if (clearedKey && typeof window !== 'undefined') {
+            const currentCleared = JSON.parse(localStorage.getItem('cleared_notifications') || '[]');
+            if (!currentCleared.includes(clearedKey)) {
+              currentCleared.push(clearedKey);
+              localStorage.setItem('cleared_notifications', JSON.stringify(currentCleared));
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Failed to delete notification:", err);
+    }
+  }
+
+  async function clearAllNotifications() {
+    if (!session?.user) return;
+    try {
+      const { error } = await supabase.from('notifications').delete().eq('user_id', session.user.id);
+      if (!error) {
+        if (typeof window !== 'undefined') {
+          const currentCleared = JSON.parse(localStorage.getItem('cleared_notifications') || '[]');
+          notifications.forEach(notif => {
+            if (notif.related_entity_id) {
+              let clearedKey = '';
+              if (notif.type === 'manual_bill' || notif.type === 'auto_pay') {
+                const bill = bills.find(b => b.id.toString() === notif.related_entity_id);
+                const dueDate = bill ? (bill.due_date || bill.dueDate) : '';
+                clearedKey = `${notif.related_entity_id}-${dueDate}-${notif.type}`;
+              } else if (notif.type === 'lodge_payment') {
+                clearedKey = `${notif.related_entity_id}-lodge_payment`;
+              }
+              if (clearedKey && !currentCleared.includes(clearedKey)) {
+                currentCleared.push(clearedKey);
+              }
+            }
+          });
+          localStorage.setItem('cleared_notifications', JSON.stringify(currentCleared));
+        }
+        setNotifications([]);
+      }
+    } catch (err) {
+      console.error("Failed to clear all notifications:", err);
+    }
+  }
+
   async function updateNotificationSettings(settings: Partial<NotificationSettings>) {
     if (!session?.user || !notificationSettings) return;
     try {
@@ -2787,6 +2859,11 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
+      // Load cleared notification keys from local storage to avoid duplicates
+      const clearedKeys: string[] = typeof window !== 'undefined'
+        ? JSON.parse(localStorage.getItem('cleared_notifications') || '[]')
+        : [];
+
       // Check Manual Bills
       if (notificationSettings.manual_bill_reminders) {
         for (const bill of bills) {
@@ -2798,7 +2875,8 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
             if (diffDays >= 0 && diffDays <= (notificationSettings.manual_bill_reminder_days || 3)) {
               // Check if ANY notification already exists for this entity to avoid duplicates
               const exists = notifications.some(n => n.related_entity_id === bill.id?.toString() && n.type === 'manual_bill');
-              if (!exists) {
+              const clearedKey = `${bill.id}-${bill.due_date || bill.dueDate}-manual_bill`;
+              if (!exists && !clearedKeys.includes(clearedKey)) {
                 newNotifications.push({
                   user_id: session.user.id,
                   household_id: dbHouseholdId,
@@ -2823,15 +2901,16 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
 
             if (diffDays <= (notificationSettings.auto_pay_reminder_days || 1)) {
               const exists = notifications.some(n => n.related_entity_id === bill.id?.toString() && n.type === 'auto_pay');
-              if (!exists) {
-                const message = diffDays < 0 
-                  ? `Your auto-paid bill ${bill.name} was due on ${bill.dueDate}. Ensure it was paid.`
+              const clearedKey = `${bill.id}-${bill.due_date || bill.dueDate}-auto_pay`;
+              if (!exists && !clearedKeys.includes(clearedKey)) {
+                const message = diffDays <= 0 
+                  ? `Your automatic payment should now be paid.`
                   : `Your auto-paid bill ${bill.name} will be processed in ${diffDays} days.`;
                 newNotifications.push({
                   user_id: session.user.id,
                   household_id: dbHouseholdId,
                   type: 'auto_pay',
-                  title: diffDays < 0 ? 'Auto-Pay Bill Passed' : 'Auto-Pay Upcoming',
+                  title: diffDays <= 0 ? 'Auto-Pay Bill Passed' : 'Auto-Pay Upcoming',
                   message,
                   related_entity_id: bill.id?.toString()
                 });
@@ -2848,7 +2927,8 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
            for (const hist of payHistory) {
              if (hist.status === 'pending' && hist.member_id === currentMember.id.toString()) {
                 const exists = notifications.some(n => n.related_entity_id === hist.id && n.type === 'lodge_payment');
-                if (!exists) {
+                const clearedKey = `${hist.id}-lodge_payment`;
+                if (!exists && !clearedKeys.includes(clearedKey)) {
                   newNotifications.push({
                     user_id: session.user.id,
                     household_id: dbHouseholdId,
@@ -2944,6 +3024,8 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
     notifications,
     notificationSettings,
     markNotificationRead,
+    deleteNotification,
+    clearAllNotifications,
     updateNotificationSettings,
     session,
     isAuthLoading,

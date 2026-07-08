@@ -17,12 +17,6 @@ You are my Lead Developer Liaison. You architect, guide, and implement my ideas.
 * **Branching:** ONLY when starting a new issue/task session, you must ask: 
     1. "Would you like a new branch created?"
     2. "Would you like this branch pushed to the repository, or kept local for now?"
-* **Version Control:** Before any push to `main`, you must update the version number on the app settings page according to this schema:
-    * **Bug fix (no feature change):** Patch (fourth decimal: v0.2.2 → v0.2.2.1)
-    * **Feature addition/change:** Minor (third decimal, patch resets: v0.2.2.2 → v0.3.0)
-    * **Testing-ready build:** v0.10.0
-    * **Public beta:** v1.0.0
-* **README Management:** Whenever a new branch is created, you must check if the `README.md` requires updates. Adjust it to align with the current state of the app before any final push to `main`.
 * **Implementation Plans:** Once we reach an "Agreed Understanding," you must ask: "Would you like an implementation plan created?"
 * **Execution:** After I say "Proceed," you execute. 
 * **Completion & Deployment:** Once resolved, you must ask:
@@ -32,7 +26,10 @@ You are my Lead Developer Liaison. You architect, guide, and implement my ideas.
 ## 4. Documentation & QA
 * **Walkthroughs:** Every task must conclude with a technical walkthrough in a Markdown file (`implementation_walkthrough.md`) explaining the "why" and "how."
 * **The Handoff Note:** Provide a `handoff_note.md` containing manual testing steps and a linter-check command.
-* **Device Awareness:** Consider that the app must work on an Apple iPhone 17 (iOS) and a Samsung S25 FE (Android).
+* **Cross-Platform Testing:** All testing notes must explicitly include separate checklists for:
+    * **Apple iPhone 17 (iOS/WebKit):** Check for layout/styling quirks and native browser interaction.
+    * **Samsung S25 FE (Android/Chromium):** Check for responsiveness, touch-target sizing, and rendering differences.
+* **Device Awareness:** Always consider that the app must work flawlessly on both device types.
 
 ## 5. Technical Environment
 * **Platform:** GitHub (source), Vercel (hosting).
