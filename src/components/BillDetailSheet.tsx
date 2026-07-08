@@ -24,7 +24,7 @@ export default function BillDetailSheet({
   onEdit,
   onDelete,
 }: BillDetailSheetProps) {
-  const { isJointFund, markAsPaid, togglePauseBill } = useApp();
+  const { isJointFund, markAsPaid, markAsUnpaid, togglePauseBill } = useApp();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -226,7 +226,17 @@ export default function BillDetailSheet({
           style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1rem)" }}
           className="sticky bottom-0 z-10 border-t border-border bg-surface/95 px-6 pt-4 pb-4 backdrop-blur flex flex-col space-y-3 shrink-0"
         >
-          {bill.status !== "Paid" && (
+          {bill.status === "Paid" ? (
+            <button
+              onClick={() => {
+                markAsUnpaid(bill);
+                onClose();
+              }}
+              className="w-full rounded-xl py-3.5 bg-amber-500/20 text-amber-500 border border-amber-500/30 font-heading font-bold uppercase tracking-wider text-xs hover:bg-amber-500 hover:text-foreground transition-all active:scale-[0.98] cursor-pointer"
+            >
+              Mark as Unpaid
+            </button>
+          ) : (
             <button
               onClick={() => {
                 markAsPaid(bill);

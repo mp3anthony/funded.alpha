@@ -1,13 +1,9 @@
-# Technical Walkthrough: Square Avatars on Household Health Card
+# Technical Walkthrough: Removing Days Counter from Notification Settings
 
 ## Why
-The contributor avatars on the Household Health card were styled with `rounded-full` (circle format). To keep the visual style consistent with the rest of the application's square-avatar layout (e.g., settings page and member edit modals), the avatars on the Household Health card have been updated to a square format with rounded corners (`rounded-xl`).
+The days counter controls (incremental `+` and `-` buttons with day displays) on each toggle item in the Notification Settings tab were removed to simplify the user interface, reduce visual clutter, and streamline the layout.
 
 ## How
-In [HealthScoreCard.tsx](file:///d:/Documents/QuantumShift/Code/funded/funded%20rebuild/funded-nextjs/src/components/HealthScoreCard.tsx#L235), modified the avatar container wrapper's class from `rounded-full` to `rounded-xl`:
-
-```diff
--                  <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border-2 border-border-strong bg-surface">
-+                  <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 border-2 border-border-strong bg-surface">
-```
-This applies to both the profile images and the letter placeholders for contributors.
+1. **Modified component:** [NotificationCenter.tsx](file:///d:/Documents/QuantumShift/Code/funded/funded%20rebuild/funded-nextjs/src/components/NotificationCenter.tsx)
+   - Removed the unused `handleUpdateDays` helper function that updated the numerical settings for `manual_bill_reminder_days` and `auto_pay_reminder_days`.
+   - Removed the conditional rendering blocks for both `manual_bill_reminders` and `auto_pay_reminders` that rendered the days adjusters (the `+`/`-` buttons and `<span />` element).

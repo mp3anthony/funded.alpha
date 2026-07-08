@@ -5,6 +5,7 @@ import { useApp, type Bill, type BillSplit, type Member } from "@/context/AppCon
 import { convertAmount } from "@/lib/utils";
 import BillDetailSheet from "./BillDetailSheet";
 import AddBillSheet from "./AddBillSheet";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
 export interface BillCardProps {
   bill: Bill;
@@ -24,6 +25,30 @@ export default function BillCard({
   const { deleteBill } = useApp();
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const highlightBillId = searchParams ? searchParams.get("billId") : null;
+
+  const [prevHighlightId, setPrevHighlightId] = useState<string | null>(null);
+
+  if (highlightBillId !== prevHighlightId) {
+    setPrevHighlightId(highlightBillId);
+    if (highlightBillId && highlightBillId === bill.id.toString()) {
+      setIsDetailOpen(true);
+    }
+  }
+
+  const handleCloseDetail = () => {
+    setIsDetailOpen(false);
+    if (highlightBillId === bill.id.toString()) {
+      const params = new URLSearchParams(searchParams ? searchParams.toString() : "");
+      params.delete("billId");
+      const newQuery = params.toString();
+      router.replace(`${pathname}${newQuery ? `?${newQuery}` : ""}`);
+    }
+  };
   // Determine assignee
   const assigneeSplit = splits.find((s) => s.is_assignee);
   const assigneeId = bill.assignee_id || (assigneeSplit?.member_id);
@@ -55,8 +80,9 @@ export default function BillCard({
       try {
         await deleteBill(bill.id);
         setIsDetailOpen(false);
-      } catch (err: any) {
-        alert("Failed to delete bill: " + (err?.message || "Unknown error"));
+      } catch (err) {
+        const errMsg = err instanceof Error ? err.message : "Unknown error";
+        alert("Failed to delete bill: " + errMsg);
       }
     }
   };
@@ -135,7 +161,7 @@ export default function BillCard({
 
       <BillDetailSheet
         isOpen={isDetailOpen}
-        onClose={() => setIsDetailOpen(false)}
+        onClose={handleCloseDetail}
         bill={bill}
         splits={splits}
         householdMembers={householdMembers}

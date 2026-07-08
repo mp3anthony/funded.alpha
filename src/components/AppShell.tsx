@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useApp, useCurrentUser } from "@/context/AppContext";
 import BottomNav from "@/components/BottomNav";
@@ -8,6 +8,7 @@ import Onboarding from "@/components/Onboarding";
 import Logo from "./Logo";
 import AvatarDropdown from "./AvatarDropdown";
 import NotificationCenter from "./NotificationCenter";
+import { Bell } from "lucide-react";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const [isMounted, setIsMounted] = useState(false);
@@ -20,15 +21,57 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   return <AppShellBody isMounted={isMounted}>{children}</AppShellBody>;
 }
 
+/** Read all active snooze timestamps from localStorage. */
+function getSnoozedIds(): Record<string, number> {
+  if (typeof window === "undefined") return {};
+  const snoozes: Record<string, number> = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith("snooze-")) {
+      const id = key.substring(7);
+      const val = localStorage.getItem(key);
+      if (val) snoozes[id] = parseInt(val);
+    }
+  }
+  return snoozes;
+}
+
 function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMounted: boolean }) {
   const { isOnboarded, session, isAuthLoading, isDataLoading, notifications } = useApp();
   const router = useRouter();
   const pathname = usePathname();
   const currentUser = useCurrentUser();
   const [isNotificationCenterOpen, setIsNotificationCenterOpen] = useState(false);
+  const [snoozedIds, setSnoozedIds] = useState<Record<string, number>>({});
+  const [now, setNow] = useState(() => Date.now());
   const isLoginPage = pathname === "/login";
   const isConfirmEmailPage = pathname === "/confirm-email";
   const isResetPasswordPage = pathname?.startsWith("/reset-password");
+
+  // 1b. Sync snooze state from localStorage (refreshes every 30s so expiry is reactive)
+  const refreshSnoozes = useCallback(() => {
+    setSnoozedIds(getSnoozedIds());
+    setNow(Date.now());
+  }, []);
+
+  useEffect(() => {
+    refreshSnoozes();
+    const interval = setInterval(refreshSnoozes, 30_000);
+    return () => clearInterval(interval);
+  }, [refreshSnoozes]);
+
+  // Re-read snoozes whenever the notification center closes (user may have just snoozed)
+  useEffect(() => {
+    if (!isNotificationCenterOpen) {
+      refreshSnoozes();
+    }
+  }, [isNotificationCenterOpen, refreshSnoozes]);
+
+  // Compute visible notification count (excludes snoozed ones)
+  const visibleNotificationCount = notifications.filter(n => {
+    const expires = snoozedIds[n.id];
+    return !(expires && expires > now);
+  }).length;
 
   // 2. Global Scroll Lock (MutationObserver)
   useEffect(() => {
@@ -103,12 +146,42 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
       className="flex-1 flex flex-col w-full relative overflow-hidden text-foreground"
       style={{ paddingTop: 'env(safe-area-inset-top)' }}
     >
-      {/* Floating Avatar — fixed position, always visible when authenticated */}
+      {/* Floating Avatar + Bell — fixed position, always visible when authenticated */}
       {!isLoading && currentUser && (
-        <div className="floating-avatar flex items-center gap-4">
+        <div className="floating-avatar flex items-center gap-2">
+          {/* Notification Bell — only visible when there are active (non-snoozed) notifications */}
+          {visibleNotificationCount > 0 && (
+            <button
+              id="notification-bell-btn"
+              onClick={() => setIsNotificationCenterOpen(true)}
+              aria-label={`Open notifications (${visibleNotificationCount})`}
+              className="relative h-9 w-9 rounded-xl flex items-center justify-center text-primary transition-transform duration-200 active:scale-95 hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer"
+              style={{ background: 'var(--color-primary-light)', border: '2px solid var(--color-primary-mid)' }}
+            >
+              <Bell size={18} fill="currentColor" className="text-primary" />
+              {/* Notification count badge */}
+              {visibleNotificationCount > 0 && (
+                <span
+                  className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full text-[9px] font-bold flex items-center justify-center leading-none"
+                  style={{
+                    background: 'var(--color-primary)',
+                    color: 'var(--color-primary-fg)',
+                  }}
+                >
+                  {visibleNotificationCount > 99 ? '99+' : visibleNotificationCount}
+                </span>
+              )}
+            </button>
+          )}
           <AvatarDropdown user={currentUser} />
         </div>
       )}
+
+      {/* Notification Center Modal */}
+      <NotificationCenter
+        isOpen={isNotificationCenterOpen}
+        onClose={() => setIsNotificationCenterOpen(false)}
+      />
 
       {/* Main Content */}
       <main 
