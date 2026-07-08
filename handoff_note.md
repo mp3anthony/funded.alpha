@@ -12,6 +12,19 @@
    - Click the individual **Clear** (trash icon) button on any notification; verify it is deleted and does not reappear on re-load.
    - Click **Clear All** in the inbox header; verify all notifications disappear.
 
+## Cross-Platform Testing Checklist
+
+### Apple iPhone 17 (iOS/WebKit)
+* [ ] **Layout & Styling:** Verify the Notifications drawer aligns correctly with mobile headers and doesn't clip safe areas.
+* [ ] **Snooze Dropdown Stacking:** Check that clicking the clock icon correctly opens the snooze dropdown above other notification items.
+* [ ] **Touch Targets:** Verify that the Checkmark (Mark Read), Clock (Snooze), and Trash (Clear) buttons are easily tappable (minimum 44x44px target sizes).
+* [ ] **Safari Navigation:** Verify that clicking a notification redirects to the bills page and opens the sheet smoothly in iOS Safari.
+
+### Samsung S25 FE (Android/Chromium)
+* [ ] **Responsiveness:** Verify the drawer width fits correctly on narrow screen dimensions.
+* [ ] **Browser Interactions:** Check that Chrome's default back button behavior handles modal dismissal/navigation cleanly.
+* [ ] **Touch Target Sizing:** Ensure clear spacing between adjacent action items (Snooze vs. Clear).
+
 ## Linter Check Command
 To run the linter and ensure the changes are free of syntax or style issues:
 ```bash
