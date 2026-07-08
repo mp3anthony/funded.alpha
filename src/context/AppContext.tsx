@@ -522,6 +522,7 @@ interface AppContextValue {
   updateBill: (billId: string | number, billData: any, splitsData: any[]) => Promise<void>;
   togglePaid: (id: string | number) => void;
   markAsPaid: (bill: Bill) => Promise<void>;
+  markAsUnpaid: (bill: Bill) => Promise<void>;
   togglePauseBill: (id: string | number, isPaused: boolean) => Promise<void>;
   deleteBill: (id: string | number) => void;
 
@@ -1316,7 +1317,10 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
           else if (freq === "yearly") d.setFullYear(d.getFullYear() + 1);
           else d.setMonth(d.getMonth() + 1); // default monthly
 
-          nextDueDateStr = d.toISOString().split("T")[0];
+          const year = d.getFullYear();
+          const month = String(d.getMonth() + 1).padStart(2, "0");
+          const day = String(d.getDate()).padStart(2, "0");
+          nextDueDateStr = `${year}-${month}-${day}`;
         }
       }
 
@@ -1348,6 +1352,56 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
       }
     } catch (err) {
       console.error("Failed to mark as paid:", err);
+    }
+  }
+
+  async function markAsUnpaid(bill: Bill) {
+    try {
+      let prevDueDateStr = bill.due_date || bill.dueDate;
+
+      if (bill.is_recurring) {
+        const d = new Date(prevDueDateStr + "T00:00:00");
+        if (!isNaN(d.getTime())) {
+          const freq = (bill.frequency || "monthly").toLowerCase();
+          if (freq === "weekly") d.setDate(d.getDate() - 7);
+          else if (freq === "fortnightly" || freq === "fortnightly") d.setDate(d.getDate() - 14);
+          else if (freq === "yearly") d.setFullYear(d.getFullYear() - 1);
+          else d.setMonth(d.getMonth() - 1); // default monthly
+
+          const year = d.getFullYear();
+          const month = String(d.getMonth() + 1).padStart(2, "0");
+          const day = String(d.getDate()).padStart(2, "0");
+          prevDueDateStr = `${year}-${month}-${day}`;
+        }
+      }
+
+      const { data, error } = await supabase
+        .from("bills")
+        .update({ status: "Due Soon", due_date: prevDueDateStr })
+        .eq("id", bill.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error updating bill as unpaid:", error);
+        return;
+      }
+
+      if (data) {
+        setBills((prev) =>
+          prev.map((b) => (b.id === bill.id ? mapBillFromDb(data) : b))
+        );
+
+        if (typeof window !== "undefined") {
+          const currentCleared = JSON.parse(localStorage.getItem("cleared_notifications") || "[]");
+          const filteredCleared = currentCleared.filter(
+            (key: string) => !key.startsWith(`${bill.id}-`)
+          );
+          localStorage.setItem("cleared_notifications", JSON.stringify(filteredCleared));
+        }
+      }
+    } catch (err) {
+      console.error("Failed to mark as unpaid:", err);
     }
   }
 
@@ -2968,6 +3022,7 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
     updateBill,
     togglePaid,
     markAsPaid,
+    markAsUnpaid,
     togglePauseBill,
     deleteBill,
     isJointFund,

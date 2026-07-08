@@ -76,13 +76,6 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
     }
   };
 
-  const handleUpdateDays = async (key: keyof NotificationSettings, change: number) => {
-    if (!notificationSettings) return;
-    const currentVal = (notificationSettings[key] as number) || 0;
-    const newVal = Math.max(0, currentVal + change);
-    await updateNotificationSettings({ [key]: newVal });
-  };
-
   const handleMarkAsPaid = async (notif: Notification) => {
     if (!notif.related_entity_id) return;
     const bill = bills.find(b => b.id.toString() === notif.related_entity_id);
@@ -312,13 +305,6 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
                           />
                           <div className="w-9 h-5 bg-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
                         </label>
-                        {notificationSettings.manual_bill_reminders && (
-                          <div className="flex items-center gap-2 bg-surface rounded-lg border border-border px-2 py-1">
-                            <button onClick={() => handleUpdateDays('manual_bill_reminder_days', -1)} className="text-muted hover:text-foreground w-4 flex justify-center font-bold">-</button>
-                            <span className="text-xs font-mono font-bold w-12 text-center">{notificationSettings.manual_bill_reminder_days} days</span>
-                            <button onClick={() => handleUpdateDays('manual_bill_reminder_days', 1)} className="text-muted hover:text-foreground w-4 flex justify-center font-bold">+</button>
-                          </div>
-                        )}
                       </div>
                     </div>
 
@@ -337,13 +323,6 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
                           />
                           <div className="w-9 h-5 bg-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
                         </label>
-                        {notificationSettings.auto_pay_reminders && (
-                          <div className="flex items-center gap-2 bg-surface rounded-lg border border-border px-2 py-1">
-                            <button onClick={() => handleUpdateDays('auto_pay_reminder_days', -1)} className="text-muted hover:text-foreground w-4 flex justify-center font-bold">-</button>
-                            <span className="text-xs font-mono font-bold w-12 text-center">{notificationSettings.auto_pay_reminder_days} days</span>
-                            <button onClick={() => handleUpdateDays('auto_pay_reminder_days', 1)} className="text-muted hover:text-foreground w-4 flex justify-center font-bold">+</button>
-                          </div>
-                        )}
                       </div>
                     </div>
 
