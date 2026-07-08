@@ -195,7 +195,7 @@ export default function ContributorSplits({
                 <div className="flex flex-col">
                   <span className="text-sm font-medium text-foreground">{member.name}</span>
                   {isAssignee && (
-                    <span className="text-[10px] font-heading font-bold uppercase tracking-wider text-primary">
+                    <span className="text-[10px] font-heading font-bold capitalize tracking-wider text-primary">
                       Assignee
                     </span>
                   )}

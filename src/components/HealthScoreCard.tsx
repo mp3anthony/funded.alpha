@@ -62,6 +62,20 @@ export const HealthScoreCard = React.memo(function HealthScoreCard() {
     }
   }, [paySchedules, isJointFund, householdContributions, payHistory]);
 
+  const weeklyActualIncome = useMemo(() => {
+    return paySchedules.reduce((sum, schedule) => {
+      let amount = schedule.amount || 0;
+      if (!schedule.is_fixed_amount) {
+        const historyItems = payHistory.filter(h => h.pay_schedule_id === schedule.id);
+        if (historyItems.length > 0) {
+          historyItems.sort((a, b) => new Date(b.pay_date).getTime() - new Date(a.pay_date).getTime());
+          amount = historyItems[0].amount;
+        }
+      }
+      return sum + convertAmount(amount, schedule.frequency, "weekly");
+    }, 0);
+  }, [paySchedules, payHistory]);
+
   const weeklyBills = useMemo(() => {
     return bills.reduce((sum, bill) => {
       if (bill.is_paused) return sum;
@@ -70,6 +84,7 @@ export const HealthScoreCard = React.memo(function HealthScoreCard() {
   }, [bills]);
 
   const weeklySurplus = weeklyIncome - weeklyBills;
+  const weeklySurplusActual = weeklyActualIncome - weeklyBills;
   const surplusColor = weeklySurplus >= 0 ? "text-primary" : "text-destructive";
 
   const sinkingFundsTotal = useMemo(() => {
@@ -123,11 +138,13 @@ export const HealthScoreCard = React.memo(function HealthScoreCard() {
             {statusText}
           </h2>
         </div>
-        <p className="text-sm text-subtle font-sans pt-1">
-          {weeklySurplus >= 0 
-            ? `$${formatCurrency(weeklySurplus).replace('$', '')} surplus after bills this week` 
-            : `-$${formatCurrency(Math.abs(weeklySurplus)).replace('$', '')} deficit after bills this week`}
-        </p>
+        {isJointFund && (
+          <p className="text-sm text-subtle font-sans pt-1">
+            {weeklySurplusActual >= 0 
+              ? `$${formatCurrency(weeklySurplusActual).replace('$', '')} surplus after bills this week` 
+              : `-$${formatCurrency(Math.abs(weeklySurplusActual)).replace('$', '')} deficit after bills this week`}
+          </p>
+        )}
       </div>
 
       {/* 2x2 Stat Grid */}
@@ -145,7 +162,9 @@ export const HealthScoreCard = React.memo(function HealthScoreCard() {
         </div>
         {/* Tile 3 */}
         <div className="bg-surface-raised rounded-[20px] p-4 sm:p-5 flex flex-col justify-center gap-1.5 transition-colors hover:bg-surface-elevated">
-          <span className="font-mono text-[10px] uppercase tracking-widest text-muted font-bold">Surplus</span>
+          <span className="font-mono text-[10px] uppercase tracking-widest text-muted font-bold">
+            {isJointFund ? "Joint Fund Surplus" : "Surplus after bills"}
+          </span>
           <span className={`font-mono font-bold text-[22px] ${surplusColor} tracking-tight`}>{formatCurrency(weeklySurplus)}</span>
         </div>
         {/* Tile 4 */}

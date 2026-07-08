@@ -66,7 +66,7 @@ export default function RuleCard({
           <select
             value={rule.is_active ? "active" : "inactive"}
             onChange={onToggle}
-            className="rounded-lg border border-border bg-background px-2.5 py-1 text-[10px] font-bold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-6 uppercase tracking-wider"
+            className="rounded-lg border border-border bg-background px-2.5 py-1 text-[10px] font-bold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-6 capitalize tracking-wider"
           >
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>

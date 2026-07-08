@@ -213,7 +213,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
 
           {/* 2. Bill Amount */}
           <div className="flex flex-col space-y-2">
-            <label className="font-heading text-sm font-semibold text-subtle uppercase tracking-wider">
+            <label className="font-heading text-sm font-semibold text-subtle capitalize tracking-wider">
               Bill Amount
             </label>
             <div className="relative">
@@ -260,7 +260,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
           {/* Date Row (3. Invoice Date & 4. Due Date) */}
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex flex-1 flex-col space-y-2">
-              <label className="font-heading text-sm font-semibold text-subtle uppercase tracking-wider">
+              <label className="font-heading text-sm font-semibold text-subtle capitalize tracking-wider">
                 Invoice Date
               </label>
               <input 
@@ -308,7 +308,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
 
           {/* 6. Assignee */}
           <div className="flex flex-col space-y-2">
-            <label className="font-heading text-sm font-semibold text-subtle uppercase tracking-wider">
+            <label className="font-heading text-sm font-semibold text-subtle capitalize tracking-wider">
               Assignee
             </label>
             <div className="relative">
@@ -339,7 +339,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
 
           {/* 7. Paid By Selector */}
           <div className="flex flex-col space-y-2 pt-2">
-            <label className="font-heading text-sm font-semibold text-subtle uppercase tracking-wider">
+            <label className="font-heading text-sm font-semibold text-subtle capitalize tracking-wider">
               Paid By
             </label>
             {isJointFund ? (
@@ -349,7 +349,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
                   <select
                     value={paidByMode}
                     onChange={(e) => setPaidByMode(e.target.value as "joint" | "individual")}
-                    className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 appearance-none transition-all cursor-pointer pr-10 uppercase tracking-wider font-bold"
+                    className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 appearance-none transition-all cursor-pointer pr-10 capitalize tracking-wider font-bold"
                   >
                     <option value="joint">Joint Fund</option>
                     <option value="individual">Individual Splits</option>

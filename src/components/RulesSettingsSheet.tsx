@@ -201,7 +201,7 @@ export default function RulesSettingsSheet({
 
             {/* Threshold Amount */}
             <div className="flex flex-col space-y-1.5">
-              <label className="font-heading text-[10px] font-semibold text-subtle uppercase tracking-wider">
+              <label className="font-heading text-[10px] font-semibold text-subtle capitalize tracking-wider">
                 When my pay exceeds
               </label>
               <div className="relative">
@@ -244,7 +244,7 @@ export default function RulesSettingsSheet({
             {/* Action Target Selector */}
             {actionType === "goal" ? (
               <div className="flex flex-col space-y-1.5">
-                <label className="font-heading text-[10px] font-semibold text-subtle uppercase tracking-wider">
+                <label className="font-heading text-[10px] font-semibold text-subtle capitalize tracking-wider">
                   Target savings goal
                 </label>
                 <select
@@ -269,7 +269,7 @@ export default function RulesSettingsSheet({
 
             {/* Calculation Type Dropdown */}
             <div className="flex flex-col space-y-1.5">
-              <label className="font-heading text-[10px] font-semibold text-subtle uppercase tracking-wider">
+              <label className="font-heading text-[10px] font-semibold text-subtle capitalize tracking-wider">
                 Calculation Type
               </label>
               <div className="relative">
@@ -291,7 +291,7 @@ export default function RulesSettingsSheet({
 
             {/* Amount to Add */}
             <div className="flex flex-col space-y-1.5">
-              <label className="font-heading text-[10px] font-semibold text-subtle uppercase tracking-wider">
+              <label className="font-heading text-[10px] font-semibold text-subtle capitalize tracking-wider">
                 {amountType === "percentage" ? "Percentage of Surplus" : "Amount to Add"}
               </label>
               <div className="relative">

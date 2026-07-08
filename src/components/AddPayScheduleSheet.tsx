@@ -163,7 +163,7 @@ export default function AddPayScheduleSheet({
 
           {/* Frequency Dropdown */}
           <div className="flex flex-col space-y-1 md:space-y-1.5">
-            <label className="font-heading text-[10px] md:text-xs font-semibold text-subtle uppercase tracking-wider">
+            <label className="font-heading text-[10px] md:text-xs font-semibold text-subtle capitalize tracking-wider">
               Frequency
             </label>
             <div className="relative">
@@ -210,7 +210,7 @@ export default function AddPayScheduleSheet({
           {/* Fixed Amount Input (Conditional) */}
           {isFixedAmount && (
             <div className="flex flex-col space-y-1 md:space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
-              <label className="font-heading text-[10px] md:text-xs font-semibold text-subtle uppercase tracking-wider">
+              <label className="font-heading text-[10px] md:text-xs font-semibold text-subtle capitalize tracking-wider">
                 Amount
               </label>
               <div className="relative">

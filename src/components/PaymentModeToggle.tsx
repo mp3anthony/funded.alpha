@@ -1,14 +1,35 @@
 "use client";
 
 import React from "react";
-import { Info } from "lucide-react";
+import { Info, Wallet, Building2 } from "lucide-react";
 
 interface PaymentModeToggleProps {
   currentMode: boolean; // false = Direct Pay, true = Joint Fund
   onModeChange: (mode: boolean) => void;
+  compact?: boolean;
 }
 
-export default function PaymentModeToggle({ currentMode, onModeChange }: PaymentModeToggleProps) {
+export default function PaymentModeToggle({ currentMode, onModeChange, compact = false }: PaymentModeToggleProps) {
+  if (compact) {
+    return (
+      <div className="relative w-full sm:w-64">
+        <select
+          value={currentMode ? "joint" : "direct"}
+          onChange={(e) => onModeChange(e.target.value === "joint")}
+          className="w-full rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-bold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-8 capitalize tracking-wider"
+        >
+          <option value="direct">Direct Pay</option>
+          <option value="joint">Joint Fund</option>
+        </select>
+        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-muted">
+          <svg className="h-3 w-3 fill-current" viewBox="0 0 20 20">
+            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+          </svg>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col space-y-4 w-full">
       <div className="flex flex-col space-y-2">

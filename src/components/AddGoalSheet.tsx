@@ -263,7 +263,7 @@ export default function AddGoalSheet({
 
           {/* Category Dropdown */}
           <div className="flex flex-col space-y-1.5 md:space-y-2">
-            <label className="font-heading text-xs font-semibold text-subtle uppercase tracking-wider">
+            <label className="font-heading text-xs font-semibold text-subtle capitalize tracking-wider">
               Category
             </label>
             <div className="relative">

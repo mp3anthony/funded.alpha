@@ -455,7 +455,7 @@ export default function Onboarding() {
           <div className="flex flex-col items-center gap-6 animate-in fade-in duration-300">
             <Logo size="large" showWordmark={true} />
             <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-            <p className="text-sm font-bold text-foreground uppercase tracking-wider font-mono animate-pulse">
+            <p className="text-sm font-bold text-foreground capitalize tracking-wider font-mono animate-pulse">
               Creating your Household...
             </p>
           </div>

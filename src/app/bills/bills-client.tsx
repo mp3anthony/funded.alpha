@@ -187,7 +187,7 @@ export default function BillsClient() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-muted uppercase tracking-wider ml-1">
+            <label className="text-[10px] font-bold text-muted capitalize tracking-wider ml-1">
               Due Date
             </label>
             <div className="relative">
@@ -210,7 +210,7 @@ export default function BillsClient() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-muted uppercase tracking-wider ml-1">
+            <label className="text-[10px] font-bold text-muted capitalize tracking-wider ml-1">
               Amounts As
             </label>
             <div className="relative">
@@ -256,7 +256,7 @@ export default function BillsClient() {
       {/* Bills Scrollable Container */}
       <div className="space-y-3">
         <div className="flex items-center justify-between px-1">
-          <h2 className="text-xs font-bold text-subtle uppercase tracking-wider">
+          <h2 className="text-xs font-bold text-subtle capitalize tracking-wider">
             Bills List
           </h2>
           <div className="flex items-center gap-4">
