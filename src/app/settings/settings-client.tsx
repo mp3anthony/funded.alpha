@@ -267,7 +267,7 @@ export default function SettingsClient() {
         <div className="flex flex-col items-center justify-center text-center opacity-60">
           <p className="text-muted font-sans text-xs tracking-wider leading-relaxed">
             Built with AI<br />
-            funded. v0.3.0<br />
+            funded. v0.4.0<br />
             Concept &amp; Development: Anthony Paull
           </p>
         </div>

@@ -232,7 +232,7 @@ export const HealthScoreCard = React.memo(function HealthScoreCard() {
               
               return (
                 <div key={member.id} className="bg-surface-raised rounded-[20px] p-3 sm:p-4 flex items-center gap-3 transition-colors hover:bg-surface-elevated overflow-hidden">
-                  <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border-2 border-border-strong bg-surface">
+                  <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 border-2 border-border-strong bg-surface">
                     {member.avatar_url ? (
                       <img src={member.avatar_url} alt={member.name} className="w-full h-full object-cover" />
                     ) : (
