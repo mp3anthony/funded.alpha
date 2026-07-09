@@ -37,9 +37,10 @@ Funded is a household cash-flow app that answers one question per payday: *how m
 - **Payment modes** — choose between Joint Fund (pooled pot) or Direct Pay (split bills between members)
 - **Multi-member households** — invite members via join code, manage roles (owner/member), and assign bill splits
 - **Health score** — weighted financial health score (0–100) based on bill status, goal progress, and budget coverage
-- **Light and dark mode** — automatic via `prefers-color-scheme`, with a manual toggle in settings
+- **Notifications** — in-app notification centre with bill-due alerts, snooze, read/unread state, and per-type settings
+- **Light and dark mode** — automatic via `prefers-color-scheme` CSS media query, with a manual class-based override (`.dark` / `.light`) toggle in settings
 - **PWA** — installable as a home screen app on iOS Safari and Android Chrome with full offline fallback
-- **Authentication** — email/password auth via Supabase with PKCE flow and email confirmation
+- **Authentication** — email/password auth via Supabase with PKCE flow, email confirmation, and password reset
 
 ---
 
@@ -55,6 +56,7 @@ Funded is a household cash-flow app that answers one question per payday: *how m
 | Backend / DB | [Supabase](https://supabase.com/) (PostgreSQL + Auth + Storage + Edge Functions) |
 | Auth | Supabase Auth (PKCE flow, email confirmation) |
 | File storage | Supabase Storage (avatar uploads) |
+| SSR Auth | [@supabase/ssr](https://www.npmjs.com/package/@supabase/ssr) (server-side session pre-fetching) |
 | Utilities | clsx, tailwind-merge |
 
 ---
@@ -131,6 +133,7 @@ The Supabase schema is defined in the `supabase/` directory. Run these SQL files
    - `fix_households_rls.sql` — RLS policy fixes
    - `fix_households_rls_recursion.sql` — recursive RLS fix
    - `fix_household_members_select.sql` — member select policy fix
+   - `20260707005200_update_frequency_data_to_fortnightly.sql` — normalises frequency data to fortnightly
 
 ### Edge Functions
 
@@ -164,36 +167,44 @@ funded-nextjs/
 │   │   ├── offline/          # Offline fallback page
 │   │   ├── payday/           # Payday income + schedules page
 │   │   └── settings/         # Household settings page
-│   ├── components/           # Reusable UI components (37 components)
+│   ├── components/           # Reusable UI components (39 components)
 │   │   ├── AppShell.tsx      # Auth guard, onboarding gate, bottom nav shell
 │   │   ├── Onboarding.tsx    # 5-step onboarding wizard
 │   │   ├── BottomNav.tsx     # Mobile bottom navigation bar
-│   │   ├── HealthScoreCard.tsx   # Dashboard health score widget
-│   │   ├── UpcomingBillsCard.tsx  # Dashboard upcoming bills widget
-│   │   ├── ActiveGoalsCard.tsx    # Dashboard goals widget
-│   │   ├── RecentActivityCard.tsx # Dashboard activity feed
-│   │   ├── AddBillSheet.tsx       # Add/edit bill bottom sheet
-│   │   ├── BillDetailSheet.tsx    # Bill detail view bottom sheet
-│   │   ├── AddGoalSheet.tsx       # Add goal bottom sheet
-│   │   ├── EditGoalSheet.tsx      # Edit goal bottom sheet
-│   │   ├── GoalDetailSheet.tsx    # Goal detail view bottom sheet
+│   │   ├── HealthScoreCard.tsx        # Dashboard health score widget
+│   │   ├── HealthScore.tsx            # Standalone health score display
+│   │   ├── HouseholdHealth.tsx        # Household health summary
+│   │   ├── UpcomingBillsCard.tsx      # Dashboard upcoming bills widget
+│   │   ├── ActiveGoalsCard.tsx        # Dashboard goals widget
+│   │   ├── RecentActivityCard.tsx     # Dashboard activity feed
+│   │   ├── NotificationCenter.tsx     # In-app notification centre (alerts, snooze, settings)
+│   │   ├── AddBillSheet.tsx           # Add/edit bill bottom sheet
+│   │   ├── BillDetailSheet.tsx        # Bill detail view bottom sheet
+│   │   ├── BillCard.tsx               # Individual bill card
+│   │   ├── EditCategoryOrderModal.tsx # Reorder bill categories
+│   │   ├── AddGoalSheet.tsx           # Add goal bottom sheet
+│   │   ├── EditGoalSheet.tsx          # Edit goal bottom sheet
+│   │   ├── GoalDetailSheet.tsx        # Goal detail view bottom sheet
+│   │   ├── AddAmountModal.tsx         # Manual goal top-up modal
 │   │   ├── AddPayScheduleSheet.tsx    # Add pay schedule bottom sheet
 │   │   ├── PayScheduleDetailSheet.tsx # Pay schedule detail sheet
 │   │   ├── EnterPayAmountModal.tsx    # Variable pay entry modal
+│   │   ├── SurplusSuggestionModal.tsx # Surplus allocation prompt post-payday
 │   │   ├── PayHistoryCard.tsx         # Pay history timeline
 │   │   ├── ContributionSettingsSheet.tsx # Contribution management
-│   │   ├── RulesSettingsSheet.tsx      # Surplus rules configuration
-│   │   ├── ContributorSplits.tsx       # Bill split assignment (Direct Pay)
-│   │   ├── PaymentModeToggle.tsx       # Joint Fund / Direct Pay toggle
-│   │   ├── JoinHouseholdSheet.tsx      # Join via code sheet
-│   │   ├── EditMemberModal.tsx         # Edit household member
-│   │   ├── RemoveMemberModal.tsx       # Remove household member
-│   │   ├── AvatarUpload.tsx            # Avatar image upload
-│   │   ├── AvatarDropdown.tsx          # Avatar selection dropdown
-│   │   ├── Logo.tsx                    # Funded logo component
-│   │   ├── PageHeader.tsx              # Consistent page header
-│   │   ├── FrequencyToggle.tsx         # Frequency selector toggle
-│   │   └── ...                         # Additional UI components
+│   │   ├── RulesSettingsSheet.tsx     # Surplus rules configuration
+│   │   ├── RuleCard.tsx               # Individual contribution rule card
+│   │   ├── ContributorSplits.tsx      # Bill split assignment (Direct Pay)
+│   │   ├── PaymentModeToggle.tsx      # Joint Fund / Direct Pay toggle
+│   │   ├── JoinHouseholdSheet.tsx     # Join via code sheet
+│   │   ├── EditMemberModal.tsx        # Edit household member
+│   │   ├── RemoveMemberModal.tsx      # Remove household member
+│   │   ├── UserProfileMenu.tsx        # User profile dropdown menu
+│   │   ├── AvatarUpload.tsx           # Avatar image upload
+│   │   ├── AvatarDropdown.tsx         # Avatar selection dropdown
+│   │   ├── Logo.tsx                   # Funded logo component
+│   │   ├── PageHeader.tsx             # Consistent page header
+│   │   └── FrequencyToggle.tsx        # Frequency selector toggle
 │   ├── context/
 │   │   └── AppContext.tsx    # Global state provider (auth, data, CRUD)
 │   ├── lib/
@@ -227,9 +238,10 @@ funded-nextjs/
 | `/payday` | **Payday** | Pay schedules, income entry (fixed or variable), pay history, surplus rule triggers |
 | `/bills` | **Bills** | All household bills with status badges, category filters, search, and frequency normalisation toggle |
 | `/funds` | **Goals** | Savings goals with progress bars, manual top-ups, and completion tracking |
-| `/settings` | **Settings** | Household name, payment mode (Joint Fund / Direct Pay), member management, contributions, surplus rules, theme toggle, join codes |
+| `/settings` | **Settings** | Household name, payment mode (Joint Fund / Direct Pay), member management, contributions, surplus rules, theme toggle, join codes, notifications |
 | `/login` | **Login** | Email/password authentication (sign in or sign up) |
 | `/confirm-email` | **Confirm Email** | Email verification landing page |
+| `/reset-password` | **Reset Password** | Password update page reached via Supabase reset email link |
 | `/auth` | **Auth Callback** | Supabase auth redirect handler |
 | `/offline` | **Offline** | PWA offline fallback page |
 
@@ -237,10 +249,11 @@ funded-nextjs/
 
 1. **Sign up** → email confirmation → **Onboarding** (5 steps: name household, choose payment mode, add first pay schedule, add first bill, review)
 2. **Dashboard** shows household health at a glance
-3. **Payday** to log income when paid — surplus rules fire automatically
+3. **Payday** to log income when paid — surplus rules fire automatically; surplus suggestion modal prompts allocation
 4. **Bills** to manage household costs
 5. **Goals** to track savings targets
-6. **Settings** to invite members, configure contributions and rules
+6. **Settings** to invite members, configure contributions, rules, and notification preferences
+7. **Forgot password** → reset email → `/reset-password` to set a new password
 
 ---
 
@@ -274,8 +287,8 @@ All colours are defined as CSS custom properties in `globals.css` and mapped int
 
 ### Theme switching
 
-- **Automatic:** respects `prefers-color-scheme` media query
-- **Manual:** toggle in Settings applies `.dark` / `.light` class to `<html>`
+- **Automatic:** CSS `@media (prefers-color-scheme: light)` sets light tokens on `:root` when no class is present
+- **Manual:** toggle in Settings writes `.dark` or `.light` class to `<html>`, overriding the media query
 - **Layered surfaces:** `--color-surface`, `--color-surface-raised`, `--color-surface-elevated` provide depth
 
 ### Mobile-first considerations
@@ -332,20 +345,13 @@ The service worker is **automatically unregistered in development** (localhost) 
 
 ## Deployment
 
-### Netlify (current)
+### Vercel (current)
 
-The app is currently deployed on Netlify:
-
-| | |
-|-|-|
-| **Live URL** | [fundedalpha.netlify.app](https://fundedalpha.netlify.app/) |
-| **Feedback form** | [Microsoft Forms](https://forms.office.com/r/eCyJuX9JW9) |
-
-### Vercel (alternative)
+The app is deployed on Vercel. Pushes to `main` trigger an automatic production deployment.
 
 ```bash
 npm run build
-# Deploy via Vercel CLI or Git integration
+# Deploy via Vercel CLI or Git integration on the main branch
 ```
 
 ### Environment variables
