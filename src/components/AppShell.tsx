@@ -142,68 +142,71 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
   const isLoading = !isMounted || isAuthLoading || (session && isDataLoading) || !session;
 
   return (
-    <div 
-      className="flex-1 flex flex-col w-full relative overflow-hidden text-foreground"
-      style={{ paddingTop: 'env(safe-area-inset-top)' }}
-    >
-      {/* Floating Avatar + Bell — fixed position, always visible when authenticated */}
-      {!isLoading && currentUser && (
-        <div className="floating-avatar flex items-center gap-2">
-          {/* Notification Bell — only visible when there are active (non-snoozed) notifications */}
-          {visibleNotificationCount > 0 && (
-            <button
-              id="notification-bell-btn"
-              onClick={() => setIsNotificationCenterOpen(true)}
-              aria-label={`Open notifications (${visibleNotificationCount})`}
-              className="relative h-9 w-9 rounded-xl flex items-center justify-center text-primary transition-transform duration-200 active:scale-95 hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer"
-              style={{ background: 'var(--color-primary-light)', border: '2px solid var(--color-primary-mid)' }}
-            >
-              <Bell size={18} fill="currentColor" className="text-primary" />
-              {/* Notification count badge */}
-              {visibleNotificationCount > 0 && (
-                <span
-                  className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full text-[9px] font-bold flex items-center justify-center leading-none"
-                  style={{
-                    background: 'var(--color-primary)',
-                    color: 'var(--color-primary-fg)',
-                  }}
-                >
-                  {visibleNotificationCount > 99 ? '99+' : visibleNotificationCount}
-                </span>
-              )}
-            </button>
-          )}
-          <AvatarDropdown user={currentUser} />
-        </div>
-      )}
-
-      {/* Notification Center Modal */}
-      <NotificationCenter
-        isOpen={isNotificationCenterOpen}
-        onClose={() => setIsNotificationCenterOpen(false)}
-      />
-
-      {/* Main Content */}
-      <main 
-        className="flex-1 overflow-y-auto w-full relative z-10"
-        style={{ WebkitOverflowScrolling: 'touch', paddingBottom: 'calc(5rem + env(safe-area-inset-bottom))' }}
+    <>
+      <div 
+        className="flex-1 flex flex-col w-full relative overflow-hidden text-foreground"
+        style={{ paddingTop: 'env(safe-area-inset-top)' }}
       >
-        {isLoading ? (
-          <div className="flex h-full w-full items-center justify-center">
-            <div className="flex flex-col items-center gap-6 animate-in fade-in duration-300">
-              <Logo size="large" showWordmark={true} />
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-            </div>
+        {/* Floating Avatar + Bell — fixed position, always visible when authenticated */}
+        {!isLoading && currentUser && (
+          <div className="floating-avatar flex items-center gap-2">
+            {/* Notification Bell — only visible when there are active (non-snoozed) notifications */}
+            {visibleNotificationCount > 0 && (
+              <button
+                id="notification-bell-btn"
+                onClick={() => setIsNotificationCenterOpen(true)}
+                aria-label={`Open notifications (${visibleNotificationCount})`}
+                className="relative h-9 w-9 rounded-xl flex items-center justify-center text-primary transition-transform duration-200 active:scale-95 hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer"
+                style={{ background: 'var(--color-primary-light)', border: '2px solid var(--color-primary-mid)' }}
+              >
+                <Bell size={18} fill="currentColor" className="text-primary" />
+                {/* Notification count badge */}
+                {visibleNotificationCount > 0 && (
+                  <span
+                    className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full text-[9px] font-bold flex items-center justify-center leading-none"
+                    style={{
+                      background: 'var(--color-primary)',
+                      color: 'var(--color-primary-fg)',
+                    }}
+                  >
+                    {visibleNotificationCount > 99 ? '99+' : visibleNotificationCount}
+                  </span>
+                )}
+              </button>
+            )}
+            <AvatarDropdown user={currentUser} />
           </div>
-        ) : (
-          <Suspense fallback={null}>
-            {children}
-          </Suspense>
         )}
-      </main>
 
-      {/* Bottom Nav */}
+        {/* Notification Center Modal */}
+        <NotificationCenter
+          isOpen={isNotificationCenterOpen}
+          onClose={() => setIsNotificationCenterOpen(false)}
+        />
+
+        {/* Main Content */}
+        <main 
+          className="flex-1 overflow-y-auto w-full relative z-10"
+          style={{ WebkitOverflowScrolling: 'touch', paddingBottom: 'calc(5rem + env(safe-area-inset-bottom))' }}
+        >
+          {isLoading ? (
+            <div className="flex h-full w-full items-center justify-center">
+              <div className="flex flex-col items-center gap-6 animate-in fade-in duration-300">
+                <Logo size="large" showWordmark={true} />
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              </div>
+            </div>
+          ) : (
+            <Suspense fallback={null}>
+              {children}
+            </Suspense>
+          )}
+        </main>
+      </div>
+
+      {/* Bottom Nav — rendered OUTSIDE the overflow-hidden container so
+          position:fixed works against the viewport on iOS WebKit */}
       {(!isLoading || session) && <BottomNav />}
-    </div>
+    </>
   );
 }
