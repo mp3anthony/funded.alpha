@@ -21,7 +21,7 @@ const jetbrains = JetBrains_Mono({
   weight: ['400', '500', '600'],
   display: 'swap'
 });
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AppProvider } from "@/context/AppContext";
 import AppShell from "@/components/AppShell";
@@ -39,6 +39,18 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "Funded",
   },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f2f2ee' },
+    { media: '(prefers-color-scheme: dark)', color: '#0a0a0a' },
+  ],
 };
 
 // Async Server Component to access cookies and fetch session inside a Suspense boundary
@@ -105,14 +117,11 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full antialiased bg-background">
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover" />
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png?v=2" />
         <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png?v=2" />
         <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512x512.png?v=2" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="theme-color" content="#f2f2ee" media="(prefers-color-scheme: light)" />
-        <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
