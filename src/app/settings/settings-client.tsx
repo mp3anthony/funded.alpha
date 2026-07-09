@@ -263,11 +263,12 @@ export default function SettingsClient() {
       </section>
 
       {/* ── Version & Credits ────────── */}
-      <section className="bg-surface border border-border rounded-2xl p-5 shadow-sm mt-8">
-        <div className="flex flex-col items-center justify-center text-center opacity-60">
-          <p className="text-muted font-sans text-xs tracking-wider leading-relaxed">
-            Built with AI<br />
-            funded. v0.4.0<br />
+      <section className="bg-white/[0.02] border border-border/40 rounded-2xl p-5 mt-8">
+        <div className="flex flex-col items-center justify-center text-center">
+          <p className="text-muted font-sans text-xs tracking-wider leading-loose opacity-50">
+            Built with AI &bull; funded. v0.4.0
+          </p>
+          <p className="text-muted font-sans text-xs tracking-wider opacity-40">
             Concept &amp; Development: Anthony Paull
           </p>
         </div>
@@ -409,13 +410,13 @@ export default function SettingsClient() {
 
           {/* Form Fields */}
           <div className="flex-1 flex flex-col sm:flex-row gap-4">
-            {/* Full Name */}
+            {/* Nickname */}
             <div className="flex-1 space-y-2">
               <label
                 htmlFor="settings-name"
                 className="block text-[10px] font-bold tracking-wider uppercase text-muted"
               >
-                Full Name
+                Nickname
               </label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted pointer-events-none" />
@@ -602,34 +603,10 @@ export default function SettingsClient() {
             <div className="overflow-y-auto flex-1 p-5 space-y-4">
               <div className="bg-surface border border-border rounded-2xl shadow-sm overflow-hidden divide-y divide-border">
           
-          {/* Payment Mode */}
-          <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="flex h-10 w-10 rounded-xl bg-purple-500/10 text-purple-500 items-center justify-center shrink-0">
-                <CreditCard className="h-5 w-5" />
-              </div>
-              <div>
-                <h4 className="text-sm sm:text-base font-bold text-foreground">
-                  Payment Mode
-                </h4>
-                <p className="text-xs text-muted mt-0.5">
-                  How bill splits are settled (Direct or Joint).
-                </p>
-              </div>
-            </div>
-            <div className="shrink-0 flex justify-end">
-              <PaymentModeToggle
-                currentMode={tempMode !== null ? tempMode : isJointFund}
-                onModeChange={handleModeChangeClick}
-                compact={true}
-              />
-            </div>
-          </div>
-
           {/* Joint Fund Features (Only show if Joint Fund enabled) */}
           {isJointFund && (
             <>
-              {/* Contributions */}
+              {/* Contribution Amounts */}
               <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                   <div className="flex h-10 w-10 rounded-xl bg-primary/10 text-primary items-center justify-center shrink-0">
@@ -637,7 +614,7 @@ export default function SettingsClient() {
                   </div>
                   <div>
                     <h4 className="text-sm sm:text-base font-bold text-foreground">
-                      Joint Contributions
+                      Contribution Amounts
                     </h4>
                     <p className="text-xs text-muted mt-0.5">
                       Fixed amounts members pay into the joint fund.
@@ -652,7 +629,7 @@ export default function SettingsClient() {
                 </button>
               </div>
 
-              {/* Contribution Rules */}
+              {/* Automation Rules */}
               <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                   <div className="flex h-10 w-10 rounded-xl bg-blue-500/10 text-blue-500 items-center justify-center shrink-0">
@@ -684,7 +661,7 @@ export default function SettingsClient() {
             </>
           )}
 
-          {/* Household Join Code */}
+          {/* Join Code */}
           <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="flex h-10 w-10 rounded-xl bg-amber-500/10 text-amber-500 items-center justify-center shrink-0">
@@ -692,7 +669,7 @@ export default function SettingsClient() {
               </div>
               <div>
                 <h4 className="text-sm sm:text-base font-bold text-foreground">
-                  Household Join Code
+                  Join Code
                 </h4>
                 <p className="text-xs text-muted mt-0.5">
                   Share this code to invite members.
@@ -759,6 +736,30 @@ export default function SettingsClient() {
                   </button>
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* Payment Mode */}
+          <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="flex h-10 w-10 rounded-xl bg-purple-500/10 text-purple-500 items-center justify-center shrink-0">
+                <CreditCard className="h-5 w-5" />
+              </div>
+              <div>
+                <h4 className="text-sm sm:text-base font-bold text-foreground">
+                  Payment Mode
+                </h4>
+                <p className="text-xs text-muted mt-0.5">
+                  How bill splits are settled (Direct or Joint).
+                </p>
+              </div>
+            </div>
+            <div className="shrink-0 flex justify-end">
+              <PaymentModeToggle
+                currentMode={tempMode !== null ? tempMode : isJointFund}
+                onModeChange={handleModeChangeClick}
+                compact={true}
+              />
             </div>
           </div>
         </div>
