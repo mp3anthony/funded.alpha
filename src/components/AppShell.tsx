@@ -185,8 +185,8 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
 
       {/* Main Content */}
       <main 
-        className="flex-1 overflow-y-auto w-full relative z-10 pb-6"
-        style={{ WebkitOverflowScrolling: 'touch' }}
+        className="flex-1 overflow-y-auto w-full relative z-10"
+        style={{ WebkitOverflowScrolling: 'touch', paddingBottom: 'calc(5rem + env(safe-area-inset-bottom))' }}
       >
         {isLoading ? (
           <div className="flex h-full w-full items-center justify-center">
