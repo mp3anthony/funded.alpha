@@ -25,7 +25,7 @@ export default function BottomNav() {
             <Link
               key={item.name}
               href={item.path}
-              className="group flex flex-1 flex-col items-center justify-center pt-2 text-center transition-all duration-200 ease-in-out"
+              className="group flex flex-1 flex-col items-center justify-center pt-2 text-center transition-colors duration-200 ease-in-out"
               style={{ paddingBottom: 'calc(1.25rem + env(safe-area-inset-bottom))' }}
             >
               <div className="relative flex flex-col items-center gap-1">
