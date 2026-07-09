@@ -16,10 +16,7 @@ export default function BottomNav() {
 
   return (
     <nav className="z-50 w-full shrink-0 border-t border-border bg-background/80 dark:bg-foreground/20 dark:bg-black/80 backdrop-blur-lg">
-      <div 
-        className="mx-auto flex max-w-md items-center justify-around px-4 pt-2"
-        style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
-      >
+      <div className="mx-auto flex max-w-md items-center justify-around px-4 pt-2">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.path;
@@ -28,7 +25,8 @@ export default function BottomNav() {
             <Link
               key={item.name}
               href={item.path}
-              className="group flex flex-1 flex-col items-center justify-center pb-3 pt-2 text-center transition-all duration-200 ease-in-out hover:-translate-y-1"
+              className="group flex flex-1 flex-col items-center justify-center pt-2 text-center transition-all duration-200 ease-in-out"
+              style={{ paddingBottom: 'calc(1.25rem + env(safe-area-inset-bottom))' }}
             >
               <div className="relative flex flex-col items-center gap-1">
                 <Icon
