@@ -71,9 +71,18 @@ export default function LoginPage() {
         setMode("signin");
         setEmail("");
       }
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "An error occurred";
-      setErrorMsg(message);
+    } catch (err: any) {
+      const isRateLimit = 
+        err?.status === 429 || 
+        err?.message?.toLowerCase().includes("rate limit") || 
+        err?.message?.toLowerCase().includes("too many requests");
+        
+      if (isRateLimit) {
+        setErrorMsg("You've reached the testing rate limit (2 emails per hour). Please wait an hour before trying again.");
+      } else {
+        const message = err instanceof Error ? err.message : "An error occurred";
+        setErrorMsg(message);
+      }
     } finally {
       setLoading(false);
     }

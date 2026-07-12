@@ -1,31 +1,23 @@
 # Handoff Note
 
-This task removes the days-adjuster controls from the Notification Settings tab, leaving only the primary toggle switches.
-
 ## Manual Testing Steps
-1. Open the application.
-2. Click the notification bell icon to open the **Notification Center**.
-3. Go to the **Settings** tab.
-4. Verify that:
-   - There are no days-counter controls (no `- days +` UI components) below the **Manual Bill Reminders** and **Auto-Pay Reminders** toggles.
-   - Enabling or disabling each switch works successfully.
+1. Navigate to the login/signup page (`/login`).
+2. Rapidly submit the "Sign Up" form with multiple different test email addresses.
+3. Observe that after the second attempt, the subsequent attempts trigger a 429 rate limit.
+4. Verify that the UI presents the custom warning: `"You've reached the testing rate limit (2 emails per hour). Please wait an hour before trying again."` rather than the default "An error occurred".
 
-## Linter-Check Command
-To verify linting, run:
+### Cross-Platform Testing Checklist
+
+#### Apple iPhone 17 (iOS/WebKit)
+- [ ] Verify the input fields remain accessible and don't zoom awkwardly.
+- [ ] Ensure the new custom error banner renders correctly without breaking the layout or overlapping buttons.
+- [ ] Ensure the native iOS keyboard correctly dismisses when interacting with the custom error banner.
+
+#### Samsung S25 FE (Android/Chromium)
+- [ ] Ensure the custom error banner contrasts appropriately with the background (especially in dark mode).
+- [ ] Validate that the layout handles the viewport correctly when the Android soft keyboard appears alongside the error banner.
+
+## Linter Check Command
 ```bash
 npm run lint
 ```
-
----
-
-## Cross-Platform Verification Checklists
-
-### Apple iPhone 17 (iOS/WebKit)
-- [ ] Open the notification center settings tab in Safari / WebKit view.
-- [ ] Verify there are no days-adjuster layout artifacts or residual styling quirks in the list.
-- [ ] Check native browser touch interaction on the toggle switches to ensure correct sizing and spacing.
-
-### Samsung S25 FE (Android/Chromium)
-- [ ] Open the notification center settings tab in Chrome / Chromium view.
-- [ ] Verify responsiveness of the settings layout.
-- [ ] Check touch-target sizing on toggles to ensure they are comfortable for thumb/finger taps.
