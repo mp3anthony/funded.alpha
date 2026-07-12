@@ -116,7 +116,7 @@ export default function BillCard({
 
       {/* Middle Row: Amount */}
       <div className={`flex items-baseline gap-2.5 ${isCompact ? "shrink-0 pl-4" : "w-full"}`}>
-        <span className={`font-jetbrains font-extrabold text-foreground tracking-tight ${isCompact ? "text-xl" : "text-3xl"}`}>
+        <span className={`font-mono font-extrabold text-foreground tracking-tight ${isCompact ? "text-xl" : "text-3xl"}`}>
           ${formattedAmount}
         </span>
       </div>

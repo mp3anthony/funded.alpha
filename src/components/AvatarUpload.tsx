@@ -155,7 +155,7 @@ export default function AvatarUpload({
             Allowed formats: JPEG, PNG, WebP. Max size: 2MB.
           </p>
           {error && (
-            <p className="text-[10px] text-red-500 font-semibold uppercase tracking-wider animate-shake">
+            <p className="text-[10px] text-destructive font-semibold uppercase tracking-wider animate-shake">
               {error}
             </p>
           )}

@@ -114,7 +114,7 @@ export default function AddPayScheduleSheet({
       >
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-surface/90 px-5 py-3 md:px-6 md:py-4 backdrop-blur">
-          <h2 className="font-syne text-lg font-bold text-foreground">
+          <h2 className="font-heading text-lg font-bold text-foreground">
             {existingSchedule ? "Edit Pay Schedule" : "Add Pay Schedule"}
           </h2>
           <button
@@ -129,7 +129,7 @@ export default function AddPayScheduleSheet({
         {/* Form Body */}
         <div className="flex-1 overflow-y-auto px-5 py-4 md:px-6 md:py-5 space-y-4 md:space-y-5">
           {errorMsg && (
-            <div className="bg-red-500/10 border border-red-500/50 rounded-xl p-3 text-red-500 text-xs font-mono break-words whitespace-pre-wrap">
+            <div className="bg-destructive/10 border border-destructive/50 rounded-xl p-3 text-destructive text-xs font-mono break-words whitespace-pre-wrap">
               <span className="font-bold">Error:</span> {errorMsg}
             </div>
           )}

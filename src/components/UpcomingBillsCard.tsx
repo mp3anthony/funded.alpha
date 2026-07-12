@@ -63,14 +63,14 @@ export const UpcomingBillsCard = React.memo(function UpcomingBillsCard({
     <div className={`bg-surface border border-border rounded-2xl p-6 flex flex-col shadow-xl transition-all duration-300 hover:border-border-strong ${isMinimised ? "h-fit" : "h-full"}`}>
       {/* Header */}
       <div className={`flex items-center justify-between gap-3 ${isMinimised ? "" : "mb-5"}`}>
-        <h3 className="font-syne font-bold text-sm sm:text-base text-foreground tracking-wide flex items-start gap-2 min-w-0">
+        <h3 className="font-heading font-bold text-sm sm:text-base text-foreground tracking-wide flex items-start gap-2 min-w-0">
           <Calendar className="h-4 w-4 text-primary shrink-0 mt-0.5" />
           <span className="break-words">Upcoming Manual Payments</span>
         </h3>
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <Link
             href="/bills"
-            className="text-[10px] font-syne font-bold uppercase tracking-wider text-primary hover:text-foreground transition-colors flex items-center gap-1 group whitespace-nowrap"
+            className="text-[10px] font-heading font-bold uppercase tracking-wider text-primary hover:text-foreground transition-colors flex items-center gap-1 group whitespace-nowrap"
           >
             <span>View All <span className="hidden sm:inline">Bills</span></span>
             <ArrowUpRight className="h-3 w-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
@@ -99,7 +99,7 @@ export const UpcomingBillsCard = React.memo(function UpcomingBillsCard({
               </div>
               <div className="space-y-1">
                 <p className="text-sm font-semibold text-muted">No upcoming manual payments</p>
-                <p className="text-xs text-subtle font-sans max-w-[240px] mx-auto">
+                <p className="text-xs text-subtle font-body max-w-[240px] mx-auto">
                   Start by adding your manual bills to keep track of due dates.
                 </p>
               </div>
@@ -156,7 +156,7 @@ export const UpcomingBillsCard = React.memo(function UpcomingBillsCard({
                     className="py-3.5 flex items-center justify-between hover:bg-foreground/5 -mx-4 px-4 rounded-xl cursor-pointer transition-all duration-200 group active:scale-[0.99]"
                   >
                     <div className="flex flex-col min-w-0 pr-4">
-                      <span className="font-sans font-bold text-sm text-foreground truncate transition-colors">
+                      <span className="font-body font-bold text-sm text-foreground truncate transition-colors">
                         {bill.name}
                       </span>
                       <span
@@ -171,7 +171,7 @@ export const UpcomingBillsCard = React.memo(function UpcomingBillsCard({
                       </span>
                     </div>
                     <div className="flex flex-col items-end shrink-0 gap-1.5">
-                      <span className="font-jetbrains text-sm font-bold text-foreground tracking-tight">
+                      <span className="font-mono text-sm font-bold text-foreground tracking-tight">
                         ${bill.amount.toLocaleString("en-US", {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,

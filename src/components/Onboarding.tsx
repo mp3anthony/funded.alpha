@@ -85,7 +85,7 @@ export default function Onboarding() {
         amount: parseFloat(billAmount),
         status: "Due Soon",
         frequency: billFrequency,
-        statusColor: "text-amber-600 bg-amber-500/10 dark:text-amber-400",
+        statusColor: "text-amber-600 bg-accent/10 dark:text-accent",
         statusIcon: Clock,
         categoryColor: "bg-secondary/10 text-secondary",
       });
@@ -181,7 +181,7 @@ export default function Onboarding() {
                         onClick={() => setFlowMode("create")}
                         className="flex flex-col items-center justify-center p-5 rounded-2xl border border-border bg-white/5 hover:bg-white/10 hover:border-primary/50 transition-all text-center cursor-pointer group"
                       >
-                        <span className="font-syne font-bold text-sm text-foreground group-hover:text-primary transition-colors">
+                        <span className="font-heading font-bold text-sm text-foreground group-hover:text-primary transition-colors">
                           Create a Household
                         </span>
                         <span className="text-[10px] text-muted mt-1 font-mono">
@@ -193,7 +193,7 @@ export default function Onboarding() {
                         onClick={() => setIsJoinSheetOpen(true)}
                         className="flex flex-col items-center justify-center p-5 rounded-2xl border border-border bg-white/5 hover:bg-white/10 hover:border-primary/50 transition-all text-center cursor-pointer group"
                       >
-                        <span className="font-syne font-bold text-sm text-foreground group-hover:text-primary transition-colors">
+                        <span className="font-heading font-bold text-sm text-foreground group-hover:text-primary transition-colors">
                           Join via Code
                         </span>
                         <span className="text-[10px] text-muted mt-1 font-mono">
@@ -210,10 +210,10 @@ export default function Onboarding() {
                       <div className="flex justify-center h-[40px]">
                         <Logo size="medium" showWordmark={true} />
                       </div>
-                      <h2 className="font-syne font-bold text-lg text-foreground">Create your Household</h2>
+                      <h2 className="font-heading font-bold text-lg text-foreground">Create your Household</h2>
                     </div>
                     {createError && (
-                      <div className="bg-red-500/10 border border-red-500/50 rounded-xl p-3 text-red-500 text-xs font-mono break-words whitespace-pre-wrap">
+                      <div className="bg-destructive/10 border border-destructive/50 rounded-xl p-3 text-destructive text-xs font-mono break-words whitespace-pre-wrap">
                         <span className="font-bold">Failed to create household:</span><br/>
                         {createError}
                       </div>

@@ -93,7 +93,7 @@ export default function EditMemberModal({
       >
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-border shrink-0">
-          <h3 className="text-lg font-bold text-foreground font-syne flex items-center gap-2">
+          <h3 className="text-lg font-bold text-foreground font-heading flex items-center gap-2">
             <User className="h-5 w-5 text-primary" />
             Edit Member Settings
           </h3>
@@ -106,7 +106,7 @@ export default function EditMemberModal({
         </div>
 
         <form onSubmit={handleSave} className="flex flex-col flex-1 overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-5 md:p-6 space-y-5 md:space-y-6 font-sans">
+          <div className="flex-1 overflow-y-auto p-5 md:p-6 space-y-5 md:space-y-6 font-body">
             {error && (
               <div className="p-3.5 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-medium">
                 {error}
@@ -186,7 +186,7 @@ export default function EditMemberModal({
                 </button>
               </div>
               {role === 'owner' && member.role !== 'owner' && (
-                <p className="text-[10px] text-primary leading-normal font-sans">
+                <p className="text-[10px] text-primary leading-normal font-body">
                   Promoting this member to Owner grants them full administrative control, including the ability to manage other members and edit household configurations.
                 </p>
               )}
@@ -205,7 +205,7 @@ export default function EditMemberModal({
                     onRemoveTrigger(member);
                     onClose();
                   }}
-                  className="px-3 py-2 rounded-xl bg-destructive/10 hover:bg-destructive text-destructive hover:text-foreground border border-destructive/20 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer font-syne uppercase tracking-wider"
+                  className="px-3 py-2 rounded-xl bg-destructive/10 hover:bg-destructive text-destructive hover:text-foreground border border-destructive/20 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer font-heading uppercase tracking-wider"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                   Remove
@@ -215,7 +215,7 @@ export default function EditMemberModal({
           </div>
 
           {/* Footer */}
-          <div className="flex items-center gap-3 p-5 border-t border-border font-sans shrink-0">
+          <div className="flex items-center gap-3 p-5 border-t border-border font-body shrink-0">
             <button
               type="button"
               onClick={onClose}
@@ -227,7 +227,7 @@ export default function EditMemberModal({
             <button
               type="submit"
               disabled={loading || (name === member.name && role === member.role)}
-              className="flex-1 py-3 rounded-xl bg-primary text-black text-sm font-bold hover:brightness-110 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-1.5 cursor-pointer font-syne uppercase tracking-wider"
+              className="flex-1 py-3 rounded-xl bg-primary text-black text-sm font-bold hover:brightness-110 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-1.5 cursor-pointer font-heading uppercase tracking-wider"
             >
               {loading && <Loader2 className="h-4 w-4 animate-spin text-black" />}
               Save Changes

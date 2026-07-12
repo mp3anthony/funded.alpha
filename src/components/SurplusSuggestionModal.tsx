@@ -64,7 +64,7 @@ export default function SurplusSuggestionModal({
         <div className="flex items-center justify-between p-5 border-b border-border shrink-0">
           <div className="flex items-center gap-2 text-primary">
             <TrendingUp size={20} />
-            <h3 className="font-syne font-extrabold text-base text-foreground tracking-wide">
+            <h3 className="font-heading font-extrabold text-base text-foreground tracking-wide">
               Surplus Detected!
             </h3>
           </div>
@@ -80,10 +80,10 @@ export default function SurplusSuggestionModal({
         <div className="flex-1 overflow-y-auto p-5 space-y-5">
           {/* Title details */}
           <div className="space-y-1">
-            <h4 className="font-syne font-bold text-lg text-foreground leading-tight">
+            <h4 className="font-heading font-bold text-lg text-foreground leading-tight">
               {memberName} earned <span className="text-primary font-mono">${formattedSurplus}</span> over average!
             </h4>
-            <p className="text-xs text-muted font-sans">
+            <p className="text-xs text-muted font-body">
               Would you like to allocate this extra income to your savings goals or bills surplus pool?
             </p>
           </div>
@@ -136,7 +136,7 @@ export default function SurplusSuggestionModal({
                   <span className="text-xs font-bold text-foreground block">
                     Bills Surplus Pool
                   </span>
-                  <span className="text-[10px] text-muted block font-sans">
+                  <span className="text-[10px] text-muted block font-body">
                     Keep in household balance pool
                   </span>
                 </div>

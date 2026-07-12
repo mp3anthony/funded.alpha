@@ -24,12 +24,12 @@ export default function BillsClient() {
 
   const [isMounted, setIsMounted] = useState(false);
   const [isCompact, setIsCompact] = useState(false);
-  const [collapsedCategories, setCollapsedCategories] = useState<Record<string, boolean>>({});
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
   const [isEditCategoryOrderOpen, setIsEditCategoryOrderOpen] = useState(false);
   const [categoryOrder, setCategoryOrder] = useState<string[]>([]);
 
   const toggleCategory = (category: string) => {
-    setCollapsedCategories(prev => ({
+    setExpandedCategories(prev => ({
       ...prev,
       [category]: !prev[category]
     }));
@@ -108,7 +108,7 @@ export default function BillsClient() {
   }, [filteredBills, displayFrequency]);
 
   const allCategories = useMemo(() => {
-    const defaultCats = ["Housing", "Utilities", "Groceries", "Subscriptions", "Transport", "Health", "Personal", "Debt", "Other"];
+    const defaultCats = ["Subscriptions", "Living Costs", "Household Bills", "Debt/Finance", "Loans", "Temporary", "Other"];
     const currentCats = Object.keys(groupedBills);
     return Array.from(new Set([...categoryOrder, ...defaultCats, ...currentCats]));
   }, [groupedBills, categoryOrder]);
@@ -143,7 +143,7 @@ export default function BillsClient() {
 
       {/* 3. Total Bar */}
       <div className="px-1">
-        <div className="text-3xl font-bold text-accent tracking-tight font-jetbrains">
+        <div className="text-3xl font-bold text-primary tracking-tight font-mono">
           ${totalBills.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </div>
         <div className="text-xs font-bold uppercase tracking-wider text-subtle mt-1">
@@ -168,14 +168,12 @@ export default function BillsClient() {
                 className="w-full rounded-xl border border-border bg-background px-2 py-2 text-[10px] font-semibold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-6"
               >
                 <option value="All">All</option>
-                <option value="Housing">Housing</option>
-                <option value="Utilities">Utilities</option>
-                <option value="Groceries">Groceries</option>
                 <option value="Subscriptions">Subscriptions</option>
-                <option value="Transport">Transport</option>
-                <option value="Health">Health</option>
-                <option value="Personal">Personal</option>
-                <option value="Debt">Debt</option>
+                <option value="Living Costs">Living Costs</option>
+                <option value="Household Bills">Household Bills</option>
+                <option value="Debt/Finance">Debt/Finance</option>
+                <option value="Loans">Loans</option>
+                <option value="Temporary">Temporary</option>
                 <option value="Other">Other</option>
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1 text-muted">
@@ -295,7 +293,7 @@ export default function BillsClient() {
                   onClick={() => toggleCategory(category)}
                   className="flex items-center gap-2 w-full text-left px-1 focus:outline-none group"
                 >
-                  {collapsedCategories[category] ? (
+                  {!expandedCategories[category] ? (
                     <ChevronRight className="h-4 w-4 text-muted group-hover:text-foreground transition-colors" />
                   ) : (
                     <ChevronDown className="h-4 w-4 text-muted group-hover:text-foreground transition-colors" />
@@ -305,7 +303,7 @@ export default function BillsClient() {
                   </h3>
                 </button>
                 
-                {!collapsedCategories[category] && (
+                {expandedCategories[category] && (
                   <div className="grid grid-cols-1 gap-3">
                     {categoryBills.map((bill) => (
                       <BillCard

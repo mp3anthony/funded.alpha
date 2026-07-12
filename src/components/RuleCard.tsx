@@ -46,12 +46,12 @@ export default function RuleCard({
         <span className="text-[10px] font-bold text-primary uppercase tracking-wider block font-mono">
           {memberName}&apos;s Rule
         </span>
-        <h4 className="font-sans text-xs text-muted leading-relaxed break-words">
+        <h4 className="font-body text-xs text-muted leading-relaxed break-words">
           When pay exceeds{" "}
-          <span className="font-jetbrains font-bold text-foreground text-sm">${formattedThreshold}</span>:
+          <span className="font-mono font-bold text-foreground text-sm">${formattedThreshold}</span>:
         </h4>
         <div className="flex flex-wrap items-center gap-1.5 pt-0.5 text-xs font-bold text-foreground">
-          <span>Add <span className="font-jetbrains text-primary">{formattedAmount}</span></span>
+          <span>Add <span className="font-mono text-primary">{formattedAmount}</span></span>
           <ArrowRight size={12} className="text-muted shrink-0" />
           <span className="break-words">
             {rule.action_type === "goal" ? `Goal: ${targetName}` : "My joint contribution"}

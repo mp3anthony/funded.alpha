@@ -49,14 +49,14 @@ export const ActiveGoalsCard = React.memo(function ActiveGoalsCard({
     <div className={`bg-surface border border-border rounded-2xl p-6 flex flex-col shadow-xl transition-all duration-300 hover:border-white/20 ${isMinimised ? "h-fit" : "h-full"}`}>
       {/* Header */}
       <div className={`flex items-center justify-between gap-3 ${isMinimised ? "" : "mb-5"}`}>
-        <h3 className="font-syne font-bold text-sm sm:text-base text-foreground tracking-wide flex items-start gap-2 min-w-0">
+        <h3 className="font-heading font-bold text-sm sm:text-base text-foreground tracking-wide flex items-start gap-2 min-w-0">
           <Target className="h-4 w-4 text-primary shrink-0 mt-0.5" />
           <span className="break-words">Savings Goals</span>
         </h3>
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <Link
             href="/funds"
-            className="text-[10px] font-syne font-bold uppercase tracking-wider text-primary hover:text-foreground transition-colors flex items-center gap-1 group whitespace-nowrap"
+            className="text-[10px] font-heading font-bold uppercase tracking-wider text-primary hover:text-foreground transition-colors flex items-center gap-1 group whitespace-nowrap"
           >
             <span>View All</span>
             <ArrowUpRight className="h-3 w-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
@@ -85,7 +85,7 @@ export const ActiveGoalsCard = React.memo(function ActiveGoalsCard({
               </div>
               <div className="space-y-1">
                 <p className="text-sm font-semibold text-muted">No active goals</p>
-                <p className="text-xs text-subtle font-sans max-w-[200px] mx-auto">
+                <p className="text-xs text-subtle font-body max-w-[200px] mx-auto">
                   Set up your savings goals to track progress here.
                 </p>
               </div>
@@ -112,7 +112,7 @@ export const ActiveGoalsCard = React.memo(function ActiveGoalsCard({
                           <GoalIcon className="h-4 w-4" />
                         </div>
                         <div className="min-w-0">
-                          <h4 className="font-sans font-bold text-xs text-foreground truncate group-hover:text-foreground transition-colors leading-none">
+                          <h4 className="font-body font-bold text-xs text-foreground truncate group-hover:text-foreground transition-colors leading-none">
                             {goal.name}
                           </h4>
                           <span className="text-[8px] font-bold font-mono text-subtle uppercase tracking-wider block mt-0.5">
@@ -136,13 +136,13 @@ export const ActiveGoalsCard = React.memo(function ActiveGoalsCard({
                     </div>
 
                     <div className="flex items-center justify-between font-mono text-[9px] text-subtle">
-                      <span className="font-jetbrains">
+                      <span className="font-mono">
                         ${goal.currentAmount.toLocaleString("en-US", {
                           minimumFractionDigits: 0,
                           maximumFractionDigits: 2,
                         })}
                       </span>
-                      <span className="font-jetbrains text-neutral-600">
+                      <span className="font-mono text-neutral-600">
                         target: ${goal.targetAmount.toLocaleString("en-US", {
                           minimumFractionDigits: 0,
                           maximumFractionDigits: 2,

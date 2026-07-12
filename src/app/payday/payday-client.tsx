@@ -182,7 +182,7 @@ export default function PaydayClient() {
 
       {/* Upcoming Pays */}
       <div className="space-y-4">
-        <h2 className="text-base font-bold text-subtle uppercase tracking-wider px-1 font-syne">
+        <h2 className="text-base font-bold text-subtle uppercase tracking-wider px-1 font-heading">
           Upcoming Pays
         </h2>
 
@@ -293,7 +293,7 @@ export default function PaydayClient() {
 
       {/* Recent Pay History */}
       <div className="space-y-4">
-        <h2 className="text-base font-bold text-subtle uppercase tracking-wider px-1 font-syne">
+        <h2 className="text-base font-bold text-subtle uppercase tracking-wider px-1 font-heading">
           Recent Pay History
         </h2>
 

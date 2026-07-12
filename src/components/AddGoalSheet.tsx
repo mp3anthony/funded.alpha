@@ -70,9 +70,9 @@ export default function AddGoalSheet({
     setIsSaving(true);
     try {
       // Determine styling details based on category
-      let bgLight = "bg-slate-500/10 text-slate-600 dark:text-slate-400";
-      let barColor = "bg-slate-500";
-      let accentText = "text-slate-600 dark:text-slate-400";
+      let bgLight = "bg-surface-raised/10 text-muted dark:text-muted";
+      let barColor = "bg-surface-raised";
+      let accentText = "text-muted dark:text-muted";
 
       if (category === "Vacation") {
         bgLight = "bg-secondary/10 text-secondary";
@@ -91,9 +91,9 @@ export default function AddGoalSheet({
         barColor = "bg-indigo-500";
         accentText = "text-indigo-500";
       } else if (category === "Education") {
-        bgLight = "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400";
-        barColor = "bg-yellow-500";
-        accentText = "text-yellow-600 dark:text-yellow-400";
+        bgLight = "bg-accent/10 text-yellow-600 dark:text-accent";
+        barColor = "bg-accent";
+        accentText = "text-yellow-600 dark:text-accent";
       } else if (category === "Debt Payoff") {
         bgLight = "bg-rose-500/10 text-rose-500";
         barColor = "bg-rose-500";
@@ -155,7 +155,7 @@ export default function AddGoalSheet({
         
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-surface/90 px-5 py-3 md:px-6 md:py-4 backdrop-blur">
-          <h2 className="font-syne text-xl font-bold text-foreground">
+          <h2 className="font-heading text-xl font-bold text-foreground">
             {existingGoal ? "Edit Goal" : "Create Goal"}
           </h2>
           <button 
@@ -180,7 +180,7 @@ export default function AddGoalSheet({
               placeholder="e.g. Holiday Trip, House Deposit"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-xl border border-border bg-surface-raised px-4 py-2.5 md:py-3 text-foreground placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-sans text-sm"
+              className="w-full rounded-xl border border-border bg-surface-raised px-4 py-2.5 md:py-3 text-foreground placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-body text-sm"
               required
             />
           </div>

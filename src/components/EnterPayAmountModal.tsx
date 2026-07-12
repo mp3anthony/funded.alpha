@@ -115,7 +115,7 @@ export default function EnterPayAmountModal({
       >
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-border shrink-0">
-          <h3 className="font-syne font-bold text-base text-foreground">
+          <h3 className="font-heading font-bold text-base text-foreground">
             {title || "Review & Log Pay"}
           </h3>
           <button
@@ -159,7 +159,7 @@ export default function EnterPayAmountModal({
                 placeholder="e.g. Regular monthly pay, overtime bonus"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 h-20 resize-none font-sans"
+                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 h-20 resize-none font-body"
               />
             </div>
           </div>

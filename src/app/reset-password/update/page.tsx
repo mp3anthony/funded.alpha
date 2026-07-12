@@ -57,7 +57,7 @@ export default function UpdatePasswordPage() {
           <div className="flex justify-center mb-6">
             <Logo size="large" showWordmark={true} />
           </div>
-          <h1 className="font-syne text-2xl font-extrabold text-foreground tracking-tight">
+          <h1 className="font-heading text-2xl font-extrabold text-foreground tracking-tight">
             Update your password
           </h1>
           <p className="text-sm text-muted mt-2">

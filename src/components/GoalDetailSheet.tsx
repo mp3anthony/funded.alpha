@@ -61,7 +61,7 @@ export default function GoalDetailSheet({
     StatusIcon = Check;
   } else if (status === "paused") {
     statusLabel = "Paused";
-    statusBadgeClass = "bg-amber-500/10 text-amber-500 border border-amber-500/20";
+    statusBadgeClass = "bg-accent/10 text-accent border border-accent/20";
     StatusIcon = Pause;
   }
 
@@ -88,7 +88,7 @@ export default function GoalDetailSheet({
         
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-surface/90 px-6 py-4 backdrop-blur">
-          <h2 className="font-syne text-xl font-bold text-foreground">Goal Details</h2>
+          <h2 className="font-heading text-xl font-bold text-foreground">Goal Details</h2>
           <button 
             onClick={onClose}
             className="rounded-full p-2 text-muted hover:bg-white/5 hover:text-foreground transition-colors focus:outline-none"
@@ -103,7 +103,7 @@ export default function GoalDetailSheet({
           {/* Goal Name & Category */}
           <div className="flex flex-col space-y-1">
             <div className="flex items-center justify-between">
-              <h3 className="font-syne font-bold text-2xl text-foreground tracking-wide truncate pr-4">
+              <h3 className="font-heading font-bold text-2xl text-foreground tracking-wide truncate pr-4">
                 {goal.name}
               </h3>
               <span className="shrink-0 rounded-full px-3 py-1 text-[10px] font-heading font-bold uppercase tracking-widest bg-surface-elevated text-muted border border-border">

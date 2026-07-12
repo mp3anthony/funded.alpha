@@ -115,7 +115,7 @@ export default function RemoveMemberModal({
       >
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-border shrink-0">
-          <h3 className="text-lg font-bold text-foreground font-syne flex items-center gap-2">
+          <h3 className="text-lg font-bold text-foreground font-heading flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-destructive" />
             Remove Household Member
           </h3>
@@ -137,7 +137,7 @@ export default function RemoveMemberModal({
 
             {/* Warning Message */}
             <div className="space-y-2">
-              <p className="text-sm text-foreground font-sans leading-relaxed">
+              <p className="text-sm text-foreground font-body leading-relaxed">
                 Removing <strong className="text-foreground">{member.name}</strong> will revoke their access to the household and require reassigning or deleting their active financial records.
               </p>
             </div>
@@ -235,14 +235,14 @@ export default function RemoveMemberModal({
             )}
 
             {billsCount === 0 && goalsCount === 0 && schedulesCount > 0 && (
-              <p className="text-xs text-subtle leading-relaxed font-sans">
+              <p className="text-xs text-subtle leading-relaxed font-body">
                 Only their pay schedules will be deleted. No goals or active bill splits are affected.
               </p>
             )}
           </div>
 
           {/* Footer */}
-          <div className="flex items-center gap-3 p-5 border-t border-border font-sans shrink-0">
+          <div className="flex items-center gap-3 p-5 border-t border-border font-body shrink-0">
             <button
               type="button"
               onClick={onClose}

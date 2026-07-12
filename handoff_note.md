@@ -1,23 +1,25 @@
 # Handoff Note
 
+The default state of the bills categories has been updated to be minimized (collapsed) upon page load.
+
 ## Manual Testing Steps
-1. Navigate to the login/signup page (`/login`).
-2. Rapidly submit the "Sign Up" form with multiple different test email addresses.
-3. Observe that after the second attempt, the subsequent attempts trigger a 429 rate limit.
-4. Verify that the UI presents the custom warning: `"You've reached the testing rate limit (2 emails per hour). Please wait an hour before trying again."` rather than the default "An error occurred".
 
-### Cross-Platform Testing Checklist
+### Apple iPhone 17 (iOS/WebKit)
+- [ ] Open the `/bills` page in Safari.
+- [ ] Verify that all categories (e.g., Subscriptions, Living Costs, Household Bills) are **collapsed** by default.
+- [ ] Tap on a category header and verify it expands correctly, revealing the bills inside.
+- [ ] Tap the category header again and ensure it collapses properly.
+- [ ] Use the "Minimize All" / "Expand All" button (which toggles bill compactness) and check if it behaves as expected without conflicting with the collapsed categories state.
 
-#### Apple iPhone 17 (iOS/WebKit)
-- [ ] Verify the input fields remain accessible and don't zoom awkwardly.
-- [ ] Ensure the new custom error banner renders correctly without breaking the layout or overlapping buttons.
-- [ ] Ensure the native iOS keyboard correctly dismisses when interacting with the custom error banner.
+### Samsung S25 FE (Android/Chromium)
+- [ ] Open the `/bills` page in Chrome.
+- [ ] Verify that all categories are **collapsed** upon initial load.
+- [ ] Tap on a category header and verify the accordion animation opens it correctly.
+- [ ] Tap the category header again and confirm it collapses smoothly.
+- [ ] Use the "Minimize All" / "Expand All" button and ensure layout reflows properly without any stuttering.
 
-#### Samsung S25 FE (Android/Chromium)
-- [ ] Ensure the custom error banner contrasts appropriately with the background (especially in dark mode).
-- [ ] Validate that the layout handles the viewport correctly when the Android soft keyboard appears alongside the error banner.
-
-## Linter Check Command
+## Linter Checks
+Run the following command to ensure there are no build or linting errors:
 ```bash
 npm run lint
 ```

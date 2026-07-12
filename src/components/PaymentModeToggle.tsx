@@ -33,7 +33,7 @@ export default function PaymentModeToggle({ currentMode, onModeChange, compact =
   return (
     <div className="flex flex-col space-y-4 w-full">
       <div className="flex flex-col space-y-2">
-        <h3 className="font-syne font-bold text-lg text-foreground text-center sm:text-left">
+        <h3 className="font-heading font-bold text-lg text-foreground text-center sm:text-left">
           Does your household use a joint account?
         </h3>
         <p className="text-xs text-muted text-center sm:text-left font-mono">

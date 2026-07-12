@@ -66,7 +66,7 @@ export default function BillDetailSheet({
         
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-surface/90 px-6 py-4 backdrop-blur">
-          <h2 className="font-syne text-xl font-bold text-foreground">Bill Details</h2>
+          <h2 className="font-heading text-xl font-bold text-foreground">Bill Details</h2>
           <button 
             onClick={onClose}
             className="rounded-full p-2 text-muted hover:bg-white/5 hover:text-foreground transition-colors focus:outline-none"
@@ -232,7 +232,7 @@ export default function BillDetailSheet({
                 markAsUnpaid(bill);
                 onClose();
               }}
-              className="w-full rounded-xl py-3.5 bg-amber-500/20 text-amber-500 border border-amber-500/30 font-heading font-bold uppercase tracking-wider text-xs hover:bg-amber-500 hover:text-foreground transition-all active:scale-[0.98] cursor-pointer"
+              className="w-full rounded-xl py-3.5 bg-accent/20 text-accent border border-accent/30 font-heading font-bold uppercase tracking-wider text-xs hover:bg-accent hover:text-foreground transition-all active:scale-[0.98] cursor-pointer"
             >
               Mark as Unpaid
             </button>

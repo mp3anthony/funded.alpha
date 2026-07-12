@@ -34,10 +34,10 @@ export default function ConfirmEmailPage() {
         </div>
 
         <div className="space-y-2">
-          <h1 className="font-syne font-extrabold text-2xl tracking-tight text-foreground">
+          <h1 className="font-heading font-extrabold text-2xl tracking-tight text-foreground">
             Confirm Your Email
           </h1>
-          <p className="text-sm text-foreground leading-relaxed font-sans max-w-xs mx-auto">
+          <p className="text-sm text-foreground leading-relaxed font-body max-w-xs mx-auto">
             We sent a verification link to <strong className="text-foreground">{userEmail}</strong>. Please check your inbox and confirm your account.
           </p>
         </div>

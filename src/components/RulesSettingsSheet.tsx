@@ -156,11 +156,11 @@ export default function RulesSettingsSheet({
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-surface/90 px-5 py-3 md:px-6 md:py-4 backdrop-blur">
           <div>
-            <h2 className="font-syne text-lg font-bold text-foreground flex items-center gap-1.5">
+            <h2 className="font-heading text-lg font-bold text-foreground flex items-center gap-1.5">
               <Sparkles size={18} className="text-primary animate-pulse" />
               <span>Contribution Rules</span>
             </h2>
-            <p className="text-[10px] text-muted font-sans mt-0.5">
+            <p className="text-[10px] text-muted font-body mt-0.5">
               Automatically allocate excess pay when you earn above a threshold
             </p>
           </div>
@@ -176,7 +176,7 @@ export default function RulesSettingsSheet({
           {/* Rule Form Panel Overlay */}
           {isFormOpen ? (
           <form onSubmit={handleSave} className="flex flex-col space-y-5 px-6 py-5 border-b border-border-strong bg-background/50">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-primary font-syne">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-primary font-heading">
               {editingRule ? "Edit Automation Rule" : "Create Automation Rule"}
             </h3>
 
@@ -332,7 +332,7 @@ export default function RulesSettingsSheet({
                     This percentage will be calculated from the amount over your threshold (e.g., 50% means half of your surplus)
                   </p>
                   {isPercentageOverLimit && (
-                    <p className="text-[10px] text-red-500 font-semibold uppercase tracking-wider">
+                    <p className="text-[10px] text-destructive font-semibold uppercase tracking-wider">
                       Percentage must be between 0.01 and 100
                     </p>
                   )}

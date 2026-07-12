@@ -134,12 +134,12 @@ export const HealthScoreCard = React.memo(function HealthScoreCard() {
             className={`w-3.5 h-3.5 rounded-full ${dotColor} transition-colors duration-700`}
             style={{ boxShadow: `0 0 12px ${glowColor}80` }}
           />
-          <h2 className="font-syne font-extrabold text-3xl tracking-tight text-foreground">
+          <h2 className="font-heading font-extrabold text-3xl tracking-tight text-foreground">
             {statusText}
           </h2>
         </div>
         {isJointFund && (
-          <p className="text-sm text-subtle font-sans pt-1">
+          <p className="text-sm text-subtle font-body pt-1">
             {weeklySurplusActual >= 0 
               ? `$${formatCurrency(weeklySurplusActual).replace('$', '')} surplus after bills this week` 
               : `-$${formatCurrency(Math.abs(weeklySurplusActual)).replace('$', '')} deficit after bills this week`}

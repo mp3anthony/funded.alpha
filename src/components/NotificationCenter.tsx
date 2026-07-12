@@ -128,7 +128,7 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
 
   const getIconForType = (type: string) => {
     switch (type) {
-      case 'manual_bill': return <Clock size={20} className="text-amber-500" />;
+      case 'manual_bill': return <Clock size={20} className="text-accent" />;
       case 'auto_pay': return <AlertTriangle size={20} className="text-rose-500" />;
       case 'lodge_payment': return <CheckCircle size={20} className="text-primary" />;
       default: return <Bell size={20} className="text-muted" />;
@@ -146,7 +146,7 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
         {/* Header */}
         <div className="sticky top-0 z-10 flex flex-col border-b border-border bg-surface/90 px-6 py-4 backdrop-blur">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-syne text-xl font-bold text-foreground flex items-center gap-2">
+            <h2 className="font-heading text-xl font-bold text-foreground flex items-center gap-2">
               <Bell size={20} /> Notifications
             </h2>
             <button 
@@ -252,7 +252,7 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
                               <div className="relative">
                                 <button
                                   onClick={() => setActiveSnoozeMenuId(activeSnoozeMenuId === notif.id ? null : notif.id)}
-                                  className="p-1 text-muted hover:text-amber-500 transition-colors flex justify-center"
+                                  className="p-1 text-muted hover:text-accent transition-colors flex justify-center"
                                   title="Snooze reminder"
                                 >
                                   <Clock size={16} />
@@ -340,7 +340,7 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
                   </div>
 
                   <div className={`space-y-4 ${!notificationSettings.all_enabled ? 'opacity-50 pointer-events-none' : ''}`}>
-                    <h4 className="font-syne font-semibold text-muted uppercase tracking-wider text-xs">Notification Types</h4>
+                    <h4 className="font-heading font-semibold text-muted uppercase tracking-wider text-xs">Notification Types</h4>
                     
                     <div className="flex items-center justify-between p-3 border-b border-border-strong">
                       <div className="flex-1 pr-4">

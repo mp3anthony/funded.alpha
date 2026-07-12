@@ -146,7 +146,7 @@ const INITIAL_BILLS: Bill[] = [
     amount: 1200.0,
     status: "Due Soon",
     frequency: "Monthly",
-    statusColor: "text-amber-600 bg-amber-500/10 dark:text-amber-400",
+    statusColor: "text-amber-600 bg-accent/10 dark:text-accent",
     statusIcon: Clock,
     categoryColor: "bg-secondary/10 text-secondary",
     is_recurring: true,
@@ -159,9 +159,9 @@ const INITIAL_BILLS: Bill[] = [
     amount: 145.5,
     status: "Due Soon",
     frequency: "Monthly",
-    statusColor: "text-amber-600 bg-amber-500/10 dark:text-amber-400",
+    statusColor: "text-amber-600 bg-accent/10 dark:text-accent",
     statusIcon: Clock,
-    categoryColor: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+    categoryColor: "bg-accent/10 text-amber-600 dark:text-accent",
     is_recurring: true,
   },
   {
@@ -172,7 +172,7 @@ const INITIAL_BILLS: Bill[] = [
     amount: 79.99,
     status: "Due Soon",
     frequency: "Monthly",
-    statusColor: "text-amber-600 bg-amber-500/10 dark:text-amber-400",
+    statusColor: "text-amber-600 bg-accent/10 dark:text-accent",
     statusIcon: Clock,
     categoryColor: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
     is_recurring: true,
@@ -285,7 +285,7 @@ function getStatusStyle(status: string) {
     case "Due Soon":
     default:
       return {
-        statusColor: "text-amber-600 bg-amber-500/10 dark:text-amber-400",
+        statusColor: "text-amber-600 bg-accent/10 dark:text-accent",
         statusIcon: Clock,
       };
   }
@@ -293,20 +293,20 @@ function getStatusStyle(status: string) {
 
 function getCategoryColor(category: string) {
   switch (category) {
-    case "Housing":
+    case "Household Bills":
       return "bg-secondary/10 text-secondary";
-    case "Utilities":
-      return "bg-amber-500/10 text-amber-600 dark:text-amber-400";
-    case "Services":
+    case "Temporary":
+      return "bg-accent/10 text-amber-600 dark:text-accent";
+    case "Subscriptions":
       return "bg-purple-500/10 text-purple-600 dark:text-purple-400";
-    case "Health & Fitness":
+    case "Living Costs":
       return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400";
-    case "Auto":
+    case "Debt/Finance":
       return "bg-rose-500/10 text-rose-600 dark:text-rose-400";
-    case "Entertainment":
+    case "Loans":
       return "bg-pink-500/10 text-pink-600 dark:text-pink-400";
     default:
-      return "bg-slate-500/10 text-slate-600 dark:text-slate-400";
+      return "bg-surface-raised/10 text-muted dark:text-muted";
   }
 }
 
@@ -342,9 +342,9 @@ function getFundStyle(category: string) {
       };
     case "Education":
       return {
-        bgLight: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
-        barColor: "bg-yellow-500",
-        accentText: "text-yellow-600 dark:text-yellow-400",
+        bgLight: "bg-accent/10 text-yellow-600 dark:text-accent",
+        barColor: "bg-accent",
+        accentText: "text-yellow-600 dark:text-accent",
         icon: BookOpen,
       };
     case "Debt Payoff":
@@ -364,9 +364,9 @@ function getFundStyle(category: string) {
     case "Other":
     default:
       return {
-        bgLight: "bg-slate-500/10 text-slate-600 dark:text-slate-400",
-        barColor: "bg-slate-500",
-        accentText: "text-slate-600 dark:text-slate-400",
+        bgLight: "bg-surface-raised/10 text-muted dark:text-muted",
+        barColor: "bg-surface-raised",
+        accentText: "text-muted dark:text-muted",
         icon: HelpCircle,
       };
   }

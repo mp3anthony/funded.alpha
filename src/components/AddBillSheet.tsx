@@ -147,7 +147,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
         
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-surface/90 px-4 py-3 sm:px-6 sm:py-4 backdrop-blur">
-          <h2 className="font-syne text-xl font-bold text-foreground">
+          <h2 className="font-heading text-xl font-bold text-foreground">
             {existingBill ? "Edit Bill" : "Add Bill"}
           </h2>
           <button 
@@ -162,7 +162,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
         {/* Form Body */}
         <div className="flex-1 overflow-y-auto px-4 py-4 md:px-6 md:py-6 space-y-4 md:space-y-6">
           {errorMsg && (
-            <div className="bg-red-500/10 border border-red-500/50 rounded-xl p-3 text-red-500 text-xs font-mono break-words whitespace-pre-wrap">
+            <div className="bg-destructive/10 border border-destructive/50 rounded-xl p-3 text-destructive text-xs font-mono break-words whitespace-pre-wrap">
               <span className="font-bold">Failed to save bill:</span><br/>
               {errorMsg}
             </div>
@@ -193,14 +193,12 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
                 onChange={(e) => setCategory(e.target.value)}
                 className="w-full rounded-xl border border-border bg-surface-raised px-4 py-2.5 md:py-3 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all appearance-none text-sm cursor-pointer"
               >
-                <option value="Housing">Housing</option>
-                <option value="Utilities">Utilities</option>
-                <option value="Groceries">Groceries</option>
                 <option value="Subscriptions">Subscriptions</option>
-                <option value="Transport">Transport</option>
-                <option value="Health">Health</option>
-                <option value="Personal">Personal</option>
-                <option value="Debt">Debt</option>
+                <option value="Living Costs">Living Costs</option>
+                <option value="Household Bills">Household Bills</option>
+                <option value="Debt/Finance">Debt/Finance</option>
+                <option value="Loans">Loans</option>
+                <option value="Temporary">Temporary</option>
                 <option value="Other">Other</option>
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-muted">
@@ -331,7 +329,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
               </div>
             </div>
             {householdMembers.length === 0 && (
-              <span className="text-xs text-amber-500 font-medium">
+              <span className="text-xs text-accent font-medium">
                 Add household members first (Showing logged-in user as fallback)
               </span>
             )}

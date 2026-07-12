@@ -210,7 +210,7 @@ export default function SettingsClient() {
           className="w-full flex items-center justify-between p-4 sm:p-5 hover:bg-surface-raised transition-colors text-left"
         >
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 rounded-xl bg-amber-500/10 text-amber-500 items-center justify-center shrink-0">
+            <div className="flex h-10 w-10 rounded-xl bg-accent/10 text-accent items-center justify-center shrink-0">
               <Users className="h-5 w-5" />
             </div>
             <span className="font-bold text-sm sm:text-base text-foreground">Household Settings</span>
@@ -233,14 +233,14 @@ export default function SettingsClient() {
       </section>
 
 {/* ── Danger Zone Section ────────────── */}
-      <section className="bg-red-500/5 border border-red-500/20 rounded-2xl overflow-hidden shadow-sm">
+      <section className="bg-destructive/5 border border-destructive/20 rounded-2xl overflow-hidden shadow-sm">
         <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="flex h-10 w-10 rounded-xl bg-red-500/10 text-red-500 items-center justify-center shrink-0">
+            <div className="flex h-10 w-10 rounded-xl bg-destructive/10 text-destructive items-center justify-center shrink-0">
               <LogOut className="h-5 w-5" />
             </div>
             <div>
-              <h4 className="text-sm sm:text-base font-bold text-red-500">
+              <h4 className="text-sm sm:text-base font-bold text-destructive">
                 Switch Households
               </h4>
               <p className="text-xs text-muted mt-0.5">
@@ -255,7 +255,7 @@ export default function SettingsClient() {
                 setIsJoinSheetOpen(true);
               }
             }}
-            className="px-4 py-2 bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0"
+            className="px-4 py-2 bg-destructive/10 text-destructive border border-destructive/20 hover:bg-destructive hover:text-white rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0"
           >
             Leave Household
           </button>
@@ -265,10 +265,10 @@ export default function SettingsClient() {
       {/* ── Version & Credits ────────── */}
       <section className="bg-white/[0.02] border border-border/40 rounded-2xl p-5 mt-8">
         <div className="flex flex-col items-center justify-center text-center">
-          <p className="text-muted font-sans text-xs tracking-wider leading-loose opacity-50">
+          <p className="text-muted font-body text-xs tracking-wider leading-loose opacity-50">
             Built with AI &bull; funded. v0.4.0
           </p>
-          <p className="text-muted font-sans text-xs tracking-wider opacity-40">
+          <p className="text-muted font-body text-xs tracking-wider opacity-40">
             Concept &amp; Development: Anthony Paull
           </p>
         </div>
@@ -302,7 +302,7 @@ export default function SettingsClient() {
           >
             {/* Modal header */}
             <div className="p-5 border-b border-border">
-               <h3 className="text-lg font-bold text-foreground font-syne">
+               <h3 className="text-lg font-bold text-foreground font-heading">
                 Confirm Payment Mode Change
               </h3>
             </div>
@@ -379,7 +379,7 @@ export default function SettingsClient() {
           >
             {/* Header */}
             <div className="flex items-center justify-between p-5 border-b border-border shrink-0">
-              <h3 className="text-lg font-bold text-foreground font-syne flex items-center gap-2">
+              <h3 className="text-lg font-bold text-foreground font-heading flex items-center gap-2">
                 <User className="h-5 w-5 text-primary" />
                 Profile
               </h3>
@@ -496,7 +496,7 @@ export default function SettingsClient() {
           >
             {/* Header */}
             <div className="flex items-center justify-between p-5 border-b border-border shrink-0">
-              <h3 className="text-lg font-bold text-foreground font-syne flex items-center gap-2">
+              <h3 className="text-lg font-bold text-foreground font-heading flex items-center gap-2">
                 <Settings2 className="h-5 w-5 text-accent" />
                 App Settings
               </h3>
@@ -587,8 +587,8 @@ export default function SettingsClient() {
           >
             {/* Header */}
             <div className="flex items-center justify-between p-5 border-b border-border shrink-0">
-              <h3 className="text-lg font-bold text-foreground font-syne flex items-center gap-2">
-                <Users className="h-5 w-5 text-amber-500" />
+              <h3 className="text-lg font-bold text-foreground font-heading flex items-center gap-2">
+                <Users className="h-5 w-5 text-accent" />
                 Household Settings
               </h3>
               <button
@@ -664,7 +664,7 @@ export default function SettingsClient() {
           {/* Join Code */}
           <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="flex h-10 w-10 rounded-xl bg-amber-500/10 text-amber-500 items-center justify-center shrink-0">
+              <div className="flex h-10 w-10 rounded-xl bg-accent/10 text-accent items-center justify-center shrink-0">
                 <Users className="h-5 w-5" />
               </div>
               <div>
@@ -680,7 +680,7 @@ export default function SettingsClient() {
             <div className="flex flex-col w-full sm:w-auto shrink-0 gap-1.5 mt-2 sm:mt-0">
               {joinCode ? (
                 <>
-                  <span className="text-[10px] text-muted font-sans uppercase font-bold self-start sm:self-end px-1">
+                  <span className="text-[10px] text-muted font-body uppercase font-bold self-start sm:self-end px-1">
                     Expires {codeExpiresAt ? new Date(codeExpiresAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : ""}
                   </span>
                   <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -719,7 +719,7 @@ export default function SettingsClient() {
                 </>
               ) : (
                 <div className="flex items-center gap-2 self-start sm:self-end">
-                  <span className="text-muted text-xs font-sans mr-2">No code</span>
+                  <span className="text-muted text-xs font-body mr-2">No code</span>
                   <button
                     type="button"
                     onClick={async () => {
@@ -781,7 +781,7 @@ export default function SettingsClient() {
           >
             {/* Header */}
             <div className="flex items-center justify-between p-5 border-b border-border shrink-0">
-              <h3 className="text-lg font-bold text-foreground font-syne flex items-center gap-2">
+              <h3 className="text-lg font-bold text-foreground font-heading flex items-center gap-2">
                 <Users className="h-5 w-5 text-purple-500" />
                 Household Members
               </h3>
@@ -795,7 +795,7 @@ export default function SettingsClient() {
 
             {/* Body */}
             <div className="overflow-y-auto flex-1 p-5 space-y-4">
-              <div className="bg-surface border border-border rounded-2xl shadow-sm overflow-hidden divide-y divide-border font-sans">
+              <div className="bg-surface border border-border rounded-2xl shadow-sm overflow-hidden divide-y divide-border font-body">
           {members.length === 0 ? (
             <div className="p-8 text-center">
               <Users className="h-8 w-8 mx-auto text-muted mb-2" />
@@ -830,17 +830,17 @@ export default function SettingsClient() {
                         </h4>
                         {/* Role Badges */}
                         {isOwner ? (
-                          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 font-syne">
+                          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 font-heading">
                             Owner
                           </span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-white/5 text-muted border border-border font-syne">
+                          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-white/5 text-muted border border-border font-heading">
                             Member
                           </span>
                         )}
                         {/* Invitation Status Badge */}
                         {isPending && (
-                          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20 font-syne">
+                          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-accent/10 text-accent border border-accent/20 font-heading">
                             Pending
                           </span>
                         )}

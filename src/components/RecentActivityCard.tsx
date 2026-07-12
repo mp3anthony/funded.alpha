@@ -105,7 +105,7 @@ export const RecentActivityCard = React.memo(function RecentActivityCard({
       {/* Header */}
       <div className="flex items-center gap-2 mb-5">
         <Activity className="h-4 w-4 text-primary" />
-        <h3 className="font-syne font-bold text-base text-foreground tracking-wide">
+        <h3 className="font-heading font-bold text-base text-foreground tracking-wide">
           Recent Activity
         </h3>
       </div>
@@ -119,7 +119,7 @@ export const RecentActivityCard = React.memo(function RecentActivityCard({
             </div>
             <div className="space-y-1">
               <p className="text-sm font-semibold text-muted">No activity yet</p>
-              <p className="text-xs text-subtle font-sans max-w-[220px] mx-auto">
+              <p className="text-xs text-subtle font-body max-w-[220px] mx-auto">
                 Log your first paycheck to see activity here.
               </p>
             </div>
@@ -153,7 +153,7 @@ export const RecentActivityCard = React.memo(function RecentActivityCard({
                     >
                       <ActivityIcon className="h-4.5 w-4.5" />
                     </div>
-                    <span className="font-sans font-medium text-sm text-foreground min-w-0 truncate">
+                    <span className="font-body font-medium text-sm text-foreground min-w-0 truncate">
                       {act.description}
                     </span>
                   </div>

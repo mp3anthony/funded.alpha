@@ -84,7 +84,7 @@ export default function PayHistoryCard({ history, onConfirmPending, hideMemberIn
     <div
       className={`bg-surface border rounded-2xl p-5 shadow-sm flex items-center justify-between gap-4 transition-all hover:border-white/20 ${
         isPending
-          ? "border-yellow-500/50 bg-yellow-500/5"
+          ? "border-accent/50 bg-accent/5"
           : "border-border"
       }`}
     >
@@ -121,7 +121,7 @@ export default function PayHistoryCard({ history, onConfirmPending, hideMemberIn
 
           <div className="flex items-center gap-2 shrink-0">
             {isPending && (
-              <span className="flex items-center gap-1 bg-yellow-500/10 border border-yellow-500/30 text-[9px] text-yellow-400 font-mono rounded-full px-2.5 py-0.5 uppercase font-bold">
+              <span className="flex items-center gap-1 bg-accent/10 border border-accent/30 text-[9px] text-accent font-mono rounded-full px-2.5 py-0.5 uppercase font-bold">
                 Pending
               </span>
             )}
@@ -139,7 +139,7 @@ export default function PayHistoryCard({ history, onConfirmPending, hideMemberIn
         {history.notes && (
           <div className="flex items-start gap-1.5 bg-white/5 border border-border-strong rounded-lg px-3 py-2 text-xs text-subtle">
             <FileText size={13} className="mt-0.5 shrink-0 text-muted" />
-            <span className="break-words font-sans">{history.notes}</span>
+            <span className="break-words font-body">{history.notes}</span>
           </div>
         )}
       </div>
