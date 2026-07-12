@@ -145,12 +145,6 @@ export default function RootLayout({
                         reg.update(); // Force update SW
                       }
                     );
-                    // Force clear all caches to guarantee fresh UI load on iOS PWA
-                    caches.keys().then(function(names) {
-                      for (let name of names) {
-                        caches.delete(name);
-                      }
-                    });
                   }
                 });
               }

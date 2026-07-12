@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { X, Bell, Settings as SettingsIcon, CheckCircle, Clock, AlertTriangle, Circle, Trash2 } from "lucide-react";
 import { useApp, type Notification, type NotificationSettings } from "@/context/AppContext";
 import { useRouter } from "next/navigation";
+import { isStandaloneMode, isPushSupported, getPushPermissionState, subscribeToPush } from "@/lib/pushClient";
 
 interface NotificationCenterProps {
   isOpen: boolean;
@@ -34,6 +35,32 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
   const [nowVal, setNowVal] = useState(() => Date.now());
   const [activeSnoozeMenuId, setActiveSnoozeMenuId] = useState<string | null>(null);
   const router = useRouter();
+
+  const [pushSupported, setPushSupported] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
+  const [pushPermission, setPushPermission] = useState<NotificationPermission>('default');
+  const [isSubscribing, setIsSubscribing] = useState(false);
+
+  useEffect(() => {
+    setPushSupported(isPushSupported());
+    setIsStandalone(isStandaloneMode());
+    if (isPushSupported()) {
+      setPushPermission(getPushPermissionState());
+    }
+  }, []);
+
+  const handleEnablePush = async () => {
+    try {
+      setIsSubscribing(true);
+      await subscribeToPush();
+      setPushPermission('granted');
+    } catch (e) {
+      console.error(e);
+      setPushPermission(getPushPermissionState());
+    } finally {
+      setIsSubscribing(false);
+    }
+  };
 
   useEffect(() => {
     if (!isOpen) return;
@@ -269,6 +296,31 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
             </div>
           ) : (
             <div className="p-6 space-y-6">
+              {isStandalone && pushSupported && pushPermission !== 'granted' && (
+                <div className="flex flex-col gap-3 p-4 bg-primary/10 border border-primary/20 rounded-xl">
+                  <div className="flex items-center gap-2 text-primary">
+                    <Bell size={20} />
+                    <h4 className="font-semibold">Enable Push Notifications</h4>
+                  </div>
+                  <p className="text-sm text-foreground/80">
+                    Get alerts about bills and payments even when the app is closed.
+                  </p>
+                  {pushPermission === 'denied' ? (
+                    <p className="text-xs text-rose-500 font-medium">
+                      Notifications are blocked. Please enable them in your device or browser settings.
+                    </p>
+                  ) : (
+                    <button
+                      onClick={handleEnablePush}
+                      disabled={isSubscribing}
+                      className="mt-2 w-full py-2 px-4 bg-primary text-primary-foreground font-bold rounded-lg hover:brightness-110 active:scale-95 transition-all disabled:opacity-50"
+                    >
+                      {isSubscribing ? 'Enabling...' : 'Enable Notifications'}
+                    </button>
+                  )}
+                </div>
+              )}
+
               {notificationSettings ? (
                 <>
                   <div className="flex items-center justify-between p-4 bg-surface-elevated rounded-xl border border-border">

@@ -3001,6 +3001,27 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
         const { data, error } = await supabase.from('notifications').insert(newNotifications).select();
         if (!error && data) {
            setNotifications(prev => [...data, ...prev].sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+           
+           // Fire web push for each new notification
+           for (const notif of data) {
+             try {
+               await fetch('/api/push/send', {
+                 method: 'POST',
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify({
+                   userId: notif.user_id,
+                   title: notif.title,
+                   body: notif.message,
+                   url: notif.related_entity_id 
+                     ? `/bills?billId=${notif.related_entity_id}` 
+                     : '/',
+                   icon: '/icons/icon-192x192.png?v=2'
+                 }),
+               });
+             } catch (e) {
+               console.error('Push send failed:', e);
+             }
+           }
         }
       }
     };
