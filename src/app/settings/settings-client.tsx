@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   User,
   Bell,
@@ -576,7 +577,8 @@ export default function SettingsClient() {
       )}
 
       {/* ── Household Settings Modal ────────── */}
-      {showHouseholdSettingsModal && (
+      {/* Portaled to document.body — nested position:fixed inside the AppShell overflow-hidden wrapper gets reclassified as absolute on iOS WebKit */}
+      {showHouseholdSettingsModal && typeof document !== "undefined" && createPortal(
         <div
           className="fixed inset-0 z-[100] modal-backdrop flex items-center justify-center bg-foreground/20 dark:bg-foreground/20 dark:bg-black/80 backdrop-blur-sm p-4"
           onClick={() => setShowHouseholdSettingsModal(false)}
@@ -766,11 +768,13 @@ export default function SettingsClient() {
       
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ── Household Members Modal ────────── */}
-      {showHouseholdMembersModal && (
+      {/* Portaled to document.body — same overflow-hidden containment issue as the Household Settings modal above */}
+      {showHouseholdMembersModal && typeof document !== "undefined" && createPortal(
         <div
           className="fixed inset-0 z-[100] modal-backdrop flex items-center justify-center bg-foreground/20 dark:bg-foreground/20 dark:bg-black/80 backdrop-blur-sm p-4"
           onClick={() => setShowHouseholdMembersModal(false)}
@@ -866,7 +870,8 @@ export default function SettingsClient() {
         </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       
