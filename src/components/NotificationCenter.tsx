@@ -52,6 +52,17 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
         navigator.serviceWorker.ready.then(reg => {
           reg.pushManager.getSubscription().then(sub => {
             setHasActiveSubscription(!!sub);
+            
+            // Auto-sync the subscription to the server in case of a split-state
+            if (sub) {
+              fetch('/api/push/subscribe', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(sub),
+              }).catch(err => {
+                console.error('Failed to auto-sync push subscription:', err);
+              });
+            }
           });
         });
       }
