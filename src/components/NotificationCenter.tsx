@@ -40,23 +40,37 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
   const [isStandalone, setIsStandalone] = useState(false);
   const [pushPermission, setPushPermission] = useState<NotificationPermission>('default');
   const [isSubscribing, setIsSubscribing] = useState(false);
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const [pushError, setPushError] = useState<string | null>(null);
 
   useEffect(() => {
     setPushSupported(isPushSupported());
     setIsStandalone(isStandaloneMode());
     if (isPushSupported()) {
       setPushPermission(getPushPermissionState());
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.ready.then(reg => {
+          reg.pushManager.getSubscription().then(sub => {
+            setHasActiveSubscription(!!sub);
+          });
+        });
+      }
     }
   }, []);
 
   const handleEnablePush = async () => {
     try {
+      setPushError(null);
       setIsSubscribing(true);
       await subscribeToPush();
       setPushPermission('granted');
-    } catch (e) {
+      setHasActiveSubscription(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (e: any) {
       console.error(e);
+      setPushError(e.message || 'Failed to save push subscription to the server.');
       setPushPermission(getPushPermissionState());
+      setHasActiveSubscription(false);
     } finally {
       setIsSubscribing(false);
     }
@@ -296,7 +310,7 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
             </div>
           ) : (
             <div className="p-6 space-y-6">
-              {isStandalone && pushSupported && pushPermission !== 'granted' && (
+              {isStandalone && pushSupported && (!hasActiveSubscription) && (
                 <div className="flex flex-col gap-3 p-4 bg-primary/10 border border-primary/20 rounded-xl">
                   <div className="flex items-center gap-2 text-primary">
                     <Bell size={20} />
@@ -310,13 +324,20 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
                       Notifications are blocked. Please enable them in your device or browser settings.
                     </p>
                   ) : (
-                    <button
-                      onClick={handleEnablePush}
-                      disabled={isSubscribing}
-                      className="mt-2 w-full py-2 px-4 bg-primary text-primary-foreground font-bold rounded-lg hover:brightness-110 active:scale-95 transition-all disabled:opacity-50"
-                    >
-                      {isSubscribing ? 'Enabling...' : 'Enable Notifications'}
-                    </button>
+                    <>
+                      <button
+                        onClick={handleEnablePush}
+                        disabled={isSubscribing}
+                        className="mt-2 w-full py-2 px-4 bg-primary text-primary-foreground font-bold rounded-lg hover:brightness-110 active:scale-95 transition-all disabled:opacity-50"
+                      >
+                        {isSubscribing ? 'Enabling...' : (pushError ? 'Retry' : 'Enable Notifications')}
+                      </button>
+                      {pushError && (
+                        <p className="text-xs text-rose-500 font-medium mt-1">
+                          {pushError}
+                        </p>
+                      )}
+                    </>
                   )}
                 </div>
               )}
