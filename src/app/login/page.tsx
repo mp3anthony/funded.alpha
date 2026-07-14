@@ -20,9 +20,14 @@ export default function LoginPage() {
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
-      if (params.get("error") === "confirmation_failed") {
+      const error = params.get("error");
+      if (error === "link_expired") {
         Promise.resolve().then(() => {
-          setErrorMsg("Email confirmation failed. The link may have expired or is invalid.");
+          setErrorMsg("This link has expired or has already been used. Please request a new one.");
+        });
+      } else if (error === "link_failed" || error === "confirmation_failed") {
+        Promise.resolve().then(() => {
+          setErrorMsg("Something went wrong opening that link. Please request a new one and try again.");
         });
       }
     }
