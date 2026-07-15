@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { Lock, Loader2, AlertCircle, Check, Eye, EyeOff } from "lucide-react";
@@ -15,6 +15,44 @@ export default function UpdatePasswordPage() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+  // The recovery link establishes a session on this page via Supabase's
+  // detectSessionInUrl. Wait for that session before enabling the form so a
+  // fast submit can't fire updateUser() before we're authenticated. If no
+  // session ever appears, the link was invalid/expired.
+  const [linkState, setLinkState] = useState<"checking" | "ready" | "invalid">("checking");
+
+  useEffect(() => {
+    let settled = false;
+    const markReady = () => {
+      if (settled) return;
+      settled = true;
+      setLinkState("ready");
+    };
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) markReady();
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) markReady();
+    });
+
+    // Give Supabase a moment to consume the recovery hash before deciding the
+    // link is bad.
+    const timeout = setTimeout(() => {
+      if (!settled) {
+        settled = true;
+        setLinkState("invalid");
+      }
+    }, 5000);
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timeout);
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,9 +76,10 @@ export default function UpdatePasswordPage() {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
 
-      setSuccessMsg("Password updated successfully! Redirecting to dashboard...");
+      setSuccessMsg("Password updated successfully! Redirecting to sign in...");
+      await supabase.auth.signOut();
       setTimeout(() => {
-        router.replace("/");
+        router.replace("/login?message=password_reset_success");
       }, 2000);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "An error occurred";
@@ -65,20 +104,44 @@ export default function UpdatePasswordPage() {
           </p>
         </div>
 
-        {errorMsg && (
+        {linkState === "checking" && (
+          <div className="flex flex-col items-center gap-3 py-6">
+            <Loader2 className="h-6 w-6 animate-spin text-secondary" />
+            <p className="text-sm text-muted">Verifying your reset link...</p>
+          </div>
+        )}
+
+        {linkState === "invalid" && (
+          <div className="space-y-6">
+            <div className="p-4 rounded-xl bg-destructive/10 text-destructive text-sm font-medium flex items-center gap-3">
+              <AlertCircle className="h-5 w-5 shrink-0" />
+              <p>This reset link is invalid or has expired. Please request a new one.</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => router.replace("/login")}
+              className="w-full py-3.5 rounded-xl bg-secondary text-secondary-fg text-sm font-bold shadow-lg shadow-secondary/20 hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer"
+            >
+              Back to Sign In
+            </button>
+          </div>
+        )}
+
+        {linkState === "ready" && errorMsg && (
           <div className="mb-6 p-4 rounded-xl bg-destructive/10 text-destructive text-sm font-medium flex items-center gap-3">
             <AlertCircle className="h-5 w-5 shrink-0" />
             <p>{errorMsg}</p>
           </div>
         )}
 
-        {successMsg && (
+        {linkState === "ready" && successMsg && (
           <div className="mb-6 p-4 rounded-xl bg-primary/10 border border-primary/20 text-primary text-sm font-semibold flex items-center gap-3">
             <Check className="h-5 w-5 shrink-0" />
             <p>{successMsg}</p>
           </div>
         )}
 
+        {linkState === "ready" && (
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
             <label className="block text-xs font-bold tracking-wider uppercase text-muted">
@@ -147,6 +210,7 @@ export default function UpdatePasswordPage() {
             Update Password
           </button>
         </form>
+        )}
       </div>
     </div>
   );

@@ -21,6 +21,7 @@ export default function LoginPage() {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const error = params.get("error");
+      const message = params.get("message");
       if (error === "link_expired") {
         Promise.resolve().then(() => {
           setErrorMsg("This link has expired or has already been used. Please request a new one.");
@@ -28,6 +29,10 @@ export default function LoginPage() {
       } else if (error === "link_failed" || error === "confirmation_failed") {
         Promise.resolve().then(() => {
           setErrorMsg("Something went wrong opening that link. Please request a new one and try again.");
+        });
+      } else if (message === "password_reset_success") {
+        Promise.resolve().then(() => {
+          setSuccessMsg("Your password has been updated. Please sign in with your new password.");
         });
       }
     }
@@ -68,8 +73,14 @@ export default function LoginPage() {
         if (error) throw error;
         router.replace("/");
       } else if (mode === "forgot") {
+        // Send recovery links straight to the update-password page rather than
+        // routing through /auth/callback. Supabase auto-consumes the recovery
+        // token the instant the client loads and fires its one-time
+        // PASSWORD_RECOVERY event before React can subscribe, so a callback page
+        // that relies on catching that event loses the race and treats recovery
+        // like a normal sign-in. Landing directly on the form avoids the race.
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${window.location.origin}/reset-password/update`,
         });
         if (error) throw error;
         setSuccessMsg("Recovery link sent! Check your email to reset your password.");

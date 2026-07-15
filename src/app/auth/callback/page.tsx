@@ -27,11 +27,6 @@ export default function AuthCallbackPage() {
       return;
     }
 
-    // Recovery links also establish a session, but AppContext's PASSWORD_RECOVERY
-    // listener owns that redirect (to /reset-password/update) — don't race it by
-    // also sending recovery sessions to the dashboard from here.
-    const isRecovery = getParam("type", searchParams, hashParams) === "recovery";
-
     let settled = false;
     const settle = (path: string) => {
       if (settled) return;
@@ -39,31 +34,24 @@ export default function AuthCallbackPage() {
       router.replace(path);
     };
 
-    if (!isRecovery) {
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session) settle("/");
-      });
+    // Trust Supabase's own auth event instead of re-parsing the URL ourselves —
+    // by the time this effect runs, detectSessionInUrl may have already consumed
+    // and cleared the hash, so a manual re-parse here is unreliable. The event
+    // Supabase fires (PASSWORD_RECOVERY vs SIGNED_IN) is authoritative.
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY") {
+        settle("/reset-password/update");
+      } else if (event === "SIGNED_IN" && session) {
+        settle("/");
+      }
+    });
 
-      const {
-        data: { subscription },
-      } = supabase.auth.onAuthStateChange((event, session) => {
-        if (event === "SIGNED_IN" && session) {
-          settle("/");
-        }
-      });
-
-      const timeout = setTimeout(() => settle("/login?error=link_failed"), 5000);
-
-      return () => {
-        subscription.unsubscribe();
-        clearTimeout(timeout);
-      };
-    }
-
-    // Give Supabase a moment to process the recovery hash before giving up.
     const timeout = setTimeout(() => settle("/login?error=link_failed"), 5000);
 
     return () => {
+      subscription.unsubscribe();
       clearTimeout(timeout);
     };
   }, [router]);
