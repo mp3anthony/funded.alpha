@@ -4,7 +4,9 @@ import { sendPushToSubscriptions } from '@/lib/push';
 import { generateReminders, type ReminderSettings } from '@/lib/notifications/generateReminders';
 import { todayInZone } from '@/lib/notifications/timezone';
 
-export const runtime = 'nodejs';
+// Note: route handlers already run on the Node.js runtime by default, which
+// web-push requires. An explicit `export const runtime` is omitted because it
+// is incompatible with this project's Next.js `cacheComponents` config.
 export const maxDuration = 60;
 
 const PUSH_ICON = '/icons/icon-192x192.png?v=2';
