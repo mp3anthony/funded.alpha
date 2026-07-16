@@ -224,6 +224,9 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
             <div className="divide-y divide-border">
               {(() => {
                 const visibleNotifications = notifications.filter(notif => {
+                  // Dismissed notifications are kept in the DB (so their dedupe
+                  // key survives) but hidden from the inbox.
+                  if (notif.is_read) return false;
                   const expires = snoozedIds[notif.id];
                   if (expires && expires > nowVal) return false;
                   return true;

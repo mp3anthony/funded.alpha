@@ -6,6 +6,8 @@ import { supabase } from "@/lib/supabase";
 import { type Session } from "@supabase/supabase-js";
 import { type HouseholdContribution, type ContributionRule } from "@/types";
 import { adjustAutopayBillDate } from "@/lib/utils";
+import { generateReminders } from "@/lib/notifications/generateReminders";
+import { todayInZone } from "@/lib/notifications/timezone";
 
 
 /* ═══════════════════════════════════════════════
@@ -130,6 +132,7 @@ export interface Notification {
   message: string;
   is_read: boolean;
   related_entity_id?: string | null;
+  dedupe_key?: string | null;
   created_at: string;
 }
 
@@ -1384,14 +1387,6 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
         setBills((prev) =>
           prev.map((b) => (b.id === bill.id ? mapBillFromDb(data) : b))
         );
-
-        if (typeof window !== "undefined") {
-          const currentCleared = JSON.parse(localStorage.getItem("cleared_notifications") || "[]");
-          const filteredCleared = currentCleared.filter(
-            (key: string) => !key.startsWith(`${bill.id}-`)
-          );
-          localStorage.setItem("cleared_notifications", JSON.stringify(filteredCleared));
-        }
       }
     } catch (err) {
       console.error("Failed to mark as unpaid:", err);
@@ -2820,59 +2815,35 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
 
   async function deleteNotification(id: string) {
     if (!session?.user) return;
-    const notif = notifications.find(n => n.id === id);
     try {
-      const { error } = await supabase.from('notifications').delete().eq('id', id).eq('user_id', session.user.id);
+      // Dismiss = keep-and-mark. We mark the row as read (rather than
+      // deleting it) so its dedupe_key persists and the server/client
+      // reminder generators respect the dismissal instead of resurfacing it.
+      const { error } = await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('id', id)
+        .eq('user_id', session.user.id);
       if (!error) {
-        setNotifications(prev => prev.filter(n => n.id !== id));
-        if (notif && notif.related_entity_id) {
-          let clearedKey = '';
-          if (notif.type === 'manual_bill' || notif.type === 'auto_pay') {
-            const bill = bills.find(b => b.id.toString() === notif.related_entity_id);
-            const dueDate = bill ? (bill.due_date || bill.dueDate) : '';
-            clearedKey = `${notif.related_entity_id}-${dueDate}-${notif.type}`;
-          } else if (notif.type === 'lodge_payment') {
-            clearedKey = `${notif.related_entity_id}-lodge_payment`;
-          }
-          if (clearedKey && typeof window !== 'undefined') {
-            const currentCleared = JSON.parse(localStorage.getItem('cleared_notifications') || '[]');
-            if (!currentCleared.includes(clearedKey)) {
-              currentCleared.push(clearedKey);
-              localStorage.setItem('cleared_notifications', JSON.stringify(currentCleared));
-            }
-          }
-        }
+        setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
       }
     } catch (err) {
-      console.error("Failed to delete notification:", err);
+      console.error("Failed to dismiss notification:", err);
     }
   }
 
   async function clearAllNotifications() {
     if (!session?.user) return;
     try {
-      const { error } = await supabase.from('notifications').delete().eq('user_id', session.user.id);
+      // Mark all of the user's unread notifications as read (keep the rows so
+      // their dedupe keys survive and dismissals are respected server-side).
+      const { error } = await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .eq('user_id', session.user.id)
+        .eq('is_read', false);
       if (!error) {
-        if (typeof window !== 'undefined') {
-          const currentCleared = JSON.parse(localStorage.getItem('cleared_notifications') || '[]');
-          notifications.forEach(notif => {
-            if (notif.related_entity_id) {
-              let clearedKey = '';
-              if (notif.type === 'manual_bill' || notif.type === 'auto_pay') {
-                const bill = bills.find(b => b.id.toString() === notif.related_entity_id);
-                const dueDate = bill ? (bill.due_date || bill.dueDate) : '';
-                clearedKey = `${notif.related_entity_id}-${dueDate}-${notif.type}`;
-              } else if (notif.type === 'lodge_payment') {
-                clearedKey = `${notif.related_entity_id}-lodge_payment`;
-              }
-              if (clearedKey && !currentCleared.includes(clearedKey)) {
-                currentCleared.push(clearedKey);
-              }
-            }
-          });
-          localStorage.setItem('cleared_notifications', JSON.stringify(currentCleared));
-        }
-        setNotifications([]);
+        setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
       }
     } catch (err) {
       console.error("Failed to clear all notifications:", err);
@@ -2902,96 +2873,53 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
     if (!session?.user || !notificationSettings || !notificationSettings.all_enabled || isDataLoading) return;
     
     const generateClientNotifications = async () => {
-      const newNotifications: any[] = [];
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      // Use the device timezone so client-side behavior stays identical to
+      // before for AU users. The server cron uses each household's stored
+      // timezone instead.
+      const todayYmd = todayInZone(Intl.DateTimeFormat().resolvedOptions().timeZone);
 
-      // Load cleared notification keys from local storage to avoid duplicates
-      const clearedKeys: string[] = typeof window !== 'undefined'
-        ? JSON.parse(localStorage.getItem('cleared_notifications') || '[]')
-        : [];
+      const currentMemberId =
+        members.find(m => m.user_id === session.user.id)?.id?.toString() ?? null;
 
-      // Check Manual Bills
-      if (notificationSettings.manual_bill_reminders) {
-        for (const bill of bills) {
-          if (bill.payment_type !== 'auto' && bill.status !== 'Paid') {
-            const dueDate = new Date(bill.due_date + "T00:00:00");
-            const diffTime = dueDate.getTime() - today.getTime();
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            
-            if (diffDays >= 0 && diffDays <= (notificationSettings.manual_bill_reminder_days || 3)) {
-              // Check if ANY notification already exists for this entity to avoid duplicates
-              const exists = notifications.some(n => n.related_entity_id === bill.id?.toString() && n.type === 'manual_bill');
-              const clearedKey = `${bill.id}-${bill.due_date || bill.dueDate}-manual_bill`;
-              if (!exists && !clearedKeys.includes(clearedKey)) {
-                newNotifications.push({
-                  user_id: session.user.id,
-                  household_id: dbHouseholdId,
-                  type: 'manual_bill',
-                  title: 'Manual Bill Due Soon',
-                  message: `Your bill for ${bill.name} is due in ${diffDays} days.`,
-                  related_entity_id: bill.id?.toString()
-                });
-              }
-            }
-          }
+      // Build the set of dedupe keys already represented in current state
+      // (covers both freshly-sent and dismissed-but-kept notifications), so
+      // we never regenerate a reminder that already exists.
+      const existingKeys = new Set<string>();
+      for (const n of notifications) {
+        if (n.dedupe_key) {
+          existingKeys.add(n.dedupe_key);
+          continue;
+        }
+        // Reconstruct the key for rows that predate the dedupe_key column.
+        if (!n.related_entity_id) continue;
+        if (n.type === 'manual_bill' || n.type === 'auto_pay') {
+          const bill = bills.find(b => b.id?.toString() === n.related_entity_id);
+          const dueYmd = bill ? (bill.due_date || bill.dueDate) : '';
+          existingKeys.add(`${n.related_entity_id}-${dueYmd}-${n.type}`);
+        } else if (n.type === 'lodge_payment') {
+          existingKeys.add(`${n.related_entity_id}-lodge_payment`);
         }
       }
 
-      // Check Auto-Pay Bills
-      if (notificationSettings.auto_pay_reminders) {
-        for (const bill of bills) {
-          if (bill.payment_type === 'auto' && bill.status !== 'Paid') {
-            const dueDate = new Date(bill.due_date + "T00:00:00");
-            const diffTime = dueDate.getTime() - today.getTime();
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      const rows = generateReminders({
+        userId: session.user.id,
+        householdId: dbHouseholdId,
+        todayYmd,
+        bills,
+        payHistory,
+        currentMemberId,
+        settings: notificationSettings,
+        existingKeys,
+      });
 
-            if (diffDays <= (notificationSettings.auto_pay_reminder_days || 1)) {
-              const exists = notifications.some(n => n.related_entity_id === bill.id?.toString() && n.type === 'auto_pay');
-              const clearedKey = `${bill.id}-${bill.due_date || bill.dueDate}-auto_pay`;
-              if (!exists && !clearedKeys.includes(clearedKey)) {
-                const message = diffDays <= 0 
-                  ? `Your automatic payment should now be paid.`
-                  : `Your auto-paid bill ${bill.name} will be processed in ${diffDays} days.`;
-                newNotifications.push({
-                  user_id: session.user.id,
-                  household_id: dbHouseholdId,
-                  type: 'auto_pay',
-                  title: diffDays <= 0 ? 'Auto-Pay Bill Passed' : 'Auto-Pay Upcoming',
-                  message,
-                  related_entity_id: bill.id?.toString()
-                });
-              }
-            }
-          }
-        }
-      }
-
-      // Check Lodge Payment
-      if (notificationSettings.lodge_payment_reminders) {
-         const currentMember = members.find(m => m.user_id === session.user.id);
-         if (currentMember) {
-           for (const hist of payHistory) {
-             if (hist.status === 'pending' && hist.member_id === currentMember.id.toString()) {
-                const exists = notifications.some(n => n.related_entity_id === hist.id && n.type === 'lodge_payment');
-                const clearedKey = `${hist.id}-lodge_payment`;
-                if (!exists && !clearedKeys.includes(clearedKey)) {
-                  newNotifications.push({
-                    user_id: session.user.id,
-                    household_id: dbHouseholdId,
-                    type: 'lodge_payment',
-                    title: 'Payment Requires Confirmation',
-                    message: `You have an unconfirmed payment logged on ${hist.pay_date}.`,
-                    related_entity_id: hist.id
-                  });
-                }
-             }
-           }
-         }
-      }
-
-      if (newNotifications.length > 0) {
-        const { data, error } = await supabase.from('notifications').insert(newNotifications).select();
+      if (rows.length > 0) {
+        // Upsert with ignoreDuplicates so concurrent client/cron runs never
+        // create the same reminder twice; .select() returns ONLY the rows
+        // that were actually inserted (duplicates are silently skipped).
+        const { data, error } = await supabase
+          .from('notifications')
+          .upsert(rows, { onConflict: 'user_id,dedupe_key', ignoreDuplicates: true })
+          .select();
         if (!error && data) {
            setNotifications(prev => [...data, ...prev].sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
            
