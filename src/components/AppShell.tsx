@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useApp, useCurrentUser } from "@/context/AppContext";
 import BottomNav from "@/components/BottomNav";
 import Onboarding from "@/components/Onboarding";
+import EmailVerifiedModal from "@/components/EmailVerifiedModal";
 import Logo from "./Logo";
 import AvatarDropdown from "./AvatarDropdown";
 import NotificationCenter from "./NotificationCenter";
@@ -45,9 +46,11 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
   const [isNotificationCenterOpen, setIsNotificationCenterOpen] = useState(false);
   const [snoozedIds, setSnoozedIds] = useState<Record<string, number>>({});
   const [now, setNow] = useState(() => Date.now());
+  const [showVerifiedModal, setShowVerifiedModal] = useState(false);
   const isLoginPage = pathname === "/login";
   const isConfirmEmailPage = pathname === "/confirm-email";
   const isResetPasswordPage = pathname?.startsWith("/reset-password");
+  const isAuthCallbackPage = pathname === "/auth/callback";
 
   useVisualViewportVars();
 
@@ -109,6 +112,13 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
     };
   }, [pathname]);
 
+  useEffect(() => {
+    if (pathname === "/" && sessionStorage.getItem("justVerified")) {
+      sessionStorage.removeItem("justVerified");
+      setShowVerifiedModal(true);
+    }
+  }, [pathname]);
+
   // 3. Navigation/Auth Guard Redirects
   useEffect(() => {
     if (!isMounted || isAuthLoading) return;
@@ -131,14 +141,23 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
     }
   }, [isMounted, isAuthLoading, session, isLoginPage, isConfirmEmailPage, isResetPasswordPage, router]);
 
-  // Let the login, email confirmation, or reset password page render fullscreen immediately
-  if (isLoginPage || isConfirmEmailPage || isResetPasswordPage) {
+  // Let the login, email confirmation, reset password, or auth callback page render
+  // fullscreen immediately — these must mount and run their own logic even if a
+  // background session already resolves as "not onboarded", otherwise AppShell's
+  // Onboarding gate below (which doesn't check pathname) hijacks the callback page
+  // before it ever gets a chance to run its redirect/signal logic.
+  if (isLoginPage || isConfirmEmailPage || isResetPasswordPage || isAuthCallbackPage) {
     return <>{children}</>;
   }
 
   // If fully loaded and we know user is not onboarded, show Onboarding
   if (isMounted && !isAuthLoading && session && !isOnboarded) {
-    return <Onboarding />;
+    return (
+      <>
+        <Onboarding />
+        <EmailVerifiedModal isOpen={showVerifiedModal} onClose={() => setShowVerifiedModal(false)} />
+      </>
+    );
   }
 
   // Define loading state for the main content area
@@ -210,6 +229,8 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
       {/* Bottom Nav — rendered OUTSIDE the overflow-hidden container so
           position:fixed works against the viewport on iOS WebKit */}
       {(!isLoading || session) && <BottomNav />}
+
+      <EmailVerifiedModal isOpen={showVerifiedModal} onClose={() => setShowVerifiedModal(false)} />
     </>
   );
 }
