@@ -44,6 +44,7 @@ export default function AuthCallbackPage() {
       if (event === "PASSWORD_RECOVERY") {
         settle("/reset-password/update");
       } else if (event === "SIGNED_IN" && session) {
+        sessionStorage.setItem("justVerified", "1");
         settle("/");
       }
     });
