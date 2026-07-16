@@ -45,13 +45,22 @@ export default function AuthCallbackPage() {
     // by the time this effect runs, detectSessionInUrl may have already consumed
     // and cleared the hash, so a manual re-parse here is unreliable. The event
     // Supabase fires (PASSWORD_RECOVERY vs SIGNED_IN) is authoritative.
+    //
+    // Also treat INITIAL_SESSION as a success signal here (not just SIGNED_IN):
+    // email clients/OS link-prescanning can visit and consume a one-time
+    // verification link before the user actually taps it, so by the time this
+    // page mounts the session may already be established — the real SIGNED_IN
+    // event fired and is gone, and all we get is INITIAL_SESSION reflecting the
+    // session that already exists. This route is only ever reached via a signup
+    // verification link (password reset goes straight to /reset-password/update),
+    // so any valid session seen here means the link did its job.
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       debugLog(`onAuthStateChange event=${event} session=${!!session} confirmed=${session?.user?.email_confirmed_at ?? "n/a"}`);
       if (event === "PASSWORD_RECOVERY") {
         settle("/reset-password/update");
-      } else if (event === "SIGNED_IN" && session) {
+      } else if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && session) {
         sessionStorage.setItem("justVerified", "1");
         debugLog(`justVerified flag set, sessionStorage now=${sessionStorage.getItem("justVerified")}`);
         settle("/");
