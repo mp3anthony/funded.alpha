@@ -6,8 +6,6 @@ import { useApp, useCurrentUser } from "@/context/AppContext";
 import BottomNav from "@/components/BottomNav";
 import Onboarding from "@/components/Onboarding";
 import EmailVerifiedModal from "@/components/EmailVerifiedModal";
-import AuthDebugOverlay from "@/components/AuthDebugOverlay";
-import { debugLog } from "@/lib/authDebugLog";
 import Logo from "./Logo";
 import AvatarDropdown from "./AvatarDropdown";
 import NotificationCenter from "./NotificationCenter";
@@ -115,11 +113,8 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
   }, [pathname]);
 
   useEffect(() => {
-    const flag = sessionStorage.getItem("justVerified");
-    debugLog(`AppShell effect: pathname=${pathname} justVerified=${flag}`);
-    if (pathname === "/" && flag) {
+    if (pathname === "/" && sessionStorage.getItem("justVerified")) {
       sessionStorage.removeItem("justVerified");
-      debugLog("AppShell: opening EmailVerifiedModal");
       setShowVerifiedModal(true);
     }
   }, [pathname]);
@@ -152,12 +147,7 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
   // Onboarding gate below (which doesn't check pathname) hijacks the callback page
   // before it ever gets a chance to run its redirect/signal logic.
   if (isLoginPage || isConfirmEmailPage || isResetPasswordPage || isAuthCallbackPage) {
-    return (
-      <>
-        {children}
-        <AuthDebugOverlay />
-      </>
-    );
+    return <>{children}</>;
   }
 
   // If fully loaded and we know user is not onboarded, show Onboarding
@@ -166,7 +156,6 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
       <>
         <Onboarding />
         <EmailVerifiedModal isOpen={showVerifiedModal} onClose={() => setShowVerifiedModal(false)} />
-        <AuthDebugOverlay />
       </>
     );
   }
@@ -242,7 +231,6 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
       {(!isLoading || session) && <BottomNav />}
 
       <EmailVerifiedModal isOpen={showVerifiedModal} onClose={() => setShowVerifiedModal(false)} />
-      <AuthDebugOverlay />
     </>
   );
 }
