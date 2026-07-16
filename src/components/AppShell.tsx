@@ -73,8 +73,9 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
     }
   }, [isNotificationCenterOpen, refreshSnoozes]);
 
-  // Compute visible notification count (excludes snoozed ones)
+  // Compute visible notification count (excludes read/dismissed and snoozed ones)
   const visibleNotificationCount = notifications.filter(n => {
+    if (n.is_read) return false;
     const expires = snoozedIds[n.id];
     return !(expires && expires > now);
   }).length;

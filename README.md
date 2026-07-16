@@ -107,13 +107,30 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 Create a `.env.local` file in the project root with the following values:
 
 ```env
+# ── Client (safe to expose to the browser) ──
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+
+# ── Web push (VAPID) ──
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=your-vapid-public-key
+VAPID_PRIVATE_KEY=your-vapid-private-key
+VAPID_CONTACT_EMAIL=mailto:admin@example.com
+
+# ── Server-only: reminder cron (never prefix with NEXT_PUBLIC_) ──
+# Service-role key bypasses RLS; used only by the server cron. Keep secret.
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+# Shared secret Vercel Cron sends as the Authorization bearer token.
+CRON_SECRET=a-long-random-string
 ```
 
-Both values are available in your Supabase project dashboard under **Settings → API**.
+The Supabase URL and anon key are available in your Supabase project dashboard
+under **Settings → API**. The `SUPABASE_SERVICE_ROLE_KEY` is on the same page —
+treat it like a password and never expose it to the client. `CRON_SECRET` is any
+long random string; set the identical value in Vercel so the daily reminder cron
+(`/api/cron/push-reminders`) can authenticate.
 
 > **Note:** `.env*` files are git-ignored by default. Never commit real credentials.
+> A `.env.local.example` template (no real values) is provided as a starting point.
 
 ---
 
