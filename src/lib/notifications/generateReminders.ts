@@ -30,7 +30,7 @@ export interface ReminderPayHistory {
 
 export interface ReminderInput {
   userId: string;
-  householdId: string;
+  householdId: string | null;
   /** Today's date as 'YYYY-MM-DD' in the relevant timezone. */
   todayYmd: string;
   bills: ReminderBill[];
@@ -44,7 +44,7 @@ export interface ReminderInput {
 
 export interface ReminderRow {
   user_id: string;
-  household_id: string;
+  household_id: string | null;
   type: ReminderType;
   title: string;
   message: string;
