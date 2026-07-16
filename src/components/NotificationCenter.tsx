@@ -6,6 +6,7 @@ import { X, Bell, Settings as SettingsIcon, CheckCircle, Clock, AlertTriangle, C
 import { useApp, type Notification, type NotificationSettings } from "@/context/AppContext";
 import { useRouter } from "next/navigation";
 import { isStandaloneMode, isPushSupported, getPushPermissionState, subscribeToPush } from "@/lib/pushClient";
+import { supabase } from "@/lib/supabase";
 
 interface NotificationCenterProps {
   isOpen: boolean;
@@ -41,6 +42,7 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
   const [pushPermission, setPushPermission] = useState<NotificationPermission>('default');
   const [isSubscribing, setIsSubscribing] = useState(false);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const [serverSubscribed, setServerSubscribed] = useState<boolean>(false);
   const [pushError, setPushError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -50,18 +52,29 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
       setPushPermission(getPushPermissionState());
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.ready.then(reg => {
-          reg.pushManager.getSubscription().then(sub => {
+          reg.pushManager.getSubscription().then(async sub => {
             setHasActiveSubscription(!!sub);
-            
+
             // Auto-sync the subscription to the server in case of a split-state
             if (sub) {
-              fetch('/api/push/subscribe', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(sub),
-              }).catch(err => {
+              try {
+                const { data: { session } } = await supabase.auth.getSession();
+                const response = await fetch('/api/push/subscribe', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session?.access_token ?? ''}`,
+                  },
+                  body: JSON.stringify(sub),
+                });
+                setServerSubscribed(response.ok);
+                if (!response.ok) {
+                  console.error('Failed to auto-sync push subscription: server returned', response.status);
+                }
+              } catch (err) {
+                setServerSubscribed(false);
                 console.error('Failed to auto-sync push subscription:', err);
-              });
+              }
             }
           });
         });
@@ -76,6 +89,7 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
       await subscribeToPush();
       setPushPermission('granted');
       setHasActiveSubscription(true);
+      setServerSubscribed(true);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       console.error(e);
@@ -321,7 +335,7 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
             </div>
           ) : (
             <div className="p-6 space-y-6">
-              {isStandalone && pushSupported && (!hasActiveSubscription) && (
+              {isStandalone && pushSupported && (!serverSubscribed) && (
                 <div className="flex flex-col gap-3 p-4 bg-primary/10 border border-primary/20 rounded-xl">
                   <div className="flex items-center gap-2 text-primary">
                     <Bell size={20} />

@@ -3000,7 +3000,10 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
              try {
                await fetch('/api/push/send', {
                  method: 'POST',
-                 headers: { 'Content-Type': 'application/json' },
+                 headers: {
+                   'Content-Type': 'application/json',
+                   'Authorization': `Bearer ${session.access_token}`,
+                 },
                  body: JSON.stringify({
                    userId: notif.user_id,
                    title: notif.title,
