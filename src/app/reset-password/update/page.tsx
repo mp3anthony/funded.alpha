@@ -1,10 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { Lock, Loader2, AlertCircle, Check, Eye, EyeOff } from "lucide-react";
 import Logo from "@/components/Logo";
+
+function getParam(name: string, search: URLSearchParams, hash: URLSearchParams) {
+  return search.get(name) || hash.get(name);
+}
 
 export default function UpdatePasswordPage() {
   const router = useRouter();
@@ -20,6 +24,7 @@ export default function UpdatePasswordPage() {
   // fast submit can't fire updateUser() before we're authenticated. If no
   // session ever appears, the link was invalid/expired.
   const [linkState, setLinkState] = useState<"checking" | "ready" | "invalid">("checking");
+  const succeededRef = useRef(false);
 
   useEffect(() => {
     let settled = false;
@@ -28,6 +33,24 @@ export default function UpdatePasswordPage() {
       settled = true;
       setLinkState("ready");
     };
+    const markInvalid = () => {
+      if (settled) return;
+      settled = true;
+      setLinkState("invalid");
+      supabase.auth.signOut();
+    };
+
+    const searchParams = new URLSearchParams(window.location.search.replace(/^\?/, ""));
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    const error =
+      getParam("error", searchParams, hashParams) ||
+      getParam("error_code", searchParams, hashParams) ||
+      getParam("error_description", searchParams, hashParams);
+
+    if (error) {
+      markInvalid();
+      return;
+    }
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) markReady();
@@ -42,15 +65,15 @@ export default function UpdatePasswordPage() {
     // Give Supabase a moment to consume the recovery hash before deciding the
     // link is bad.
     const timeout = setTimeout(() => {
-      if (!settled) {
-        settled = true;
-        setLinkState("invalid");
-      }
+      markInvalid();
     }, 5000);
 
     return () => {
       subscription.unsubscribe();
       clearTimeout(timeout);
+      // Leaving without a successful password change shouldn't leave a
+      // recovery session behind.
+      if (!succeededRef.current) supabase.auth.signOut();
     };
   }, []);
 
@@ -77,6 +100,7 @@ export default function UpdatePasswordPage() {
       if (error) throw error;
 
       setSuccessMsg("Password updated successfully! Redirecting to sign in...");
+      succeededRef.current = true;
       await supabase.auth.signOut();
       setTimeout(() => {
         router.replace("/login?message=password_reset_success");
