@@ -52,6 +52,7 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
   const isLoginPage = pathname === "/login";
   const isConfirmEmailPage = pathname === "/confirm-email";
   const isResetPasswordPage = pathname?.startsWith("/reset-password");
+  const isAuthCallbackPage = pathname === "/auth/callback";
 
   useVisualViewportVars();
 
@@ -145,8 +146,12 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
     }
   }, [isMounted, isAuthLoading, session, isLoginPage, isConfirmEmailPage, isResetPasswordPage, router]);
 
-  // Let the login, email confirmation, or reset password page render fullscreen immediately
-  if (isLoginPage || isConfirmEmailPage || isResetPasswordPage) {
+  // Let the login, email confirmation, reset password, or auth callback page render
+  // fullscreen immediately — these must mount and run their own logic even if a
+  // background session already resolves as "not onboarded", otherwise AppShell's
+  // Onboarding gate below (which doesn't check pathname) hijacks the callback page
+  // before it ever gets a chance to run its redirect/signal logic.
+  if (isLoginPage || isConfirmEmailPage || isResetPasswordPage || isAuthCallbackPage) {
     return (
       <>
         {children}
