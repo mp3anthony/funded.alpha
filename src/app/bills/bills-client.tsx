@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Plus, X, ChevronDown, ChevronRight } from "lucide-react";
 import { useApp, useCurrentUser } from "@/context/AppContext";
 import AddBillSheet from "@/components/AddBillSheet";
@@ -15,6 +16,7 @@ type FrequencyType = "weekly" | "fortnightly" | "monthly" | "yearly";
 export default function BillsClient() {
   const { bills, billSplits, members: householdMembers } = useApp();
   const currentUser = useCurrentUser();
+  const searchParams = useSearchParams();
 
   const [isAddBillSheetOpen, setIsAddBillSheetOpen] = useState(false);
   const [filter, setFilter] = useState<"all" | "week" | "month" | "overdue">("all");
@@ -43,6 +45,16 @@ export default function BillsClient() {
       } catch (e) {}
     }
   }, []);
+
+  useEffect(() => {
+    const billId = searchParams?.get("billId");
+    if (!billId) return;
+    const target = bills.find((b) => b.id.toString() === billId);
+    if (target) {
+      const cat = target.category || "Other";
+      setExpandedCategories((prev) => ({ ...prev, [cat]: true }));
+    }
+  }, [searchParams, bills]);
 
   const getFrequencyLabel = (freq: FrequencyType) => {
     switch (freq) {

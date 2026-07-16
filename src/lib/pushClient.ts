@@ -1,5 +1,7 @@
 // Helper utility for client-side push notification subscription management
 
+import { supabase } from "@/lib/supabase";
+
 export function isStandaloneMode() {
   if (typeof window === 'undefined') return false;
   return window.matchMedia('(display-mode: standalone)').matches || 
@@ -70,10 +72,12 @@ export async function subscribeToPush() {
   }
 
   // Send the subscription to our backend API route
+  const { data: { session } } = await supabase.auth.getSession();
   const response = await fetch('/api/push/subscribe', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'Authorization': `Bearer ${session?.access_token ?? ''}`,
     },
     body: JSON.stringify(subscription),
   });
