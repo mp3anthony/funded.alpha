@@ -9,6 +9,7 @@ import Logo from "./Logo";
 import AvatarDropdown from "./AvatarDropdown";
 import NotificationCenter from "./NotificationCenter";
 import { Bell } from "lucide-react";
+import { useVisualViewportVars } from "@/hooks/useVisualViewportVars";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const [isMounted, setIsMounted] = useState(false);
@@ -47,6 +48,8 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
   const isLoginPage = pathname === "/login";
   const isConfirmEmailPage = pathname === "/confirm-email";
   const isResetPasswordPage = pathname?.startsWith("/reset-password");
+
+  useVisualViewportVars();
 
   // 1b. Sync snooze state from localStorage (refreshes every 30s so expiry is reactive)
   const refreshSnoozes = useCallback(() => {

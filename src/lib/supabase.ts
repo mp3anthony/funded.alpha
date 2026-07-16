@@ -24,7 +24,7 @@ if (!hasRealEnvVars && typeof window !== "undefined") {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    flowType: "pkce",
+    flowType: "implicit",
     detectSessionInUrl: true,
   },
 });

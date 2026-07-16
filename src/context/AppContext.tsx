@@ -722,13 +722,6 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
       console.log('Auth useEffect - onAuthStateChange event:', _event, 'session:', session ? 'has session' : 'no session', 'user:', session?.user?.id);
       setSession(session);
       setIsAuthLoading(false);
-
-      // When a user clicks the password reset link in their email,
-      // Supabase fires a PASSWORD_RECOVERY event. Redirect them
-      // to the update page so they can enter a new password.
-      if (_event === 'PASSWORD_RECOVERY') {
-        window.location.href = '/reset-password/update';
-      }
     });
 
     return () => subscription.unsubscribe();
