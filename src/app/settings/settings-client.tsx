@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { createPortal } from "react-dom";
 import {
   User,
@@ -69,6 +70,23 @@ export default function SettingsClient() {
   const [showAppSettingsModal, setShowAppSettingsModal] = useState(false);
   const [showHouseholdSettingsModal, setShowHouseholdSettingsModal] = useState(false);
   const [showHouseholdMembersModal, setShowHouseholdMembersModal] = useState(false);
+
+  /* Deep-link: open the Profile modal when arriving via /settings?modal=profile
+     (e.g. from the avatar-dropdown name button). Reactive to the query param so
+     it also fires when already on /settings (a same-route soft navigation does
+     not remount this component); the flag is stripped once consumed so a refresh
+     or back-nav doesn't re-open it. Mirrors the billId pattern in BillCard. */
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  useEffect(() => {
+    if (searchParams?.get("modal") !== "profile") return;
+    setShowProfileModal(true);
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("modal");
+    const newQuery = params.toString();
+    router.replace(`${pathname}${newQuery ? `?${newQuery}` : ""}`, { scroll: false });
+  }, [searchParams, pathname, router]);
 
   /* Contribution Totals */
   const contributionWeekly = householdContributions
@@ -267,7 +285,7 @@ export default function SettingsClient() {
       <section className="bg-white/[0.02] border border-border/40 rounded-2xl p-5 mt-8">
         <div className="flex flex-col items-center justify-center text-center">
           <p className="text-muted font-body text-xs tracking-wider leading-loose opacity-50">
-            Built with AI &bull; funded. v0.6.0
+            Built with AI &bull; funded. v0.7.0
           </p>
           <p className="text-muted font-body text-xs tracking-wider opacity-40">
             Concept &amp; Development: Anthony Paull
