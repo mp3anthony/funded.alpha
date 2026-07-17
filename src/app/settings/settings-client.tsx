@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { createPortal } from "react-dom";
 import {
   User,
@@ -69,6 +70,23 @@ export default function SettingsClient() {
   const [showAppSettingsModal, setShowAppSettingsModal] = useState(false);
   const [showHouseholdSettingsModal, setShowHouseholdSettingsModal] = useState(false);
   const [showHouseholdMembersModal, setShowHouseholdMembersModal] = useState(false);
+
+  /* Deep-link: open the Profile modal when arriving via /settings?modal=profile
+     (e.g. from the avatar-dropdown name button). Reactive to the query param so
+     it also fires when already on /settings (a same-route soft navigation does
+     not remount this component); the flag is stripped once consumed so a refresh
+     or back-nav doesn't re-open it. Mirrors the billId pattern in BillCard. */
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  useEffect(() => {
+    if (searchParams?.get("modal") !== "profile") return;
+    setShowProfileModal(true);
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("modal");
+    const newQuery = params.toString();
+    router.replace(`${pathname}${newQuery ? `?${newQuery}` : ""}`, { scroll: false });
+  }, [searchParams, pathname, router]);
 
   /* Contribution Totals */
   const contributionWeekly = householdContributions

@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Settings, LogOut } from "lucide-react";
+import { Settings, LogOut, ChevronRight } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 interface AvatarDropdownProps {
@@ -87,13 +87,21 @@ export default function AvatarDropdown({ user }: AvatarDropdownProps) {
           className="absolute right-0 mt-2 w-56 origin-top-right rounded-xl border border-border bg-surface shadow-lg shadow-black/40 ring-1 ring-black ring-opacity-5 focus:outline-none z-50 animate-in fade-in slide-in-from-top-1 duration-150"
         >
           {/* User Information Header */}
-          <div className="px-5 py-3.5 border-b border-border-strong flex flex-col space-y-0.5">
+          <div className="px-5 py-3.5 border-b border-border-strong flex flex-col space-y-1">
             <span className="text-[10px] uppercase font-bold tracking-wider font-mono text-primary">
               Signed in as
             </span>
-            <span className="text-xs font-semibold text-foreground truncate">
-              {user.name}
-            </span>
+            {/* Name is a button that deep-links to the Profile section of settings */}
+            <Link
+              href="/settings?modal=profile"
+              onClick={() => setIsOpen(false)}
+              aria-label={`Open profile settings for ${user.name}`}
+              className="group -mx-1.5 flex items-center gap-1.5 rounded-lg px-1.5 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-white/5 hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+              role="menuitem"
+            >
+              <span className="min-w-0 truncate">{user.name}</span>
+              <ChevronRight size={14} className="shrink-0 text-muted transition-colors group-hover:text-primary" />
+            </Link>
             <span className="text-[10px] text-muted truncate">
               {user.email}
             </span>
