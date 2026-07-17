@@ -25,7 +25,6 @@ export default function BillsClient() {
   const [displayFrequency, setDisplayFrequency] = useState<FrequencyType>("weekly");
 
   const [isMounted, setIsMounted] = useState(false);
-  const [isCompact, setIsCompact] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
   const [isEditCategoryOrderOpen, setIsEditCategoryOrderOpen] = useState(false);
   const [categoryOrder, setCategoryOrder] = useState<string[]>([]);
@@ -269,20 +268,12 @@ export default function BillsClient() {
           <h2 className="text-xs font-bold text-subtle capitalize tracking-wider">
             Bills List
           </h2>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setIsEditCategoryOrderOpen(true)}
-              className="text-[10px] font-bold text-muted hover:text-foreground uppercase tracking-wider transition-colors"
-            >
-              Edit Order
-            </button>
-            <button
-              onClick={() => setIsCompact(!isCompact)}
-              className="text-[10px] font-bold text-muted hover:text-foreground uppercase tracking-wider transition-colors"
-            >
-              {isCompact ? "Expand All" : "Minimize All"}
-            </button>
-          </div>
+          <button
+            onClick={() => setIsEditCategoryOrderOpen(true)}
+            className="text-[10px] font-bold text-muted hover:text-foreground uppercase tracking-wider transition-colors"
+          >
+            Edit Order
+          </button>
         </div>
         {filteredBills.length === 0 ? (
           <div className="bg-surface border border-border rounded-2xl p-8 text-center shadow-sm">
@@ -324,7 +315,6 @@ export default function BillsClient() {
                         splits={billSplits.filter(s => s.bill_id === bill.id)}
                         householdMembers={householdMembers}
                         displayFrequency={displayFrequency}
-                        isCompact={isCompact}
                       />
                     ))}
                   </div>
