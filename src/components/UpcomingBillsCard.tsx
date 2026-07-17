@@ -70,6 +70,7 @@ export const UpcomingBillsCard = React.memo(function UpcomingBillsCard({
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <Link
             href="/bills"
+            prefetch={false}
             className="text-[10px] font-heading font-bold uppercase tracking-wider text-primary hover:text-foreground transition-colors flex items-center gap-1 group whitespace-nowrap"
           >
             <span>View All <span className="hidden sm:inline">Bills</span></span>

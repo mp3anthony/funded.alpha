@@ -56,6 +56,7 @@ export const ActiveGoalsCard = React.memo(function ActiveGoalsCard({
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <Link
             href="/funds"
+            prefetch={false}
             className="text-[10px] font-heading font-bold uppercase tracking-wider text-primary hover:text-foreground transition-colors flex items-center gap-1 group whitespace-nowrap"
           >
             <span>View All</span>

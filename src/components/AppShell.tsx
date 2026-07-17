@@ -45,7 +45,11 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
   const currentUser = useCurrentUser();
   const [isNotificationCenterOpen, setIsNotificationCenterOpen] = useState(false);
   const [snoozedIds, setSnoozedIds] = useState<Record<string, number>>({});
-  const [now, setNow] = useState(() => Date.now());
+  // Start at 0 (not Date.now()) so static prerender doesn't read the current
+  // time during render — cacheComponents forbids that outside a Suspense
+  // boundary (see #47). The mount effect below calls refreshSnoozes(), which
+  // sets the real time on the client before any snooze comparison matters.
+  const [now, setNow] = useState(0);
   const [showVerifiedModal, setShowVerifiedModal] = useState(false);
   const isLoginPage = pathname === "/login";
   const isConfirmEmailPage = pathname === "/confirm-email";

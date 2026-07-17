@@ -33,7 +33,10 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
     return snoozes;
   });
   
-  const [nowVal, setNowVal] = useState(() => Date.now());
+  // Start at 0 (not Date.now()) so static prerender doesn't read the current
+  // time during render (cacheComponents forbids it outside Suspense — see #47).
+  // The open effect sets the real time before any snooze comparison is shown.
+  const [nowVal, setNowVal] = useState(0);
   const [activeSnoozeMenuId, setActiveSnoozeMenuId] = useState<string | null>(null);
   const router = useRouter();
 

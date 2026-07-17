@@ -25,10 +25,6 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AppProvider } from "@/context/AppContext";
 import AppShell from "@/components/AppShell";
-import { Suspense } from "react";
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
-import { type Session } from "@supabase/supabase-js";
 
 export const metadata: Metadata = {
   title: "Funded",
@@ -52,62 +48,6 @@ export const viewport: Viewport = {
     { media: '(prefers-color-scheme: dark)', color: '#0a0a0a' },
   ],
 };
-
-// Async Server Component to access cookies and fetch session inside a Suspense boundary
-async function ServerAppProvider({ children }: { children: React.ReactNode }) {
-  let session: Session | null = null;
-  let initialIsOnboarded = false;
-
-  try {
-    const cookieStore = await cookies();
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    if (supabaseUrl && supabaseAnonKey) {
-      const supabase = createServerClient(
-        supabaseUrl,
-        supabaseAnonKey,
-        {
-          cookies: {
-            getAll() {
-              return cookieStore.getAll();
-            },
-            setAll(cookiesToSet) {
-              try {
-                cookiesToSet.forEach(({ name, value, options }) =>
-                  cookieStore.set(name, value, options)
-                );
-              } catch {
-                // Safe to ignore in Server Components
-              }
-            },
-          },
-        }
-      );
-
-      const { data } = await supabase.auth.getSession();
-      session = data.session;
-
-      if (session?.user) {
-        const { data: membership } = await supabase
-          .from('household_members')
-          .select('household_id')
-          .eq('user_id', session.user.id)
-          .maybeSingle();
-
-        initialIsOnboarded = !!membership?.household_id;
-      }
-    }
-  } catch (err) {
-    console.error("Error fetching session in ServerAppProvider:", err);
-  }
-
-  return (
-    <AppProvider initialSession={session} initialIsOnboarded={initialIsOnboarded}>
-      {children}
-    </AppProvider>
-  );
-}
 
 export default function RootLayout({
   children,
@@ -156,15 +96,14 @@ export default function RootLayout({
         {/* Green Haze Background */}
         <div className="fixed bottom-0 right-0 w-[600px] h-[600px] bg-primary opacity-[0.08] dark:opacity-15 blur-[150px] pointer-events-none -z-10 translate-x-1/4 translate-y-1/4 rounded-full" />
         
-        <Suspense fallback={
-          <div className="flex flex-1 w-full items-center justify-center bg-background text-foreground">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          </div>
-        }>
-          <ServerAppProvider>
-            <AppShell>{children}</AppShell>
-          </ServerAppProvider>
-        </Suspense>
+        {/* Session is resolved client-side in AppProvider (see AppContext).
+            No server-side session prefetch here — reading cookies() in the
+            root layout would force the entire app to render dynamically under
+            cacheComponents, defeating static prerender and turning every soft
+            navigation into a per-request serverless RSC fetch (see #47). */}
+        <AppProvider>
+          <AppShell>{children}</AppShell>
+        </AppProvider>
       </body>
     </html>
   );

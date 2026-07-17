@@ -94,6 +94,7 @@ export default function AvatarDropdown({ user }: AvatarDropdownProps) {
             {/* Name is a button that deep-links to the Profile section of settings */}
             <Link
               href="/settings?modal=profile"
+              prefetch={false}
               onClick={() => setIsOpen(false)}
               aria-label={`Open profile settings for ${user.name}`}
               className="group -mx-1.5 flex items-center gap-1.5 rounded-lg px-1.5 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-white/5 hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
