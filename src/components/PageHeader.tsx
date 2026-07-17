@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import Logo from "./Logo";
 
 interface PageHeaderProps {
@@ -14,7 +15,13 @@ export default function PageHeader({ title, subtitle, action }: PageHeaderProps)
     <div className="flex flex-col w-full mb-4 mt-2 space-y-4">
       {/* Top Row: Logo (Avatar is now a floating element in AppShell) */}
       <div className="flex items-center justify-between w-full">
-        <Logo size="medium" showWordmark={true} />
+        <Link
+          href="/"
+          aria-label="Go to dashboard"
+          className="inline-flex items-center -m-2 p-2 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+        >
+          <Logo size="medium" showWordmark={true} />
+        </Link>
       </div>
       
       {/* Title & Subtitle */}
