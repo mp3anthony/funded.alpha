@@ -3,6 +3,10 @@
 import React, { useState, useRef } from "react";
 import { Upload, Trash2, Loader2 } from "lucide-react";
 import { uploadAvatar, deleteAvatar } from "@/lib/storage";
+import AvatarCropModal from "./AvatarCropModal";
+
+// Generous pre-crop ceiling to guard canvas memory; rejects only absurd files.
+const MAX_PRECROP_BYTES = 30 * 1024 * 1024;
 
 interface AvatarUploadProps {
   currentAvatarUrl: string | null;
@@ -20,17 +24,14 @@ export default function AvatarUpload({
   const [loading, setLoading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    // Allow re-picking the same file later.
+    e.target.value = "";
     if (!file) return;
-
-    // Validate size (2MB max)
-    if (file.size > 2 * 1024 * 1024) {
-      setError("File size must be less than 2MB.");
-      return;
-    }
 
     // Validate type
     const validTypes = ["image/jpeg", "image/png", "image/webp"];
@@ -39,8 +40,32 @@ export default function AvatarUpload({
       return;
     }
 
+    // Pre-crop sanity ceiling (guards canvas memory on very large files).
+    if (file.size > MAX_PRECROP_BYTES) {
+      setError("That image is too large. Please choose one under 30MB.");
+      return;
+    }
+
     setError(null);
-    setPreviewUrl(URL.createObjectURL(file));
+    // Open the crop modal; upload happens once the user confirms.
+    setCropSrc(URL.createObjectURL(file));
+  };
+
+  const closeCropModal = () => {
+    setCropSrc((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+  };
+
+  const handleCropComplete = async (blob: Blob) => {
+    closeCropModal();
+
+    const processedFile = new File([blob], `${userId}-${Date.now()}.jpg`, {
+      type: "image/jpeg",
+    });
+
+    setPreviewUrl(URL.createObjectURL(processedFile));
     setLoading(true);
 
     try {
@@ -53,7 +78,7 @@ export default function AvatarUpload({
         }
       }
 
-      const publicUrl = await uploadAvatar(userId, file);
+      const publicUrl = await uploadAvatar(userId, processedFile);
       onAvatarChange(publicUrl);
     } catch (err: any) {
       console.error("Avatar upload failed:", err);
@@ -89,6 +114,7 @@ export default function AvatarUpload({
   const activeAvatar = previewUrl || currentAvatarUrl;
 
   return (
+    <>
     <div className="flex flex-col sm:flex-row items-center gap-5 p-4 bg-surface border border-border rounded-2xl">
       {/* Avatar Display wrapper */}
       <div className="relative h-20 w-20 rounded-2xl overflow-hidden bg-surface-raised border border-border shrink-0 shadow-inner">
@@ -152,7 +178,8 @@ export default function AvatarUpload({
         {/* Hints and Error messages */}
         <div className="space-y-1">
           <p className="text-[10px] text-muted">
-            Allowed formats: JPEG, PNG, WebP. Max size: 2MB.
+            Allowed formats: JPEG, PNG, WebP. Photos are automatically cropped
+            and resized.
           </p>
           {error && (
             <p className="text-[10px] text-destructive font-semibold uppercase tracking-wider animate-shake">
@@ -162,5 +189,14 @@ export default function AvatarUpload({
         </div>
       </div>
     </div>
+
+    {cropSrc && (
+      <AvatarCropModal
+        imageSrc={cropSrc}
+        onCancel={closeCropModal}
+        onComplete={handleCropComplete}
+      />
+    )}
+    </>
   );
 }
