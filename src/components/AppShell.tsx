@@ -155,8 +155,15 @@ function AppShellBody({ children, isMounted }: { children: React.ReactNode; isMo
     return <>{children}</>;
   }
 
-  // If fully loaded and we know user is not onboarded, show Onboarding
-  if (isMounted && !isAuthLoading && session && !isOnboarded) {
+  // If fully loaded and we know user is not onboarded, show Onboarding.
+  // The !isDataLoading guard is essential: on cold start there is a one-render
+  // gap where auth has just resolved (session truthy) but isOnboarded is still
+  // its false default and loadData hasn't confirmed the household yet. Without
+  // this guard the gate wins that gap and flashes "create or join" before the
+  // home screen (see #49). isDataLoading is set true the instant the session
+  // resolves (AppContext), so we stay on the loading wheel until loadData has
+  // genuinely determined whether a household exists.
+  if (isMounted && !isAuthLoading && session && !isOnboarded && !isDataLoading) {
     return (
       <>
         <Onboarding />
