@@ -4,10 +4,18 @@ import { supabase } from "./supabase";
  * Uploads a user avatar to Supabase Storage and returns the public CDN URL.
  */
 export async function uploadAvatar(userId: string, file: File): Promise<string> {
-  const fileExt = file.name.split(".").pop();
+  // Prefer the MIME type for the extension; fall back to the file name only
+  // when the type is unknown. Keeps paths clean now that avatars are
+  // re-encoded to JPEG regardless of the original file name.
+  const mimeExtMap: Record<string, string> = {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/webp": "webp",
+  };
+  const fileExt =
+    mimeExtMap[file.type] || file.name.split(".").pop() || "jpg";
   const timestamp = Date.now();
-  const sanitizedName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
-  const fileName = `avatars/${userId}/${timestamp}-${sanitizedName}`;
+  const fileName = `avatars/${userId}/${timestamp}.${fileExt}`;
 
   const { data, error } = await supabase.storage
     .from("avatars")
