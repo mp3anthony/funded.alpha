@@ -17,6 +17,7 @@ export default function PageHeader({ title, subtitle, action }: PageHeaderProps)
       <div className="flex items-center justify-between w-full">
         <Link
           href="/"
+          prefetch={false}
           aria-label="Go to dashboard"
           className="inline-flex items-center -m-2 p-2 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
         >
