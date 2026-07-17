@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X, PiggyBank } from "lucide-react";
 import { useApp, type Fund } from "@/context/AppContext";
 
@@ -119,7 +120,9 @@ export default function EditGoalSheet({
     }
   };
 
-  return (
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <div className="fixed inset-0 z-[100] modal-backdrop flex items-end justify-center bg-foreground/20 dark:bg-black/80 backdrop-blur-sm md:items-stretch md:justify-end md:p-0 md:bg-foreground/20 dark:bg-foreground/20 dark:bg-black/80 animate-in fade-in duration-200">
       {/* Overlay to close */}
       <div className="absolute inset-0" onClick={onClose} />
@@ -291,6 +294,7 @@ export default function EditGoalSheet({
           </button>
         </div>
       </form>
-    </div>
+    </div>,
+    document.body
   );
 }
