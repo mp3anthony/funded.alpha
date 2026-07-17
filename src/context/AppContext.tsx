@@ -717,6 +717,13 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
       console.log('Auth useEffect - getSession result:', session ? 'has session' : 'no session', 'user:', session?.user?.id);
       setSession(session);
       setIsAuthLoading(false);
+      // Mark data as loading in the same batch as the session resolving, so the
+      // very first render after auth knows "session found, data not yet checked".
+      // Without this, isDataLoading stays false until loadData runs one render
+      // later, and AppShell's Onboarding gate briefly wins the gap — the
+      // cold-start "create or join" flash (see #49). Only when a session exists;
+      // a null session must stay non-loading so the login redirect still fires.
+      if (session) setIsDataLoading(true);
     });
 
     const {
@@ -725,6 +732,16 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
       console.log('Auth useEffect - onAuthStateChange event:', _event, 'session:', session ? 'has session' : 'no session', 'user:', session?.user?.id);
       setSession(session);
       setIsAuthLoading(false);
+      // Only "session just established" events should enter the loading state.
+      // TOKEN_REFRESHED / USER_UPDATED fire in the background (roughly hourly,
+      // and on tab refocus) and must stay silent — otherwise they'd flash the
+      // full-screen loading wheel over a working app, since loadData re-runs on
+      // every session change. Mirror the codebase's existing convention that
+      // treats INITIAL_SESSION and SIGNED_IN as the authoritative signals
+      // (see src/app/auth/callback/page.tsx).
+      if (session && (_event === "INITIAL_SESSION" || _event === "SIGNED_IN")) {
+        setIsDataLoading(true);
+      }
     });
 
     return () => subscription.unsubscribe();
