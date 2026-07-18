@@ -30,7 +30,7 @@ export default function PaydayClient() {
   const [selectedContributor, setSelectedContributor] = useState<string>("All");
 
   const toggleMemberHistory = (memberId: string) => {
-    setMinimizedMembers(prev => ({ ...prev, [memberId]: !prev[memberId] }));
+    setMinimizedMembers(prev => ({ ...prev, [memberId]: !(prev[memberId] ?? true) }));
   };
 
   const [isMounted, setIsMounted] = useState(false);
@@ -378,18 +378,11 @@ export default function PaydayClient() {
                 {visibleGroups.map(([memberId, histories]) => {
                   const member = householdMembers.find((m) => String(m.id) === String(memberId));
                   const memberName = member ? member.name : "Unknown Member";
-                  // True means collapsed (minimized). Force-expanded when filtered to one member.
-                  const isMinimized = selectedContributor === "All" ? !!minimizedMembers[memberId] : false;
+                  // True means collapsed (minimized). Defaults to collapsed; force-expanded when filtered to one member.
+                  const isMinimized = selectedContributor === "All" ? (minimizedMembers[memberId] ?? true) : false;
 
                   const headerContent = (
-                    <div className="flex items-center gap-3">
-                      <div className="shrink-0 flex h-14 w-14 items-center justify-center overflow-hidden rounded-lg bg-surface-elevated border border-primary text-base font-bold text-foreground">
-                        {member?.avatar_url ? (
-                          <img src={member.avatar_url} alt={memberName} className="h-full w-full object-cover" />
-                        ) : (
-                          member?.avatar || memberName.charAt(0).toUpperCase()
-                        )}
-                      </div>
+                    <div className="flex items-center gap-2.5">
                       <span className="text-base font-semibold text-foreground">{memberName}'s History</span>
                       <span className="text-xs text-muted font-mono bg-white/5 px-2 py-0.5 rounded-full">{histories.length}</span>
                     </div>
@@ -400,7 +393,7 @@ export default function PaydayClient() {
                       {selectedContributor === "All" ? (
                         <button
                           onClick={() => toggleMemberHistory(memberId)}
-                          className="group w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors cursor-pointer"
+                          className="group w-full flex items-center justify-between p-3 hover:bg-white/5 transition-colors cursor-pointer"
                         >
                           {headerContent}
                           {isMinimized ? (
@@ -410,7 +403,7 @@ export default function PaydayClient() {
                           )}
                         </button>
                       ) : (
-                        <div className="w-full flex items-center justify-between p-4">
+                        <div className="w-full flex items-center justify-between p-3">
                           {headerContent}
                         </div>
                       )}

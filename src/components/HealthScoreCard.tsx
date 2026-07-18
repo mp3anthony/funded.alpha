@@ -18,7 +18,7 @@ export const HealthScoreCard = React.memo(function HealthScoreCard() {
   } = useApp();
 
   const [isHealthExpanded, setIsHealthExpanded] = useState(false);
-  const [isContributorsExpanded, setIsContributorsExpanded] = useState(true);
+  const [isContributorsExpanded, setIsContributorsExpanded] = useState(false);
 
   // 1. Calculate Health Score
   const score = useMemo(
