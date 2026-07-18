@@ -13,6 +13,21 @@ import { convertAmount } from "@/lib/utils";
 
 type FrequencyType = "weekly" | "fortnightly" | "monthly" | "yearly";
 
+const BILL_CATEGORIES = [
+  "Subscriptions",
+  "Living Costs",
+  "Household Bills",
+  "Debt & Finance",
+  "Loans",
+  "Temporary",
+  "Other",
+];
+
+// Legacy bill category names → current scheme
+const BILL_CATEGORY_REMAP: Record<string, string> = {
+  "Debt/Finance": "Debt & Finance",
+};
+
 export default function BillsClient() {
   const { bills, billSplits, members: householdMembers } = useApp();
   const currentUser = useCurrentUser();
@@ -40,7 +55,16 @@ export default function BillsClient() {
     const savedOrder = localStorage.getItem("billCategoryOrder");
     if (savedOrder) {
       try {
-        setCategoryOrder(JSON.parse(savedOrder));
+        const parsed: string[] = JSON.parse(savedOrder);
+        const cleaned = Array.from(
+          new Set(
+            parsed
+              .map((c) => BILL_CATEGORY_REMAP[c] || c)
+              .filter((c) => BILL_CATEGORIES.includes(c))
+          )
+        );
+        setCategoryOrder(cleaned);
+        localStorage.setItem("billCategoryOrder", JSON.stringify(cleaned));
       } catch (e) {}
     }
   }, []);
@@ -119,9 +143,8 @@ export default function BillsClient() {
   }, [filteredBills, displayFrequency]);
 
   const allCategories = useMemo(() => {
-    const defaultCats = ["Subscriptions", "Living Costs", "Household Bills", "Debt/Finance", "Loans", "Temporary", "Other"];
     const currentCats = Object.keys(groupedBills);
-    return Array.from(new Set([...categoryOrder, ...defaultCats, ...currentCats]));
+    return Array.from(new Set([...categoryOrder, ...BILL_CATEGORIES, ...currentCats]));
   }, [groupedBills, categoryOrder]);
 
   const emptyStateMessage = useMemo(() => {
@@ -182,7 +205,7 @@ export default function BillsClient() {
                 <option value="Subscriptions">Subscriptions</option>
                 <option value="Living Costs">Living Costs</option>
                 <option value="Household Bills">Household Bills</option>
-                <option value="Debt/Finance">Debt/Finance</option>
+                <option value="Debt & Finance">Debt & Finance</option>
                 <option value="Loans">Loans</option>
                 <option value="Temporary">Temporary</option>
                 <option value="Other">Other</option>

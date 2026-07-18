@@ -12,6 +12,27 @@ import PageHeader from "@/components/PageHeader";
 
 const ADD_AMOUNT = 50; // dollars added per click
 
+const GOAL_CATEGORIES = [
+  "Home & Living",
+  "Debt & Finance",
+  "Vacation & Travel",
+  "Savings",
+  "Emergency",
+  "Short-Term",
+  "Education",
+  "Other",
+];
+
+// Legacy goal category names → new 8-category scheme
+const GOAL_CATEGORY_REMAP: Record<string, string> = {
+  "Emergency Fund": "Emergency",
+  "Buy a House": "Home & Living",
+  "Vacation": "Vacation & Travel",
+  "Transport": "Vacation & Travel",
+  "Debt Payoff": "Debt & Finance",
+  "Interest Free Payment": "Debt & Finance",
+};
+
 export default function FundsClient() {
   const { funds, deleteGoal, addToGoal } = useApp();
   const currentUser = useCurrentUser();
@@ -39,7 +60,16 @@ export default function FundsClient() {
     const savedOrder = localStorage.getItem("goalCategoryOrder");
     if (savedOrder) {
       try {
-        setCategoryOrder(JSON.parse(savedOrder));
+        const parsed: string[] = JSON.parse(savedOrder);
+        const cleaned = Array.from(
+          new Set(
+            parsed
+              .map((c) => GOAL_CATEGORY_REMAP[c] || c)
+              .filter((c) => GOAL_CATEGORIES.includes(c))
+          )
+        );
+        setCategoryOrder(cleaned);
+        localStorage.setItem("goalCategoryOrder", JSON.stringify(cleaned));
       } catch (e) {}
     }
   }, []);
@@ -75,9 +105,8 @@ export default function FundsClient() {
   }, [filteredFunds]);
 
   const allCategories = useMemo(() => {
-    const defaultCats = ["Emergency Fund", "Debt Payoff", "Interest Free Payment", "Buy a House", "Education", "Transport", "Vacation", "Other"];
     const currentCats = Object.keys(groupedFunds);
-    return Array.from(new Set([...categoryOrder, ...defaultCats, ...currentCats]));
+    return Array.from(new Set([...categoryOrder, ...GOAL_CATEGORIES, ...currentCats]));
   }, [groupedFunds, categoryOrder]);
 
   // ── Handlers ──────────────────────────────────────────────────────
@@ -164,13 +193,13 @@ export default function FundsClient() {
                 className="w-full rounded-xl border border-primary/30 bg-background px-2 py-2 text-[10px] font-semibold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-6"
               >
                 <option value="All">All</option>
-                <option value="Emergency Fund">Emergency Fund</option>
-                <option value="Debt Payoff">Debt Payoff</option>
-                <option value="Interest Free Payment">Interest Free Payment</option>
-                <option value="Buy a House">Buy a House</option>
+                <option value="Home & Living">Home & Living</option>
+                <option value="Debt & Finance">Debt & Finance</option>
+                <option value="Vacation & Travel">Vacation & Travel</option>
+                <option value="Savings">Savings</option>
+                <option value="Emergency">Emergency</option>
+                <option value="Short-Term">Short-Term</option>
                 <option value="Education">Education</option>
-                <option value="Transport">Transport</option>
-                <option value="Vacation">Vacation</option>
                 <option value="Other">Other</option>
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1 text-muted">

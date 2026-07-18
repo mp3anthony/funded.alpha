@@ -196,7 +196,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
                 <option value="Subscriptions">Subscriptions</option>
                 <option value="Living Costs">Living Costs</option>
                 <option value="Household Bills">Household Bills</option>
-                <option value="Debt/Finance">Debt/Finance</option>
+                <option value="Debt & Finance">Debt & Finance</option>
                 <option value="Loans">Loans</option>
                 <option value="Temporary">Temporary</option>
                 <option value="Other">Other</option>
