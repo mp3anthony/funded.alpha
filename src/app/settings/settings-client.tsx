@@ -285,7 +285,7 @@ export default function SettingsClient() {
       <section className="bg-white/[0.02] border border-border/40 rounded-2xl p-5 mt-8">
         <div className="flex flex-col items-center justify-center text-center">
           <p className="text-muted font-body text-xs tracking-wider leading-loose opacity-50">
-            Built with AI &bull; funded. v0.8.2
+            Built with AI &bull; funded. v0.8.3
           </p>
           <p className="text-muted font-body text-xs tracking-wider opacity-40">
             Concept &amp; Development: Anthony Paull
