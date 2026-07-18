@@ -112,9 +112,14 @@ export default function FundsClient() {
   // ── Handlers ──────────────────────────────────────────────────────
   const handleDeleteGoal = async () => {
     if (selectedGoal && confirm(`Are you sure you want to delete "${selectedGoal.name}"?`)) {
-      await deleteGoal(selectedGoal.id);
-      setIsDetailOpen(false);
-      setSelectedGoal(null);
+      try {
+        await deleteGoal(selectedGoal.id);
+        setIsDetailOpen(false);
+        setSelectedGoal(null);
+      } catch (err) {
+        const errMsg = err instanceof Error ? err.message : "Unknown error";
+        alert("Failed to delete goal: " + errMsg);
+      }
     }
   };
 

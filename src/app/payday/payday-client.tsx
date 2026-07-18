@@ -83,7 +83,12 @@ export default function PaydayClient() {
   const handleDeleteSchedule = async (schedule: PaySchedule) => {
     const memberName = householdMembers.find((m) => String(m.id) === String(schedule.member_id))?.name || "Member";
     if (confirm(`Delete payday schedule for ${memberName}? Any logged history will be preserved.`)) {
-      await deletePaySchedule(schedule.id);
+      try {
+        await deletePaySchedule(schedule.id);
+      } catch (err) {
+        const errMsg = err instanceof Error ? err.message : "Unknown error";
+        alert("Failed to delete payday schedule: " + errMsg);
+      }
     }
   };
 
@@ -456,8 +461,13 @@ export default function PaydayClient() {
         }}
         onDelete={async () => {
           if (selectedSchedule && confirm("Are you sure you want to delete this payday schedule?")) {
-            await deletePaySchedule(selectedSchedule.id);
-            setIsDetailOpen(false);
+            try {
+              await deletePaySchedule(selectedSchedule.id);
+              setIsDetailOpen(false);
+            } catch (err) {
+              const errMsg = err instanceof Error ? err.message : "Unknown error";
+              alert("Failed to delete payday schedule: " + errMsg);
+            }
           }
         }}
       />
