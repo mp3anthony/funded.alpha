@@ -1443,11 +1443,20 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
         throw splitErr;
       }
 
-      const { error } = await supabase.from("bills").delete().eq("id", id);
+      const { data, error } = await supabase
+        .from("bills")
+        .delete()
+        .eq("id", id)
+        .select();
 
       if (error) {
         console.error("Error deleting bill:", error);
         throw error;
+      }
+      if (!data || data.length === 0) {
+        throw new Error(
+          "The bill couldn't be deleted — it may have already been removed, or you may not have permission to delete it."
+        );
       }
 
       setBills((prev) => prev.filter((b) => b.id !== id));
@@ -1531,14 +1540,27 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
 
   async function deleteGoal(id: string | number) {
     try {
-      const { error } = await supabase.from("funds").delete().eq("id", id);
+      // .select() makes Postgres return the rows it actually deleted. If the
+      // delete is silently blocked (RLS/no match), data comes back empty with
+      // no error — we must treat that as a failure, not a success.
+      const { data, error } = await supabase
+        .from("funds")
+        .delete()
+        .eq("id", id)
+        .select();
       if (error) {
         console.error("Error deleting goal/fund:", error);
-        return;
+        throw error;
+      }
+      if (!data || data.length === 0) {
+        throw new Error(
+          "The goal couldn't be deleted — it may have already been removed, or you may not have permission to delete it."
+        );
       }
       setFunds((prev) => prev.filter((f) => f.id !== id));
     } catch (err) {
       console.error("Failed to delete goal:", err);
+      throw err;
     }
   }
 
@@ -2253,10 +2275,19 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
 
   async function deletePaySchedule(id: string) {
     try {
-      const { error } = await supabase.from("pay_schedules").delete().eq("id", id);
+      const { data, error } = await supabase
+        .from("pay_schedules")
+        .delete()
+        .eq("id", id)
+        .select();
       if (error) {
         console.error("Error deleting pay schedule:", error);
         throw error;
+      }
+      if (!data || data.length === 0) {
+        throw new Error(
+          "The payday schedule couldn't be deleted — it may have already been removed, or you may not have permission to delete it."
+        );
       }
       setPaySchedules((prev) => prev.filter((s) => s.id !== id));
     } catch (err) {
