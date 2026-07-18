@@ -89,7 +89,7 @@ export default function BillCard({
     <>
       <button 
         onClick={() => setIsDetailOpen(true)}
-        className="w-full text-left rounded-2xl bg-surface border border-border flex hover:border-primary/30 hover:bg-surface-raised transition-all group focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background p-5 flex-col space-y-4"
+        className="w-full text-left rounded-2xl bg-surface border border-border flex hover:border-primary/30 hover:bg-surface-raised transition-all group focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background p-4 flex-col space-y-2.5"
       >
       {/* Top Row: Name & Badges */}
       <div className="flex items-center justify-between w-full">
@@ -112,13 +112,13 @@ export default function BillCard({
 
       {/* Middle Row: Amount */}
       <div className="flex items-baseline gap-2.5 w-full">
-        <span className="font-mono font-extrabold text-foreground tracking-tight text-3xl">
+        <span className="font-mono font-extrabold text-foreground tracking-tight text-2xl">
           ${formattedAmount}
         </span>
       </div>
 
       {/* Bottom Row: Due Date & Assignee */}
-      <div className="flex w-full items-center justify-between pt-2">
+      <div className="flex w-full items-center justify-between">
         <div className="flex flex-col space-y-1">
           <span
             className={`font-mono text-xs uppercase font-medium transition-colors ${
@@ -137,17 +137,26 @@ export default function BillCard({
 
         {assignee && (
           <div
-            className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-elevated text-[10px] font-bold text-foreground border border-border group-hover:border-primary/30 transition-colors shadow-sm"
+            className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-xl bg-surface-elevated text-[10px] font-bold text-foreground border border-border group-hover:border-primary/30 transition-colors shadow-sm"
             title={`Assignee: ${assignee.name}`}
           >
-            {assignee.avatar || assignee.name.charAt(0).toUpperCase()}
+            {assignee.avatar_url ? (
+              <img
+                src={assignee.avatar_url}
+                alt={assignee.name}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              assignee.avatar || assignee.name.charAt(0).toUpperCase()
+            )}
           </div>
         )}
       </div>
 
       {/* Tap for more prompt */}
-      <div className="w-full pt-3 mt-1 border-t border-border/50 text-center text-[10px] font-semibold text-primary/70 uppercase tracking-widest group-hover:text-primary transition-colors flex items-center justify-center gap-1">
-        Tap for more details
+      <div className="w-full text-center text-[9px] font-semibold text-muted/60 uppercase tracking-widest group-hover:text-primary transition-colors flex items-center justify-center gap-1">
+        Tap for more
+        <span aria-hidden="true">›</span>
       </div>
       </button>
 
