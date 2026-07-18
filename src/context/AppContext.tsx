@@ -304,7 +304,7 @@ function getCategoryColor(category: string) {
       return "bg-purple-500/10 text-purple-600 dark:text-purple-400";
     case "Living Costs":
       return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400";
-    case "Debt/Finance":
+    case "Debt & Finance":
       return "bg-rose-500/10 text-rose-600 dark:text-rose-400";
     case "Loans":
       return "bg-pink-500/10 text-pink-600 dark:text-pink-400";
@@ -315,33 +315,47 @@ function getCategoryColor(category: string) {
 
 function getFundStyle(category: string) {
   switch (category) {
-    case "Vacation":
+    case "Home & Living":
+      return {
+        bgLight: "bg-indigo-500/10 text-indigo-500",
+        barColor: "bg-indigo-500",
+        accentText: "text-indigo-500",
+        icon: Home,
+      };
+    case "Debt & Finance":
+      return {
+        bgLight: "bg-rose-500/10 text-rose-500",
+        barColor: "bg-rose-500",
+        accentText: "text-rose-500",
+        icon: CreditCard,
+      };
+    case "Vacation & Travel":
       return {
         bgLight: "bg-secondary/10 text-secondary",
         barColor: "bg-secondary",
         accentText: "text-secondary",
         icon: Plane,
       };
-    case "Emergency Fund":
+    case "Savings":
+      return {
+        bgLight: "bg-emerald-500/10 text-emerald-500",
+        barColor: "bg-emerald-500",
+        accentText: "text-emerald-500",
+        icon: PiggyBank,
+      };
+    case "Emergency":
       return {
         bgLight: "bg-primary/10 text-primary",
         barColor: "bg-primary",
         accentText: "text-primary",
         icon: Shield,
       };
-    case "Transport":
+    case "Short-Term":
       return {
-        bgLight: "bg-accent/10 text-accent",
-        barColor: "bg-accent",
-        accentText: "text-accent",
-        icon: Car,
-      };
-    case "Buy a House":
-      return {
-        bgLight: "bg-indigo-500/10 text-indigo-500",
-        barColor: "bg-indigo-500",
-        accentText: "text-indigo-500",
-        icon: Home,
+        bgLight: "bg-cyan-500/10 text-cyan-500",
+        barColor: "bg-cyan-500",
+        accentText: "text-cyan-500",
+        icon: Clock,
       };
     case "Education":
       return {
@@ -349,20 +363,6 @@ function getFundStyle(category: string) {
         barColor: "bg-accent",
         accentText: "text-yellow-600 dark:text-accent",
         icon: BookOpen,
-      };
-    case "Debt Payoff":
-      return {
-        bgLight: "bg-rose-500/10 text-rose-500",
-        barColor: "bg-rose-500",
-        accentText: "text-rose-500",
-        icon: CreditCard,
-      };
-    case "Interest Free Payment":
-      return {
-        bgLight: "bg-purple-500/10 text-purple-500",
-        barColor: "bg-purple-500",
-        accentText: "text-purple-500",
-        icon: PiggyBank,
       };
     case "Other":
     default:
@@ -531,7 +531,7 @@ interface AppContextValue {
 
   /* Funds */
   funds: Fund[];
-  addFund: (fund: Fund) => void;
+  addFund: (fund: Omit<Fund, "bgLight" | "barColor" | "accentText" | "icon">) => void;
   updateGoal: (id: string | number, goalData: any) => Promise<void>;
   deleteGoal: (id: string | number) => Promise<void>;
   updateFund: (id: string | number, fundData: any) => Promise<void>;
@@ -1459,7 +1459,7 @@ export function AppProvider({ children, initialSession = null, initialIsOnboarde
   }
 
   /* ── Funds Actions ──────────────────────────── */
-  async function addFund(fund: Fund) {
+  async function addFund(fund: Omit<Fund, "bgLight" | "barColor" | "accentText" | "icon">) {
     try {
       const hId = await ensureHousehold();
 

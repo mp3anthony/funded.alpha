@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { X, PiggyBank } from "lucide-react";
+import { X } from "lucide-react";
 import { useApp, type Fund } from "@/context/AppContext";
 
 interface AddGoalSheetProps {
@@ -21,7 +21,7 @@ export default function AddGoalSheet({
   const [name, setName] = useState("");
   const [targetAmount, setTargetAmount] = useState("");
   const [currentAmount, setCurrentAmount] = useState("0");
-  const [category, setCategory] = useState("Emergency Fund");
+  const [category, setCategory] = useState("Savings");
   const [deadline, setDeadline] = useState("");
   const [status, setStatus] = useState<'not_started' | 'in_progress' | 'completed' | 'paused'>("not_started");
   const [isSaving, setIsSaving] = useState(false);
@@ -49,7 +49,7 @@ export default function AddGoalSheet({
       setName("");
       setTargetAmount("");
       setCurrentAmount("0");
-      setCategory("Emergency Fund");
+      setCategory("Savings");
       setDeadline("");
       setStatus("not_started");
     }
@@ -70,50 +70,11 @@ export default function AddGoalSheet({
 
     setIsSaving(true);
     try {
-      // Determine styling details based on category
-      let bgLight = "bg-surface-raised/10 text-muted dark:text-muted";
-      let barColor = "bg-surface-raised";
-      let accentText = "text-muted dark:text-muted";
-
-      if (category === "Vacation") {
-        bgLight = "bg-secondary/10 text-secondary";
-        barColor = "bg-secondary";
-        accentText = "text-secondary";
-      } else if (category === "Emergency Fund") {
-        bgLight = "bg-primary/10 text-primary";
-        barColor = "bg-primary";
-        accentText = "text-primary";
-      } else if (category === "Transport") {
-        bgLight = "bg-accent/10 text-accent";
-        barColor = "bg-accent";
-        accentText = "text-accent";
-      } else if (category === "Buy a House") {
-        bgLight = "bg-indigo-500/10 text-indigo-500";
-        barColor = "bg-indigo-500";
-        accentText = "text-indigo-500";
-      } else if (category === "Education") {
-        bgLight = "bg-accent/10 text-yellow-600 dark:text-accent";
-        barColor = "bg-accent";
-        accentText = "text-yellow-600 dark:text-accent";
-      } else if (category === "Debt Payoff") {
-        bgLight = "bg-rose-500/10 text-rose-500";
-        barColor = "bg-rose-500";
-        accentText = "text-rose-500";
-      } else if (category === "Interest Free Payment") {
-        bgLight = "bg-purple-500/10 text-purple-500";
-        barColor = "bg-purple-500";
-        accentText = "text-purple-500";
-      }
-
       const goalData = {
         name,
         category,
         currentAmount: Number(currentAmount) || 0,
         targetAmount: Number(targetAmount),
-        bgLight,
-        barColor,
-        accentText,
-        icon: PiggyBank,
         deadline: deadline || null,
         status,
       };
@@ -131,7 +92,7 @@ export default function AddGoalSheet({
       setName("");
       setTargetAmount("");
       setCurrentAmount("0");
-      setCategory("Emergency Fund");
+      setCategory("Savings");
       setDeadline("");
       setStatus("not_started");
 
@@ -275,13 +236,13 @@ export default function AddGoalSheet({
                 onChange={(e) => setCategory(e.target.value)}
                 className="w-full rounded-xl border border-border bg-surface-raised px-4 py-2.5 md:py-3 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all appearance-none text-sm"
               >
-                <option value="Emergency Fund">Emergency Fund</option>
-                <option value="Vacation">Vacation</option>
-                <option value="Transport">Transport</option>
-                <option value="Buy a House">Buy a House</option>
+                <option value="Home & Living">Home & Living</option>
+                <option value="Debt & Finance">Debt & Finance</option>
+                <option value="Vacation & Travel">Vacation & Travel</option>
+                <option value="Savings">Savings</option>
+                <option value="Emergency">Emergency</option>
+                <option value="Short-Term">Short-Term</option>
                 <option value="Education">Education</option>
-                <option value="Debt Payoff">Debt Payoff</option>
-                <option value="Interest Free Payment">Interest Free Payment</option>
                 <option value="Other">Other</option>
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-muted">
