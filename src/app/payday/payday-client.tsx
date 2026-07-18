@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Plus, User, Trash2, CheckCircle2, AlertCircle, Clock, PiggyBank, DollarSign, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, User, Trash2, CheckCircle2, AlertCircle, Clock, PiggyBank, DollarSign, ChevronDown, ChevronRight } from "lucide-react";
 import { useApp, useCurrentUser, type PaySchedule, type PayHistory } from "@/context/AppContext";
 import AddPayScheduleSheet from "@/components/AddPayScheduleSheet";
 import EnterPayAmountModal from "@/components/EnterPayAmountModal";
@@ -27,6 +27,7 @@ export default function PaydayClient() {
   const [pendingHistoryToConfirm, setPendingHistoryToConfirm] = useState<PayHistory | null>(null);
 
   const [minimizedMembers, setMinimizedMembers] = useState<Record<string, boolean>>({});
+  const [selectedContributor, setSelectedContributor] = useState<string>("All");
 
   const toggleMemberHistory = (memberId: string) => {
     setMinimizedMembers(prev => ({ ...prev, [memberId]: !prev[memberId] }));
@@ -150,11 +151,14 @@ export default function PaydayClient() {
     setPendingHistoryToConfirm(null);
   };
 
-  const recentHistory = payHistory.slice(0, 10);
-
+  // Filter FIRST (by selected contributor), then cap at 10, then group by member.
   const groupedHistory = React.useMemo(() => {
+    const source = selectedContributor === "All"
+      ? payHistory
+      : payHistory.filter((h) => String(h.member_id) === String(selectedContributor));
+    const limited = source.slice(0, 10);
     const groups: Record<string, PayHistory[]> = {};
-    recentHistory.forEach((history) => {
+    limited.forEach((history) => {
       const id = String(history.member_id);
       if (!groups[id]) {
         groups[id] = [];
@@ -162,7 +166,19 @@ export default function PaydayClient() {
       groups[id].push(history);
     });
     return groups;
-  }, [recentHistory]);
+  }, [payHistory, selectedContributor]);
+
+  // Dropdown options derived from the FULL payHistory (not the capped/grouped view).
+  const contributorOptions = React.useMemo(() => {
+    const uniqueIds = Array.from(new Set(payHistory.map((h) => String(h.member_id))));
+    return uniqueIds
+      .map((id) => householdMembers.find((m) => String(m.id) === id))
+      .filter((m): m is NonNullable<typeof m> => Boolean(m))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [payHistory, householdMembers]);
+
+  const visibleGroups = Object.entries(groupedHistory);
+  const isEmpty = visibleGroups.length === 0;
 
   // Explicit, hydration-safe ordering for the unified Upcoming Pays card.
   // Primary: next_pay_date ascending (YYYY-MM-DD string compare = chronological).
@@ -314,58 +330,111 @@ export default function PaydayClient() {
           Recent Pay History
         </h2>
 
-        {recentHistory.length === 0 ? (
+        {payHistory.length === 0 ? (
           <div className="bg-surface border border-border rounded-2xl p-10 text-center shadow-sm">
             <PiggyBank className="h-10 w-10 text-muted mx-auto mb-3" />
             <p className="text-sm font-semibold text-muted">No history logged yet.</p>
             <p className="text-xs text-subtle mt-1">Logged payday transactions will appear here.</p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {Object.entries(groupedHistory).map(([memberId, histories]) => {
-              const member = householdMembers.find((m) => String(m.id) === String(memberId));
-              const memberName = member ? member.name : "Unknown Member";
-              // True means collapsed (minimized)
-              const isMinimized = !!minimizedMembers[memberId];
-
-              return (
-                <div key={memberId} className="bg-surface border border-border rounded-2xl overflow-hidden shadow-sm">
-                  <button
-                    onClick={() => toggleMemberHistory(memberId)}
-                    className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors cursor-pointer"
+          <>
+            {/* Contributor filter */}
+            <div className="flex flex-col gap-3 px-1">
+              <div className="space-y-1.5">
+                <label htmlFor="contributor-filter" className="text-[10px] font-bold text-muted uppercase tracking-wider ml-1">
+                  Contributor
+                </label>
+                <div className="relative">
+                  <select
+                    id="contributor-filter"
+                    value={selectedContributor}
+                    onChange={(e) => setSelectedContributor(e.target.value)}
+                    className="w-full rounded-xl border border-primary/30 bg-background px-2 py-2 text-[10px] font-semibold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-6"
                   >
+                    <option value="All">All Contributors</option>
+                    {contributorOptions.map((m) => (
+                      <option key={String(m.id)} value={String(m.id)}>{m.name}</option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1 text-muted">
+                    <svg className="h-3 w-3 fill-current" viewBox="0 0 20 20">
+                      <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {isEmpty && selectedContributor !== "All" ? (
+              <div className="bg-surface border border-border rounded-2xl p-10 text-center shadow-sm">
+                <PiggyBank className="h-10 w-10 text-muted mx-auto mb-3" />
+                <p className="text-sm font-semibold text-muted">
+                  No pays logged for {householdMembers.find((m) => String(m.id) === String(selectedContributor))?.name || "this contributor"} yet.
+                </p>
+                <p className="text-xs text-subtle mt-1">Logged payday transactions will appear here.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {visibleGroups.map(([memberId, histories]) => {
+                  const member = householdMembers.find((m) => String(m.id) === String(memberId));
+                  const memberName = member ? member.name : "Unknown Member";
+                  // True means collapsed (minimized). Force-expanded when filtered to one member.
+                  const isMinimized = selectedContributor === "All" ? !!minimizedMembers[memberId] : false;
+
+                  const headerContent = (
                     <div className="flex items-center gap-3">
-                      {member?.avatar_url ? (
-                        <img src={member.avatar_url} alt={memberName} className="h-8 w-8 rounded-full object-cover shrink-0 border border-border" />
-                      ) : (
-                        <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-foreground font-bold text-xs shrink-0 border border-border shadow-inner">
-                          {member?.avatar || memberName.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                      <span className="font-semibold text-foreground">{memberName}'s History</span>
+                      <div className="shrink-0 flex h-14 w-14 items-center justify-center overflow-hidden rounded-lg bg-surface-elevated border border-primary text-base font-bold text-foreground">
+                        {member?.avatar_url ? (
+                          <img src={member.avatar_url} alt={memberName} className="h-full w-full object-cover" />
+                        ) : (
+                          member?.avatar || memberName.charAt(0).toUpperCase()
+                        )}
+                      </div>
+                      <span className="text-base font-semibold text-foreground">{memberName}'s History</span>
                       <span className="text-xs text-muted font-mono bg-white/5 px-2 py-0.5 rounded-full">{histories.length}</span>
                     </div>
-                    {isMinimized ? <ChevronDown size={18} className="text-muted" /> : <ChevronUp size={18} className="text-muted" />}
-                  </button>
-                  
-                  {!isMinimized && (
-                    <div className="p-4 pt-0 border-t border-border-strong">
-                      <div className="grid grid-cols-1 gap-3 pt-4">
-                        {histories.map((history) => (
-                          <PayHistoryCard
-                            key={history.id}
-                            history={history}
-                            onConfirmPending={handleConfirmPendingClick}
-                            hideMemberInfo={true}
-                          />
-                        ))}
-                      </div>
+                  );
+
+                  return (
+                    <div key={memberId} className="bg-surface border border-border rounded-2xl overflow-hidden shadow-sm">
+                      {selectedContributor === "All" ? (
+                        <button
+                          onClick={() => toggleMemberHistory(memberId)}
+                          className="group w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors cursor-pointer"
+                        >
+                          {headerContent}
+                          {isMinimized ? (
+                            <ChevronRight className="h-4 w-4 text-muted group-hover:text-foreground transition-colors" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4 text-muted group-hover:text-foreground transition-colors" />
+                          )}
+                        </button>
+                      ) : (
+                        <div className="w-full flex items-center justify-between p-4">
+                          {headerContent}
+                        </div>
+                      )}
+
+                      {!isMinimized && (
+                        <div className="p-4 pt-0 border-t border-border-strong">
+                          <div className="grid grid-cols-1 gap-3 pt-4">
+                            {histories.map((history) => (
+                              <PayHistoryCard
+                                key={history.id}
+                                history={history}
+                                onConfirmPending={handleConfirmPendingClick}
+                                hideMemberInfo={true}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+                  );
+                })}
+              </div>
+            )}
+          </>
         )}
       </div>
 
