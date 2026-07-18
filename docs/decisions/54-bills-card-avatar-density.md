@@ -1,4 +1,4 @@
-# Bill cards: square assignee avatar (with image) + reduced negative space
+# Bill cards: square assignee avatar (with image + green border) + compact layout
 
 - **Closes:** #54 (Bills cards: square assignee avatar + reduce card negative space)
 - **Related:** #53 (Bills floating filter controls) — sibling BillCard/Bills-surface polish
@@ -10,60 +10,82 @@
 Two BillCard refinements were logged as one issue because both are visual polish on the
 same surface (`src/components/BillCard.tsx`). Part A brings the per-card assignee chip into
 line with the rest of the app's avatar treatment; Part B tightens the card's density so
-more bills fit on screen. The diff (16 insertions / 7 deletions, class strings plus one
-`<img>` fallback) is self-evident from the source. This entry records the choices behind it
-— chiefly the density direction that was chosen and the two that were rejected.
+more bills fit on screen.
+
+The layout that shipped is denser than the plan first agreed. Implementation happened in two
+rounds: a first "moderate tighten" pass, then — after Anthony tested the Vercel preview and
+sent annotated screenshots — a second pass that restructured the card into a compact 3-row
+layout and reversed two of the original issue's stated decisions. This entry records those
+choices and reversals, since the diff alone won't explain why the final state contradicts
+the issue text.
 
 ## Decisions and why
 
-### Part A: reuse the app's existing avatar pattern rather than invent a chip
+### Part A: reuse the app's existing avatar pattern, then adopt its green border too
 
-`AvatarDropdown.tsx` already had the correct behaviour (`rounded-xl overflow-hidden`,
-`avatar_url` → `<img object-cover>`, else initial). The card chip only needed to adopt the
-same shape and image-with-initial-fallback. Deliberately **not** copied: the profile
-avatar's green border + gradient fill. The card's assignee is a quiet indicator, not a
-focal point — giving it the profile avatar's treatment would make it compete with the
-card's own name/amount. So it keeps its existing small neutral styling (`bg-surface-elevated`,
-`border-border`) and only the shape and image rendering changed.
+`AvatarDropdown.tsx` already had the correct behaviour (rounded-square, `avatar_url` →
+`<img object-cover>`, else initial). The card chip adopted the same shape and
+image-with-initial-fallback.
 
-### Part B: "moderate tighten" chosen over denser 2-row and 1-row layouts
+**Reversal 1 — the "neutral chip, no green border" decision was dropped.** The issue was
+explicit that the chip should stay a small *neutral* indicator with no green border or
+gradient, so it wouldn't compete with the card. In the preview Anthony judged the opposite:
+the neutral chip read as disconnected from the rest of the app, and he asked for the profile
+avatar's green border. So the chip now uses `border-2 border-primary` (matching
+`AvatarDropdown`). The gradient fill was *not* copied — only the border — so the image still
+reads as itself, just framed. This is a deliberate override of the issue text on sight, not
+an oversight.
 
-The issue asked for 2–3 density options at Plan Agreement. Three were presented:
+Separately, the corner radius was reduced from `rounded-xl` to `rounded-lg`. At the chip's
+28px size a `rounded-xl` (12px) radius is so close to half the width that it renders as a
+circle; `rounded-lg` (8px) is the point where it reads clearly as a rounded square.
 
-1. **Moderate tighten** (chosen) — keep the familiar 3-row vertical card; reduce padding,
-   gaps, and amount size, and slim the footer.
-2. **Compact 2-row** — name + badge + amount on one line, DUE + assignee below.
-3. **List-row** — a single horizontal table-like row.
+### Part B: shipped as a compact 3-row layout, not the "moderate tighten" first agreed
 
-Anthony chose option 1. The reasoning worth recording: options 2 and 3 buy more density but
-change what a bill card *is* — the amount stops being the billboard anchor and the card
-starts reading as a data table row. Option 1 gets a meaningful density win (~30% shorter)
-purely by removing dead space, while every element keeps its current role and position, so
-the change is low-risk and doesn't force a mental-model shift for the user. The denser
-options remain on the table if a future pass wants them, but were explicitly **not** built.
+Three density options were offered at Plan Agreement; Anthony first chose the conservative
+"moderate tighten" (keep the 3-row vertical card, just less air). That was built and
+deployed to preview.
 
-### The "tap for more" affordance was kept, just de-emphasised
+**Reversal 2 — the preview showed there was much more dead space to reclaim,** and Anthony's
+annotated screenshots (a PS edit blocking out the empty band in red) asked to collapse it.
+The final layout relocates elements rather than just shrinking them:
 
-The footer's top divider + `text-[10px] text-primary/70` label was the single largest block
-of dead space, and the issue named it as the biggest lever. It was tempting to delete the
-footer outright. Rejected — the issue is explicit that the affordance must stay. So the
-divider was dropped (it was the space cost, not the affordance) and the label shrank to
-`text-[9px] text-muted/60` with a `›` chevron. The chevron carries the "there's more"
-signal that the removed border used to imply, so discoverability survives the slim-down.
+- **Amount** moves up onto the **top row**, right-aligned beside the name (its own middle row
+  is gone).
+- **AUTO/MANUAL badge** moves **down** from the top-right to the **bottom row**, centre.
+- **"Tap for more ›"** moves out of its own full-width footer band and becomes an inline item
+  at the **bottom-right** of that same row.
+- **Assignee avatar** sits on its own right-aligned line between the two text rows, where
+  Anthony placed it.
+
+Net: four stacked bands → three tight rows, removing both the standalone amount row and the
+footer band. This is effectively the "compact 2-row" option that was rejected at Plan
+Agreement — the rejection held only until the preview made the wasted space visible.
+
+### Notes removed from the card entirely
+
+Previously the card rendered `bill.notes` under the due date. Anthony asked for notes to
+appear **only** in the tap-for-more detail sheet, keeping the list itself clean. Safe to
+remove: `BillDetailSheet.tsx` already renders `bill.notes` in its own section, so nothing is
+lost — the card simply stops duplicating it.
 
 ## Alternatives considered and rejected
 
-- **Give the card avatar the profile avatar's full treatment** (green border + gradient).
-  Rejected — it would make a secondary indicator compete with the card's primary content.
-- **Compact 2-row / List-row density** (options 2 and 3). Rejected at Plan Agreement —
-  bigger density gain but changes the card's identity and the amount's role; higher risk for
-  this polish pass. Held in reserve, not implemented.
-- **Delete the "tap for more" footer entirely.** Rejected — the issue requires the affordance
-  to remain; only its dead space (the divider) was removed.
+- **Give the card avatar the profile avatar's full treatment** (green border *and* gradient
+  fill). Rejected — the gradient would fight the uploaded image; only the border was taken.
+- **Keep the chip neutral with no green border** (the issue's original instruction). Reversed
+  on preview — read as disconnected from the app; see Reversal 1.
+- **Stop at "moderate tighten."** Reversed on preview — left an obvious empty band; see
+  Reversal 2.
+- **List-row (single horizontal line) layout.** Still not taken — the amount stays a
+  prominent top-right anchor rather than shrinking into a table cell.
+- **Keep notes on the card.** Rejected at Anthony's request — detail sheet already shows
+  them; the list stays scannable without them.
 
 ## Implementation notes
 
 Single-file presentational change; no logic, data, or state touched. The `<img>` uses the
 same `object-cover` guard as `AvatarDropdown`, so an assignee with no `avatar_url` still
-falls back to the initial exactly as before. No deviations from the agreed plan. No new
+falls back to the initial. The due-date span carries `min-w-0 truncate` so a long formatted
+date shrinks gracefully rather than shoving the badge and tap affordance off the row. No new
 domain terms, so `docs/GLOSSARY.md` was not modified.

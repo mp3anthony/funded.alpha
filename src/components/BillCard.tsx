@@ -89,55 +89,23 @@ export default function BillCard({
     <>
       <button 
         onClick={() => setIsDetailOpen(true)}
-        className="w-full text-left rounded-2xl bg-surface border border-border flex hover:border-primary/30 hover:bg-surface-raised transition-all group focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background p-4 flex-col space-y-2.5"
+        className="w-full text-left rounded-2xl bg-surface border border-border flex hover:border-primary/30 hover:bg-surface-raised transition-all group focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background p-4 flex-col space-y-1.5"
       >
-      {/* Top Row: Name & Badges */}
-      <div className="flex items-center justify-between w-full">
-        <h3 className="font-heading font-semibold text-lg text-foreground tracking-wide truncate pr-4">
+      {/* Top Row: Name & Amount */}
+      <div className="flex items-center justify-between w-full gap-3">
+        <h3 className="font-heading font-semibold text-lg text-foreground tracking-wide truncate">
           {bill.name}
         </h3>
-        <div className="flex items-center gap-2 shrink-0">
-          {/* Removed Recurring/Frequency Badges */}
-          <span 
-            className={`shrink-0 rounded-full px-3 py-1 text-[10px] font-heading font-bold uppercase tracking-widest ${
-              isAutoPay 
-                ? "bg-primary/10 text-primary border border-primary/20" 
-                : "bg-surface-elevated text-muted border border-border"
-            }`}
-          >
-            {paymentTypeStr}
-          </span>
-        </div>
-      </div>
-
-      {/* Middle Row: Amount */}
-      <div className="flex items-baseline gap-2.5 w-full">
-        <span className="font-mono font-extrabold text-foreground tracking-tight text-2xl">
+        <span className="shrink-0 font-mono font-extrabold text-foreground tracking-tight text-2xl">
           ${formattedAmount}
         </span>
       </div>
 
-      {/* Bottom Row: Due Date & Assignee */}
-      <div className="flex w-full items-center justify-between">
-        <div className="flex flex-col space-y-1">
-          <span
-            className={`font-mono text-xs uppercase font-medium transition-colors ${
-              isUrgent ? "text-[#ff4500]" : "text-muted"
-            }`}
-          >
-            DUE {bill.dueDate}
-          </span>
-          {bill.notes && (
-            <p className="text-xs text-muted font-mono mt-1">
-              {bill.notes}
-            </p>
-          )}
-        </div>
-
-
-        {assignee && (
+      {/* Assignee avatar (right-aligned) */}
+      {assignee && (
+        <div className="flex w-full justify-end">
           <div
-            className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-xl bg-surface-elevated text-[10px] font-bold text-foreground border border-border group-hover:border-primary/30 transition-colors shadow-sm"
+            className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-lg bg-surface-elevated text-[10px] font-bold text-foreground border-2 border-primary transition-colors shadow-sm"
             title={`Assignee: ${assignee.name}`}
           >
             {assignee.avatar_url ? (
@@ -150,13 +118,33 @@ export default function BillCard({
               assignee.avatar || assignee.name.charAt(0).toUpperCase()
             )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
-      {/* Tap for more prompt */}
-      <div className="w-full text-center text-[9px] font-semibold text-muted/60 uppercase tracking-widest group-hover:text-primary transition-colors flex items-center justify-center gap-1">
-        Tap for more
-        <span aria-hidden="true">›</span>
+      {/* Bottom Row: Due Date · Payment Type · Tap for more */}
+      <div className="flex w-full items-center justify-between gap-2">
+        <span
+          className={`min-w-0 truncate font-mono text-xs uppercase font-medium transition-colors ${
+            isUrgent ? "text-[#ff4500]" : "text-muted"
+          }`}
+        >
+          DUE {bill.dueDate}
+        </span>
+
+        <span
+          className={`shrink-0 rounded-full px-3 py-1 text-[10px] font-heading font-bold uppercase tracking-widest ${
+            isAutoPay
+              ? "bg-primary/10 text-primary border border-primary/20"
+              : "bg-surface-elevated text-muted border border-border"
+          }`}
+        >
+          {paymentTypeStr}
+        </span>
+
+        <span className="shrink-0 flex items-center gap-1 text-[9px] font-semibold text-muted/60 uppercase tracking-widest group-hover:text-primary transition-colors">
+          Tap for more
+          <span aria-hidden="true">›</span>
+        </span>
       </div>
       </button>
 
