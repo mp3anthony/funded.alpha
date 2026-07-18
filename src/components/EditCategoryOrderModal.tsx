@@ -39,7 +39,7 @@ export default function EditCategoryOrderModal({ isOpen, onClose, categories, on
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-foreground/20 dark:bg-foreground/20 dark:bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-[#111] border border-border rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl flex flex-col">
+      <div className="bg-[#111] border border-border rounded-3xl w-full max-w-sm max-h-[calc(100dvh-2rem)] overflow-hidden shadow-2xl flex flex-col">
         <div className="flex items-center justify-between p-4 border-b border-border">
           <h2 className="text-lg font-bold text-foreground">Category Order</h2>
           <button onClick={onClose} className="p-2 rounded-full hover:bg-white/5 text-muted hover:text-foreground transition-colors">
@@ -47,7 +47,7 @@ export default function EditCategoryOrderModal({ isOpen, onClose, categories, on
           </button>
         </div>
         
-        <div className="p-4 space-y-2 max-h-[60vh] overflow-y-auto">
+        <div className="flex-1 min-h-0 p-4 space-y-2 overflow-y-auto">
           {order.map((cat, i) => (
             <div key={cat} className="flex items-center justify-between bg-white/5 p-3 rounded-xl border border-border-strong">
               <div className="flex items-center gap-3">
@@ -74,8 +74,8 @@ export default function EditCategoryOrderModal({ isOpen, onClose, categories, on
           ))}
         </div>
 
-        <div className="p-4 border-t border-border">
-          <button 
+        <div className="p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-border">
+          <button
             onClick={() => {
               onSave(order);
               onClose();
