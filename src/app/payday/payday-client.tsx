@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Plus, Calendar, User, Trash2, CheckCircle2, AlertCircle, Clock, PiggyBank, DollarSign, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, User, Trash2, CheckCircle2, AlertCircle, Clock, PiggyBank, DollarSign, ChevronDown, ChevronUp } from "lucide-react";
 import { useApp, useCurrentUser, type PaySchedule, type PayHistory } from "@/context/AppContext";
 import AddPayScheduleSheet from "@/components/AddPayScheduleSheet";
 import EnterPayAmountModal from "@/components/EnterPayAmountModal";
@@ -164,6 +164,19 @@ export default function PaydayClient() {
     return groups;
   }, [recentHistory]);
 
+  // Explicit, hydration-safe ordering for the unified Upcoming Pays card.
+  // Primary: next_pay_date ascending (YYYY-MM-DD string compare = chronological).
+  // Tie-break: member name ascending.
+  const sortedSchedules = React.useMemo(() => {
+    return [...paySchedules].sort((a, b) => {
+      const dateCompare = a.next_pay_date.localeCompare(b.next_pay_date);
+      if (dateCompare !== 0) return dateCompare;
+      const aName = householdMembers.find((m) => String(m.id) === String(a.member_id))?.name || "";
+      const bName = householdMembers.find((m) => String(m.id) === String(b.member_id))?.name || "";
+      return aName.localeCompare(bName);
+    });
+  }, [paySchedules, householdMembers]);
+
   return (
     <div className="flex-1 w-full max-w-4xl mx-auto px-4 pt-4 pb-24 sm:px-6 md:pt-6 space-y-8">
       <PageHeader
@@ -193,100 +206,104 @@ export default function PaydayClient() {
             <p className="text-xs text-subtle mt-1">Create a schedule to automate or log household income.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3 sm:gap-4">
-            {paySchedules.map((schedule) => {
-              const member = householdMembers.find((m) => String(m.id) === String(schedule.member_id));
-              const memberName = member ? member.name : "Unknown Member";
-              const countdown = getCountdown(schedule);
-              const isReady = isLoggable(schedule);
+          <div className="rounded-2xl bg-surface border border-border shadow-sm overflow-hidden">
+            <div className="divide-y divide-border-strong">
+              {sortedSchedules.map((schedule) => {
+                const member = householdMembers.find((m) => String(m.id) === String(schedule.member_id));
+                const memberName = member ? member.name : "Unknown Member";
+                const countdown = getCountdown(schedule);
+                const isReady = isLoggable(schedule);
 
+                const formattedAmount = schedule.is_fixed_amount && schedule.amount
+                  ? `$${Number(schedule.amount).toLocaleString("en-US", { minimumFractionDigits: 2 })}`
+                  : "Variable";
 
+                const CountdownIcon = countdown.icon;
 
-              const formattedAmount = schedule.is_fixed_amount && schedule.amount
-                ? `$${Number(schedule.amount).toLocaleString("en-US", { minimumFractionDigits: 2 })}`
-                : "Variable";
-
-              const CountdownIcon = countdown.icon;
-
-              return (
-                <div
-                  key={schedule.id}
-                  onClick={() => {
-                    setSelectedSchedule(schedule);
-                    setIsDetailOpen(true);
-                  }}
-                  className="bg-surface border border-border rounded-2xl p-5 shadow-sm flex flex-col justify-between space-y-4 hover:border-primary/30 hover:shadow-md transition-all cursor-pointer"
-                >
-                  <div className="space-y-2">
-                    {/* Member & Actions */}
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 text-foreground font-bold text-sm min-w-0">
+                return (
+                  <div
+                    key={schedule.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => {
+                      setSelectedSchedule(schedule);
+                      setIsDetailOpen(true);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setSelectedSchedule(schedule);
+                        setIsDetailOpen(true);
+                      }
+                    }}
+                    className="flex flex-col gap-3 p-4 hover:bg-surface-raised transition-all cursor-pointer group"
+                  >
+                    {/* Top zone: avatar · name/amount + freq/countdown · delete */}
+                    <div className="flex items-center gap-3">
+                      {/* Leading avatar */}
+                      <div className="shrink-0 flex h-14 w-14 items-center justify-center overflow-hidden rounded-lg bg-surface-elevated border border-primary text-base font-bold text-foreground">
                         {member?.avatar_url ? (
-                          <img src={member.avatar_url} alt={memberName} className="h-6 w-6 rounded-full object-cover shrink-0" />
+                          <img src={member.avatar_url} alt={memberName} className="h-full w-full object-cover" />
                         ) : (
-                          <div className="h-6 w-6 rounded-full bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-foreground font-bold text-[10px] shrink-0">
-                            {member?.avatar || memberName.charAt(0).toUpperCase()}
-                          </div>
+                          member?.avatar || memberName.charAt(0).toUpperCase()
                         )}
-                        <span className="truncate">{memberName}</span>
                       </div>
+
+                      {/* Right column: name+amount over frequency+countdown */}
+                      <div className="flex flex-col flex-1 min-w-0 gap-2">
+                        {/* Row 1: Name & Amount */}
+                        <div className="flex items-center justify-between gap-2">
+                          <h3 className="font-body font-semibold text-lg text-foreground truncate">
+                            {memberName}
+                          </h3>
+                          <span className={`shrink-0 font-mono font-extrabold tracking-tight text-xl ${schedule.is_fixed_amount ? "text-primary" : "text-muted"}`}>
+                            {formattedAmount}
+                          </span>
+                        </div>
+
+                        {/* Row 2: Frequency & Countdown badge */}
+                        <div className="flex w-full items-center justify-between gap-2">
+                          <span className="min-w-0 truncate font-mono text-xs uppercase text-muted">
+                            {schedule.frequency}
+                          </span>
+                          <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border shrink-0 ${countdown.color}`}>
+                            <CountdownIcon size={12} className="shrink-0" />
+                            <span>{countdown.text}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Delete button */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleDeleteSchedule(schedule);
                         }}
-                        className="p-1.5 text-muted hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors cursor-pointer shrink-0"
+                        className="shrink-0 p-1.5 text-muted hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors cursor-pointer"
                         title="Delete Schedule"
                       >
                         <Trash2 size={14} />
                       </button>
                     </div>
 
-                    {/* Meta info */}
-                    <div className="flex items-center justify-between gap-2 flex-wrap text-xs text-muted font-mono pt-1">
-                      <div className="flex items-center gap-1.5 uppercase min-w-0">
-                        <span className="truncate">{schedule.frequency === 'fortnightly' ? 'fortnightly' : schedule.frequency}</span>
+                    {/* Log-Pay CTA — only shown when pay is due */}
+                    {isReady && (
+                      <div className="pt-3 mt-1 border-t border-border-strong">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveVariableSchedule(schedule);
+                          }}
+                          className="w-full py-2.5 rounded-xl font-heading text-xs font-bold uppercase bg-primary text-primary-fg hover:brightness-110 active:scale-[0.98] cursor-pointer transition-all"
+                        >
+                          {schedule.is_fixed_amount ? "Log Pay" : "Enter Pay Amount"}
+                        </button>
                       </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        <Calendar size={12} className="shrink-0" />
-                        <span>Next: {schedule.next_pay_date}</span>
-                      </div>
-                    </div>
-
-                    {/* Amount & Status Badge */}
-                    <div className="flex items-center justify-between gap-2 flex-wrap pt-2">
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-xs text-muted font-mono uppercase truncate">Amount</span>
-                        <span className="text-lg font-heading font-extrabold text-foreground tracking-tight font-mono truncate whitespace-nowrap">
-                          {formattedAmount}
-                        </span>
-                      </div>
-                      <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border shrink-0 ${countdown.color}`}>
-                        <CountdownIcon size={12} className="shrink-0" />
-                        <span className="truncate">{countdown.text}</span>
-                      </div>
-                    </div>
-
-
+                    )}
                   </div>
-
-                  {/* Actions Bar — only shown when pay is due */}
-                  {isReady && (
-                    <div className="pt-2 border-t border-border-strong">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActiveVariableSchedule(schedule);
-                        }}
-                        className="w-full py-2.5 rounded-xl font-heading text-xs font-bold uppercase bg-primary text-primary-fg hover:brightness-110 active:scale-[0.98] cursor-pointer transition-all"
-                      >
-                        {schedule.is_fixed_amount ? "Log Pay" : "Enter Pay Amount"}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
