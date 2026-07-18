@@ -69,6 +69,33 @@ appear **only** in the tap-for-more detail sheet, keeping the list itself clean.
 remove: `BillDetailSheet.tsx` already renders `bill.notes` in its own section, so nothing is
 lost — the card simply stops duplicating it.
 
+### Round 3: two-line list-row, header-aligned type, and a large leading avatar
+
+A third preview round aligned the card with the page's own visual language and pushed it to
+a true list row:
+
+- **Amount colour → `text-primary` (green).** The card amount now matches the "Weekly Total"
+  figure at the top of the page, tying the per-bill number to the running total it feeds.
+- **Title font → `font-body` (Instrument Sans), was `font-heading` (Syne).** Anthony wanted
+  the bill name to read like the header's "WEEKLY TOTAL"/"Bills List" labels rather than the
+  playful rounded-geometric heading face. Matching the label font makes the list feel part of
+  the same surface as the header.
+- **AUTO/MANUAL badge removed from the card.** It now lives only in the detail sheet
+  (`BillDetailSheet` already renders it). The badge was per-bill noise on a scannable list;
+  payment type is a detail, not a scanning cue.
+- **Collapsed to two rows with an enlarged leading avatar.** The avatar moved from its own
+  line to a ~56px (`h-14 w-14`) square pinned left, vertically centred across both text rows
+  (name + amount over due date + tap-for-more). This is the list-row form the earlier rounds
+  circled around — the avatar is now the row's identity anchor.
+- **Avatar border thinned to `border` at the larger size.** At 28px the `border-2` green frame
+  read as a subtle accent; at 56px it became a heavy green square repeated down the list.
+  Dropping to a 1px border keeps the app's green-avatar identity without a column of bright
+  frames. (`rounded-lg` retained — it reads clearly square at this size.)
+- **Due date → numeric `DD/MM/YYYY`.** Long month names ("SEPTEMBER 07, 20…") were truncating
+  on the tighter row; a numeric NZ-format date can't overflow. Built by string-splitting the
+  raw `due_date` (`YYYY-MM-DD`) rather than `new Date()`, to avoid a timezone shift moving the
+  day. Falls back to the existing display string if the raw field is missing.
+
 ## Alternatives considered and rejected
 
 - **Give the card avatar the profile avatar's full treatment** (green border *and* gradient
@@ -81,6 +108,15 @@ lost — the card simply stops duplicating it.
   prominent top-right anchor rather than shrinking into a table cell.
 - **Keep notes on the card.** Rejected at Anthony's request — detail sheet already shows
   them; the list stays scannable without them.
+- **Keep the AUTO/MANUAL badge on the card.** Rejected — payment type is detail-sheet info,
+  not a per-row scanning cue; removing it helped the card reach two lines.
+- **Remove the avatar entirely for the two-line card.** Rejected — assignee identity is
+  worth keeping at a glance in a shared household; enlarging it as the leading anchor keeps
+  that value while still hitting two lines.
+- **Keep the `border-2` green frame at the larger avatar size.** Rejected — too heavy
+  repeated down the list; thinned to `border`.
+- **Format the numeric date with `new Date()`.** Avoided — parsing `YYYY-MM-DD` through a
+  Date can shift the day across timezones; a plain string split is exact.
 
 ## Implementation notes
 

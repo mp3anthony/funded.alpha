@@ -59,9 +59,16 @@ export default function BillCard({
   const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
   const isUrgent = daysDiff <= 3; // True if due in 3 days, today, or overdue
 
-  // Determine Payment Type format
-  const isAutoPay = bill.payment_type?.toLowerCase() === "auto";
-  const paymentTypeStr = isAutoPay ? "AUTO" : "MANUAL";
+  // Numeric due date (DD/MM/YYYY) from the raw due_date; fall back to the display string.
+  // String-split rather than new Date() to avoid any timezone shift on the day.
+  const rawDue = bill.due_date;
+  const dueDateDisplay =
+    rawDue && /^\d{4}-\d{2}-\d{2}/.test(rawDue)
+      ? (() => {
+          const [y, m, d] = rawDue.slice(0, 10).split("-");
+          return `${d}/${m}/${y}`;
+        })()
+      : bill.dueDate;
 
   // Convert amount based on selected frequency
   const convertedAmount = convertAmount(bill.amount, bill.frequency || "monthly", displayFrequency);
@@ -89,62 +96,53 @@ export default function BillCard({
     <>
       <button 
         onClick={() => setIsDetailOpen(true)}
-        className="w-full text-left rounded-2xl bg-surface border border-border flex hover:border-primary/30 hover:bg-surface-raised transition-all group focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background p-4 flex-col space-y-1.5"
+        className="w-full text-left rounded-2xl bg-surface border border-border flex hover:border-primary/30 hover:bg-surface-raised transition-all group focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background p-4 items-center gap-3"
       >
-      {/* Top Row: Name & Amount */}
-      <div className="flex items-center justify-between w-full gap-3">
-        <h3 className="font-heading font-semibold text-lg text-foreground tracking-wide truncate">
-          {bill.name}
-        </h3>
-        <span className="shrink-0 font-mono font-extrabold text-foreground tracking-tight text-2xl">
-          ${formattedAmount}
-        </span>
-      </div>
-
-      {/* Assignee avatar (right-aligned) */}
+      {/* Leading assignee avatar — spans both text rows */}
       {assignee && (
-        <div className="flex w-full justify-end">
-          <div
-            className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-lg bg-surface-elevated text-[10px] font-bold text-foreground border-2 border-primary transition-colors shadow-sm"
-            title={`Assignee: ${assignee.name}`}
-          >
-            {assignee.avatar_url ? (
-              <img
-                src={assignee.avatar_url}
-                alt={assignee.name}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              assignee.avatar || assignee.name.charAt(0).toUpperCase()
-            )}
-          </div>
+        <div
+          className="shrink-0 flex h-14 w-14 items-center justify-center overflow-hidden rounded-lg bg-surface-elevated text-base font-bold text-foreground border border-primary shadow-sm"
+          title={`Assignee: ${assignee.name}`}
+        >
+          {assignee.avatar_url ? (
+            <img
+              src={assignee.avatar_url}
+              alt={assignee.name}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            assignee.avatar || assignee.name.charAt(0).toUpperCase()
+          )}
         </div>
       )}
 
-      {/* Bottom Row: Due Date · Payment Type · Tap for more */}
-      <div className="flex w-full items-center justify-between gap-2">
-        <span
-          className={`min-w-0 truncate font-mono text-xs uppercase font-medium transition-colors ${
-            isUrgent ? "text-[#ff4500]" : "text-muted"
-          }`}
-        >
-          DUE {bill.dueDate}
-        </span>
+      {/* Right column: name + amount over due date + tap-for-more */}
+      <div className="flex flex-col flex-1 min-w-0 gap-2">
+        {/* Row 1: Name & Amount */}
+        <div className="flex items-center justify-between w-full gap-3">
+          <h3 className="font-body font-semibold text-lg text-foreground tracking-wide truncate">
+            {bill.name}
+          </h3>
+          <span className="shrink-0 font-mono font-extrabold text-primary tracking-tight text-2xl">
+            ${formattedAmount}
+          </span>
+        </div>
 
-        <span
-          className={`shrink-0 rounded-full px-3 py-1 text-[10px] font-heading font-bold uppercase tracking-widest ${
-            isAutoPay
-              ? "bg-primary/10 text-primary border border-primary/20"
-              : "bg-surface-elevated text-muted border border-border"
-          }`}
-        >
-          {paymentTypeStr}
-        </span>
+        {/* Row 2: Due Date · Tap for more */}
+        <div className="flex w-full items-center justify-between gap-2">
+          <span
+            className={`min-w-0 truncate font-mono text-xs uppercase font-medium transition-colors ${
+              isUrgent ? "text-[#ff4500]" : "text-muted"
+            }`}
+          >
+            DUE {dueDateDisplay}
+          </span>
 
-        <span className="shrink-0 flex items-center gap-1 text-[9px] font-semibold text-muted/60 uppercase tracking-widest group-hover:text-primary transition-colors">
-          Tap for more
-          <span aria-hidden="true">›</span>
-        </span>
+          <span className="shrink-0 flex items-center gap-1 text-[9px] font-semibold text-muted/60 uppercase tracking-widest group-hover:text-primary transition-colors">
+            Tap for more
+            <span aria-hidden="true">›</span>
+          </span>
+        </div>
       </div>
       </button>
 
