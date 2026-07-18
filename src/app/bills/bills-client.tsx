@@ -163,7 +163,7 @@ export default function BillsClient() {
       </div>
 
       {/* 4. Filters & Search */}
-      <div className="flex flex-col gap-3 bg-surface-raised p-3 rounded-2xl border border-border">
+      <div className="flex flex-col gap-3 px-1">
         
         {/* Filters Row */}
         <div className="grid grid-cols-3 gap-2">
@@ -176,7 +176,7 @@ export default function BillsClient() {
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="w-full rounded-xl border border-border bg-background px-2 py-2 text-[10px] font-semibold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-6"
+                className="w-full rounded-xl border border-primary/30 bg-background px-2 py-2 text-[10px] font-semibold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-6"
               >
                 <option value="All">All</option>
                 <option value="Subscriptions">Subscriptions</option>
@@ -203,7 +203,7 @@ export default function BillsClient() {
               <select
                 value={filter}
                 onChange={(e) => setFilter(e.target.value as "all" | "week" | "month" | "overdue")}
-                className="w-full rounded-xl border border-border bg-background px-2 py-2 text-[10px] font-semibold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-6"
+                className="w-full rounded-xl border border-primary/30 bg-background px-2 py-2 text-[10px] font-semibold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-6"
               >
                 <option value="all">All</option>
                 <option value="week">This Week</option>
@@ -226,7 +226,7 @@ export default function BillsClient() {
               <select
                 value={displayFrequency}
                 onChange={(e) => setDisplayFrequency(e.target.value as FrequencyType)}
-                className="w-full rounded-xl border border-border bg-background px-2 py-2 text-[10px] font-semibold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-6"
+                className="w-full rounded-xl border border-primary/30 bg-background px-2 py-2 text-[10px] font-semibold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-6"
               >
                 <option value="weekly">Weekly</option>
                 <option value="fortnightly">Fortnightly</option>
@@ -249,7 +249,7 @@ export default function BillsClient() {
             placeholder="Search bills by name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-background border border-border rounded-xl pl-4 pr-10 py-2.5 font-mono text-sm placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-primary/50 text-foreground"
+            className="w-full bg-background border border-primary/30 rounded-xl pl-4 pr-10 py-2.5 font-body text-sm placeholder:text-muted focus:outline-none focus:border-primary text-foreground"
           />
           {searchQuery && (
             <button
