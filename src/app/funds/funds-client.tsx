@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { Target, Plus, PiggyBank, TrendingUp, ChevronDown, ChevronRight } from "lucide-react";
+import { Target, Plus, ChevronDown, ChevronUp } from "lucide-react";
 import { useApp, useCurrentUser, type Fund } from "@/context/AppContext";
 import AddGoalSheet from "@/components/AddGoalSheet";
 import EditGoalSheet from "@/components/EditGoalSheet";
@@ -9,8 +9,7 @@ import GoalDetailSheet from "@/components/GoalDetailSheet";
 import AddAmountModal from "@/components/AddAmountModal";
 import EditCategoryOrderModal from "@/components/EditCategoryOrderModal";
 import PageHeader from "@/components/PageHeader";
-
-const ADD_AMOUNT = 50; // dollars added per click
+import SectionHeader from "@/components/ui/SectionHeader";
 
 const GOAL_CATEGORIES = [
   "Home & Living",
@@ -139,54 +138,35 @@ export default function FundsClient() {
         }
       />
 
-      {/* Summary Banner — reactive to state */}
-      <div className="bg-surface border border-border rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-        <div className="space-y-2">
-          <span className="text-xs font-bold uppercase tracking-wider text-subtle block">
-            Total Accumulated Savings
-          </span>
-          <div className="flex items-baseline gap-2">
-            <h3 className="text-[clamp(1.75rem,5vw,2.25rem)] font-black text-foreground tracking-tight">
-              ${totalSaved.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </h3>
-            <span className="text-xs font-semibold text-primary flex items-center gap-0.5">
-              <TrendingUp className="h-3.5 w-3.5" />
-              +5.2% this month
-            </span>
-          </div>
+      {/* Summary bar — de-boxed editorial (live figures only) */}
+      <div className="px-1">
+        <div className="text-3xl font-bold text-primary tracking-tight font-mono">
+          ${totalSaved.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </div>
-
-        <div className="flex items-center gap-4 bg-surface-raised p-4 rounded-2xl border border-border flex-1 sm:max-w-xs">
-          <div className="flex h-10 w-10 rounded-xl bg-secondary/10 text-secondary items-center justify-center font-bold shrink-0">
-            <Target className="h-5 w-5" />
-          </div>
-          <div>
-            <div className="text-sm font-bold text-foreground">
-              {funds.length} Active Goal{funds.length !== 1 ? "s" : ""}
-            </div>
-            <p className="text-xs text-muted mt-0.5">
-              Average completion: {avgCompletion.toFixed(1)}%
-            </p>
-          </div>
+        <div className="text-xs font-bold uppercase tracking-wider text-subtle mt-1">
+          Total Accumulated Savings
+        </div>
+        <div className="text-[11px] font-mono text-muted mt-2">
+          {funds.length} active goal{funds.length !== 1 ? "s" : ""} · {avgCompletion.toFixed(1)}% avg completion
         </div>
       </div>
 
-      {/* Savings Goals Grid */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between px-1">
-          <h2 className="text-base font-bold text-subtle uppercase tracking-wider">
-            Savings Goals
-          </h2>
-          <button
-            onClick={() => setIsEditCategoryOrderOpen(true)}
-            className="text-[10px] font-bold text-muted hover:text-foreground uppercase tracking-wider transition-colors"
-          >
-            Edit Order
-          </button>
-        </div>
+      {/* Savings Goals */}
+      <div>
+        <SectionHeader
+          title="Savings Goals"
+          trailing={
+            <button
+              onClick={() => setIsEditCategoryOrderOpen(true)}
+              className="text-[10px] font-heading font-bold text-muted hover:text-foreground uppercase tracking-wider transition-colors"
+            >
+              Edit Order
+            </button>
+          }
+        />
 
-        {/* Category Filter */}
-        <div className="px-1">
+        {/* Category filter — hairline underline select */}
+        <div className="px-1 mb-4 max-w-xs">
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-muted uppercase tracking-wider ml-1">
               Category
@@ -195,7 +175,7 @@ export default function FundsClient() {
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="w-full rounded-xl border border-primary/30 bg-background px-2 py-2 text-[10px] font-semibold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-6"
+                className="w-full border-b border-border bg-transparent px-1 py-1.5 text-[11px] font-semibold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-5"
               >
                 <option value="All">All</option>
                 <option value="Home & Living">Home & Living</option>
@@ -217,14 +197,13 @@ export default function FundsClient() {
         </div>
 
         {filteredFunds.length === 0 ? (
-          <div className="bg-surface border border-border rounded-2xl p-10 text-center shadow-sm">
-            <Target className="h-10 w-10 text-subtle mx-auto mb-3" />
+          <div className="py-10 text-center">
             {categoryFilter !== "All" ? (
-              <p className="text-sm font-semibold text-muted">No goals in {categoryFilter}</p>
+              <p className="text-muted font-mono text-sm">No goals in {categoryFilter}</p>
             ) : (
               <>
-                <p className="text-sm font-semibold text-muted">No goals configured yet.</p>
-                <p className="text-xs text-subtle mt-1">Create your first savings goal to get started.</p>
+                <p className="text-muted font-mono text-sm">No goals configured yet.</p>
+                <p className="text-subtle text-xs mt-1 font-body">Create your first savings goal to get started.</p>
               </>
             )}
           </div>
@@ -240,23 +219,30 @@ export default function FundsClient() {
                 return a.localeCompare(b);
               })
               .map(([category, categoryFunds]) => (
-              <div key={category} className="space-y-2">
+              <div key={category} className="flex flex-col">
                 <button
                   onClick={() => toggleCategory(category)}
-                  className="flex items-center gap-2 w-full text-left px-1 focus:outline-none group"
+                  className="flex items-center gap-3 w-full text-left px-1 focus:outline-none group"
                 >
-                  {!expandedCategories[category] ? (
-                    <ChevronRight className="h-4 w-4 text-muted group-hover:text-foreground transition-colors" />
+                  <span className="font-heading font-bold text-[15px] text-foreground shrink-0 group-hover:text-primary transition-colors">
+                    {category}
+                  </span>
+                  <span className="font-mono text-[11px] font-semibold text-subtle shrink-0">
+                    ({categoryFunds.length})
+                  </span>
+                  <span
+                    className="h-0.5 flex-1 rounded-sm"
+                    style={{ background: "linear-gradient(90deg, var(--color-primary), transparent)" }}
+                  />
+                  {expandedCategories[category] ? (
+                    <ChevronUp className="h-4 w-4 text-subtle group-hover:text-foreground transition-colors shrink-0" />
                   ) : (
-                    <ChevronDown className="h-4 w-4 text-muted group-hover:text-foreground transition-colors" />
+                    <ChevronDown className="h-4 w-4 text-subtle group-hover:text-foreground transition-colors shrink-0" />
                   )}
-                  <h3 className="text-xs font-bold text-subtle uppercase tracking-wider group-hover:text-foreground transition-colors">
-                    {category} <span className="text-muted font-normal ml-1">({categoryFunds.length})</span>
-                  </h3>
                 </button>
 
                 {expandedCategories[category] && (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="flex flex-col mt-1">
                     {categoryFunds.map((fund) => {
                       const IconComponent = fund.icon;
                       const percentage = Math.min((fund.currentAmount / fund.targetAmount) * 100, 100);
@@ -265,53 +251,62 @@ export default function FundsClient() {
                       return (
                         <div
                           key={fund.id}
+                          role="button"
+                          tabIndex={0}
                           onClick={() => {
                             setSelectedGoal(fund);
                             setIsDetailOpen(true);
                           }}
-                          className="bg-surface border border-border rounded-2xl p-5 shadow-sm space-y-4 hover:border-primary/30 hover:shadow-md transition-all cursor-pointer"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              setSelectedGoal(fund);
+                              setIsDetailOpen(true);
+                            }
+                          }}
+                          className="border-t border-border py-3 cursor-pointer hover:bg-surface/40 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset rounded-sm"
                         >
-                          {/* Card header */}
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className={`flex h-10 w-10 rounded-xl items-center justify-center shrink-0 ${fund.bgLight}`}>
-                                <IconComponent className="h-5 w-5" />
+                          {/* Header: icon · name/category · percent */}
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className={`flex h-8 w-8 rounded-lg items-center justify-center shrink-0 ${fund.bgLight || "bg-white/5 text-foreground"}`}>
+                                <IconComponent className="h-4 w-4" />
                               </div>
-                              <div>
-                                <h4 className="text-sm sm:text-base font-bold text-foreground leading-none">
+                              <div className="min-w-0">
+                                <h4 className="font-body font-semibold text-[15px] text-foreground truncate leading-tight">
                                   {fund.name}
                                 </h4>
-                                <span className="text-[10px] font-semibold tracking-wide uppercase text-subtle mt-1 block">
+                                <span className="text-[10px] font-mono font-semibold uppercase tracking-wider text-subtle block mt-0.5">
                                   {fund.category}
                                 </span>
                               </div>
                             </div>
-                            <span className={`text-xs font-bold ${fund.accentText}`}>
+                            <span className={`font-mono font-bold text-sm shrink-0 ${fund.accentText || "text-primary"}`}>
                               {percentage.toFixed(1)}%
                             </span>
                           </div>
 
                           {/* Progress bar — driven by live state */}
-                          <div className="space-y-2">
-                            <div className="w-full bg-surface-raised rounded-full h-2.5 overflow-hidden">
-                              <div
-                                className={`h-full rounded-full transition-all duration-500 ${fund.barColor}`}
-                                style={{ width: `${percentage}%` }}
-                              />
-                            </div>
-                            <div className="flex items-center justify-between text-xs">
-                              <span className="font-bold text-foreground">
-                                ${fund.currentAmount.toLocaleString("en-US", { minimumFractionDigits: 2 })}
-                              </span>
-                              <span className="text-subtle">
-                                Target: ${fund.targetAmount.toLocaleString("en-US", { minimumFractionDigits: 0 })}
-                              </span>
-                            </div>
+                          <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden mt-2.5">
+                            <div
+                              className={`h-full rounded-full transition-all duration-500 ${fund.barColor || "bg-primary"}`}
+                              style={{ width: `${percentage}%` }}
+                            />
+                          </div>
+
+                          {/* Amounts */}
+                          <div className="flex items-center justify-between font-mono text-[11px] mt-1.5">
+                            <span className="font-semibold text-foreground">
+                              ${fund.currentAmount.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                            </span>
+                            <span className="text-subtle">
+                              target: ${fund.targetAmount.toLocaleString("en-US", { minimumFractionDigits: 0 })}
+                            </span>
                           </div>
 
                           {/* Add Money / Completed action */}
                           {isComplete ? (
-                            <div className="flex items-center justify-center gap-1.5 w-full py-2 rounded-xl bg-primary/10 text-primary text-xs font-bold">
+                            <div className="flex items-center gap-1.5 mt-2.5 text-primary text-[11px] font-mono font-bold uppercase tracking-wider">
                               <Target className="h-3.5 w-3.5" />
                               <span>Goal Reached! 🎉</span>
                             </div>
@@ -322,7 +317,7 @@ export default function FundsClient() {
                                 e.stopPropagation();
                                 setAddAmountGoal(fund);
                               }}
-                              className="flex items-center justify-center gap-1.5 w-full py-2 border border-border bg-surface-raised hover:bg-primary/10 hover:border-primary/30 hover:text-primary text-muted text-xs font-semibold transition-all duration-200 active:scale-[0.98]"
+                              className="mt-2.5 inline-flex items-center gap-1.5 py-1 text-[11px] font-heading font-bold uppercase tracking-wider text-muted hover:text-primary transition-colors"
                             >
                               <Plus className="h-3.5 w-3.5" />
                               Add Amount
