@@ -13,8 +13,9 @@ import {
   ArrowLeft,
   Check,
   Wallet,
+  Building2,
 } from "lucide-react";
-import PaymentModeToggle from "@/components/PaymentModeToggle";
+import { DialogSection } from "@/components/ui/Dialog";
 import Logo from "./Logo";
 import JoinHouseholdSheet from "./JoinHouseholdSheet";
 
@@ -119,16 +120,16 @@ export default function Onboarding() {
       <div className="relative w-full max-w-lg">
         <button
           onClick={() => supabase.auth.signOut()}
-          className="absolute -top-10 right-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-surface text-[10px] font-bold text-muted hover:text-foreground hover:bg-surface-raised transition-colors cursor-pointer font-mono uppercase tracking-wider z-10"
+          className="absolute -top-10 right-0 flex items-center gap-1.5 px-3 py-1.5 rounded-[2px] border border-border bg-surface text-[10px] font-bold text-muted hover:text-foreground hover:bg-surface-raised transition-colors cursor-pointer font-mono uppercase tracking-wider z-10"
         >
           Sign Out
         </button>
         {/* Card */}
-        <div className="bg-surface border border-border rounded-3xl shadow-2xl overflow-hidden">
-          {/* Progress bar */}
+        <div className="bg-surface border border-border rounded-[2px] shadow-2xl overflow-hidden">
+          {/* Lime top progress bar */}
           <div className="h-1.5 bg-surface-raised">
             <div
-              className="h-full bg-gradient-to-r from-primary to-secondary rounded-full transition-all duration-500 ease-out"
+              className="h-full bg-primary transition-all duration-500 ease-out"
               style={{ width: `${(currentStep / TOTAL_STEPS) * 100}%` }}
             />
           </div>
@@ -142,9 +143,9 @@ export default function Onboarding() {
               return (
                 <div
                   key={i}
-                  className={`flex items-center justify-center h-10 w-10 rounded-xl transition-all duration-300 ${
+                  className={`flex items-center justify-center h-10 w-10 rounded-[2px] transition-all duration-300 ${
                     isActive
-                      ? "bg-secondary text-foreground shadow-lg shadow-secondary/30 scale-110"
+                      ? "bg-primary text-primary-fg shadow-lg shadow-primary/30 scale-110"
                       : isDone
                         ? "bg-primary/10 text-primary"
                         : "bg-surface-raised text-subtle"
@@ -156,8 +157,8 @@ export default function Onboarding() {
             })}
           </div>
 
-          <p className="text-center text-xs font-bold text-subtle uppercase tracking-widest pb-2">
-            Step {currentStep} of {TOTAL_STEPS}
+          <p className="text-center font-mono text-[11px] font-semibold text-subtle uppercase tracking-widest pb-2">
+            STEP {currentStep} / {TOTAL_STEPS}
           </p>
 
           {/* Step content */}
@@ -175,30 +176,43 @@ export default function Onboarding() {
                         Choose how you want to get started with Funded.
                       </p>
                     </div>
-                    <div className="grid grid-cols-1 gap-3 pt-2">
+                    {/* Hairline path rows */}
+                    <div className="border-y border-border divide-y divide-border">
                       <button
                         type="button"
                         onClick={() => setFlowMode("create")}
-                        className="flex flex-col items-center justify-center p-5 rounded-2xl border border-border bg-white/5 hover:bg-white/10 hover:border-primary/50 transition-all text-center cursor-pointer group"
+                        className="w-full flex items-center gap-4 py-4 text-left transition-colors hover:bg-surface-raised cursor-pointer group"
                       >
-                        <span className="font-heading font-bold text-sm text-foreground group-hover:text-primary transition-colors">
-                          Create a Household
+                        <span className="flex items-center justify-center h-9 w-9 rounded-[2px] bg-surface-raised text-primary shrink-0 group-hover:bg-primary/10 transition-colors">
+                          <Home className="h-4 w-4" />
                         </span>
-                        <span className="text-[10px] text-muted mt-1 font-mono">
-                          Start fresh, configure payday schedules & add bills
+                        <span className="flex-1 min-w-0">
+                          <span className="block font-heading font-bold text-sm text-foreground group-hover:text-primary transition-colors">
+                            Create a Household
+                          </span>
+                          <span className="block text-[10px] text-muted mt-0.5 font-mono">
+                            Start fresh, configure payday schedules &amp; add bills
+                          </span>
                         </span>
+                        <ArrowRight className="h-4 w-4 text-subtle group-hover:text-primary transition-colors shrink-0" />
                       </button>
                       <button
                         type="button"
                         onClick={() => setIsJoinSheetOpen(true)}
-                        className="flex flex-col items-center justify-center p-5 rounded-2xl border border-border bg-white/5 hover:bg-white/10 hover:border-primary/50 transition-all text-center cursor-pointer group"
+                        className="w-full flex items-center gap-4 py-4 text-left transition-colors hover:bg-surface-raised cursor-pointer group"
                       >
-                        <span className="font-heading font-bold text-sm text-foreground group-hover:text-primary transition-colors">
-                          Join via Code
+                        <span className="flex items-center justify-center h-9 w-9 rounded-[2px] bg-surface-raised text-primary shrink-0 group-hover:bg-primary/10 transition-colors">
+                          <Sparkles className="h-4 w-4" />
                         </span>
-                        <span className="text-[10px] text-muted mt-1 font-mono">
-                          Join an existing household using a 6-digit code
+                        <span className="flex-1 min-w-0">
+                          <span className="block font-heading font-bold text-sm text-foreground group-hover:text-primary transition-colors">
+                            Join via Code
+                          </span>
+                          <span className="block text-[10px] text-muted mt-0.5 font-mono">
+                            Join an existing household using a 6-digit code
+                          </span>
                         </span>
+                        <ArrowRight className="h-4 w-4 text-subtle group-hover:text-primary transition-colors shrink-0" />
                       </button>
                     </div>
                   </>
@@ -210,10 +224,10 @@ export default function Onboarding() {
                       <div className="flex justify-center h-[40px]">
                         <Logo size="medium" showWordmark={true} />
                       </div>
-                      <h2 className="font-heading font-bold text-lg text-foreground">Create your Household</h2>
                     </div>
+                    <DialogSection label="Create your Household" />
                     {createError && (
-                      <div className="bg-destructive/10 border border-destructive/50 rounded-xl p-3 text-destructive text-xs font-mono break-words whitespace-pre-wrap">
+                      <div className="bg-destructive/10 border border-destructive/50 rounded-[2px] p-3 text-destructive text-xs font-mono break-words whitespace-pre-wrap">
                         <span className="font-bold">Failed to create household:</span><br/>
                         {createError}
                       </div>
@@ -222,7 +236,7 @@ export default function Onboarding() {
                       <div className="space-y-2">
                         <label
                           htmlFor="ob-household"
-                          className="block text-[10px] font-bold tracking-wider uppercase text-muted font-mono"
+                          className="block font-heading text-xs font-semibold tracking-wider uppercase text-subtle"
                         >
                           Household Name
                         </label>
@@ -232,7 +246,7 @@ export default function Onboarding() {
                           placeholder="e.g. The Smiths"
                           value={localHouseholdName}
                           onChange={(e) => setLocalHouseholdName(e.target.value)}
-                          className="w-full px-4 py-3 rounded-xl bg-surface-raised border border-border text-foreground text-sm font-medium focus:ring-2 focus:ring-secondary/40 focus:border-secondary outline-none transition-all"
+                          className="w-full px-4 py-3 rounded-[2px] bg-surface-raised border border-border text-foreground text-sm font-medium focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all"
                         />
                       </div>
                       <button
@@ -250,25 +264,76 @@ export default function Onboarding() {
 
             {/* ── Step 2: Payment Mode ── */}
             {currentStep === 2 && (
-              <div className="flex-1 flex flex-col justify-center space-y-6">
-                <PaymentModeToggle 
-                  currentMode={paymentMode} 
-                  onModeChange={setPaymentMode} 
-                />
+              <div className="flex-1 flex flex-col justify-center space-y-5">
+                <div className="space-y-2">
+                  <DialogSection label="Payment Mode" />
+                  <p className="text-xs text-muted font-mono">
+                    How your household settles bill splits.
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  {/* Direct Pay */}
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMode(false)}
+                    className={`w-full flex items-start gap-3 p-4 rounded-[2px] border text-left transition-all cursor-pointer ${
+                      paymentMode === false
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/50"
+                    }`}
+                  >
+                    <span className="flex items-center justify-center h-9 w-9 rounded-[2px] bg-surface-raised text-primary shrink-0">
+                      <Wallet className="h-4 w-4" />
+                    </span>
+                    <span className="flex-1 min-w-0">
+                      <span className="block font-heading font-bold text-sm text-foreground">
+                        Direct Pay
+                      </span>
+                      <span className="block text-[10px] text-muted mt-0.5 font-mono">
+                        Transfer directly per bill split.
+                      </span>
+                    </span>
+                    {paymentMode === false && (
+                      <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                    )}
+                  </button>
+
+                  {/* Joint Fund */}
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMode(true)}
+                    className={`w-full flex items-start gap-3 p-4 rounded-[2px] border text-left transition-all cursor-pointer ${
+                      paymentMode === true
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/50"
+                    }`}
+                  >
+                    <span className="flex items-center justify-center h-9 w-9 rounded-[2px] bg-surface-raised text-primary shrink-0">
+                      <Building2 className="h-4 w-4" />
+                    </span>
+                    <span className="flex-1 min-w-0">
+                      <span className="block font-heading font-bold text-sm text-foreground">
+                        Joint Fund
+                      </span>
+                      <span className="block text-[10px] text-muted mt-0.5 font-mono">
+                        Shared household bank account.
+                      </span>
+                    </span>
+                    {paymentMode === true && (
+                      <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                    )}
+                  </button>
+                </div>
               </div>
             )}
 
             {/* ── Step 3: Payday ── */}
             {currentStep === 3 && (
-              <div className="flex-1 flex flex-col justify-center space-y-6">
-                <div className="text-center space-y-2">
-                  <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-gradient-to-br from-secondary to-indigo-600 text-foreground mx-auto shadow-lg shadow-secondary/25">
-                    <Calendar className="h-7 w-7" />
-                  </div>
-                  <h2 className="text-2xl font-extrabold text-foreground tracking-tight">
-                    Your Payday
-                  </h2>
-                  <p className="text-sm text-muted max-w-xs mx-auto">
+              <div className="flex-1 flex flex-col justify-center space-y-5">
+                <div className="space-y-2">
+                  <DialogSection label="Your Payday" />
+                  <p className="text-xs text-muted font-mono">
                     When do you next get paid? We&apos;ll track it for you.
                   </p>
                 </div>
@@ -276,7 +341,7 @@ export default function Onboarding() {
                   <div className="space-y-2">
                     <label
                       htmlFor="ob-paydate"
-                      className="block text-xs font-bold tracking-wider uppercase text-muted"
+                      className="block font-heading text-xs font-semibold tracking-wider uppercase text-subtle"
                     >
                       Next Payday Date
                     </label>
@@ -285,18 +350,18 @@ export default function Onboarding() {
                       type="date"
                       value={paydayDate}
                       onChange={(e) => setPaydayDate(e.target.value)}
-                      className="w-full min-w-0 px-4 py-3 rounded-xl bg-surface-raised border border-border text-foreground text-sm font-medium focus:ring-2 focus:ring-secondary/40 focus:border-secondary outline-none transition-all"
+                      className="w-full min-w-0 px-4 py-3 rounded-[2px] bg-surface-raised border border-border font-mono text-foreground text-sm font-medium focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all"
                     />
                   </div>
                   <div className="space-y-2">
                     <label
                       htmlFor="ob-payamount"
-                      className="block text-xs font-bold tracking-wider uppercase text-muted"
+                      className="block font-heading text-xs font-semibold tracking-wider uppercase text-subtle"
                     >
                       Pay Amount
                     </label>
                     <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-subtle text-sm font-semibold">$</span>
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary text-sm font-mono">$</span>
                       <input
                         id="ob-payamount"
                         type="number"
@@ -305,7 +370,7 @@ export default function Onboarding() {
                         placeholder="2,500.00"
                         value={payAmount}
                         onChange={(e) => setPayAmount(e.target.value)}
-                        className="w-full pl-8 pr-4 py-3 rounded-xl bg-surface-raised border border-border text-foreground text-sm font-medium focus:ring-2 focus:ring-secondary/40 focus:border-secondary outline-none transition-all"
+                        className="w-full pl-8 pr-4 py-3 rounded-[2px] bg-surface-raised border border-border font-mono text-primary text-sm font-semibold focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all"
                       />
                     </div>
                   </div>
@@ -315,15 +380,10 @@ export default function Onboarding() {
 
             {/* ── Step 4: First Bill ── */}
             {currentStep === 4 && (
-              <div className="flex-1 flex flex-col justify-center space-y-6">
-                <div className="text-center space-y-2">
-                  <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-gradient-to-br from-accent to-amber-500 text-foreground mx-auto shadow-lg shadow-accent/25">
-                    <Receipt className="h-7 w-7" />
-                  </div>
-                  <h2 className="text-2xl font-extrabold text-foreground tracking-tight">
-                    Add a Bill
-                  </h2>
-                  <p className="text-sm text-muted max-w-xs mx-auto">
+              <div className="flex-1 flex flex-col justify-center space-y-5">
+                <div className="space-y-2">
+                  <DialogSection label="First Bill" />
+                  <p className="text-xs text-muted font-mono">
                     Enter your first recurring bill so we can start tracking it.
                   </p>
                 </div>
@@ -331,7 +391,7 @@ export default function Onboarding() {
                   <div className="space-y-2">
                     <label
                       htmlFor="ob-billname"
-                      className="block text-xs font-bold tracking-wider uppercase text-muted"
+                      className="block font-heading text-xs font-semibold tracking-wider uppercase text-subtle"
                     >
                       Bill Name
                     </label>
@@ -341,19 +401,19 @@ export default function Onboarding() {
                       placeholder="e.g. Rent, Electricity"
                       value={billName}
                       onChange={(e) => setBillName(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl bg-surface-raised border border-border text-foreground text-sm font-medium focus:ring-2 focus:ring-secondary/40 focus:border-secondary outline-none transition-all"
+                      className="w-full px-4 py-3 rounded-[2px] bg-surface-raised border border-border text-foreground text-sm font-medium focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
                       <label
                         htmlFor="ob-billamount"
-                        className="block text-xs font-bold tracking-wider uppercase text-muted"
+                        className="block font-heading text-xs font-semibold tracking-wider uppercase text-subtle"
                       >
                         Amount
                       </label>
                       <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-subtle text-sm font-semibold">$</span>
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary text-sm font-mono">$</span>
                         <input
                           id="ob-billamount"
                           type="number"
@@ -362,14 +422,14 @@ export default function Onboarding() {
                           placeholder="0.00"
                           value={billAmount}
                           onChange={(e) => setBillAmount(e.target.value)}
-                          className="w-full pl-8 pr-4 py-3 rounded-xl bg-surface-raised border border-border text-foreground text-sm font-medium focus:ring-2 focus:ring-secondary/40 focus:border-secondary outline-none transition-all"
+                          className="w-full pl-8 pr-4 py-3 rounded-[2px] bg-surface-raised border border-border font-mono text-primary text-sm font-semibold focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all"
                         />
                       </div>
                     </div>
                     <div className="space-y-2">
                       <label
                         htmlFor="ob-billfreq"
-                        className="block text-xs font-bold tracking-wider uppercase text-muted"
+                        className="block font-heading text-xs font-semibold tracking-wider uppercase text-subtle"
                       >
                         Frequency
                       </label>
@@ -377,7 +437,7 @@ export default function Onboarding() {
                         id="ob-billfreq"
                         value={billFrequency}
                         onChange={(e) => setBillFrequency(e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl bg-surface-raised border border-border text-foreground text-sm font-medium focus:ring-2 focus:ring-secondary/40 focus:border-secondary outline-none transition-all appearance-none cursor-pointer"
+                        className="w-full px-4 py-3 rounded-[2px] bg-surface-raised border border-border text-foreground text-sm font-medium focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all appearance-none cursor-pointer"
                       >
                         <option value="Weekly">Weekly</option>
                         <option value="Fortnightly">Fortnightly</option>
@@ -393,26 +453,44 @@ export default function Onboarding() {
             {/* ── Step 5: Success ── */}
             {currentStep === 5 && (
               <div className="flex-1 flex flex-col items-center justify-center text-center space-y-6">
-                <div className="relative">
-                  <div className="inline-flex items-center justify-center h-20 w-20 rounded-3xl bg-gradient-to-br from-primary to-emerald-500 text-foreground shadow-xl shadow-primary/30">
-                    <Sparkles className="h-9 w-9" />
-                  </div>
-                  <div className="absolute -top-1 -right-1 h-6 w-6 bg-secondary text-foreground rounded-full flex items-center justify-center shadow-md">
-                    <Check className="h-3.5 w-3.5" />
-                  </div>
+                {/* Lime-glow check */}
+                <div className="inline-flex items-center justify-center h-20 w-20 rounded-[2px] bg-primary/15 border border-primary/40 text-primary shadow-lg shadow-primary/25">
+                  <Check className="h-9 w-9" />
                 </div>
                 <div className="space-y-2">
-                  <h2 className="text-2xl font-extrabold text-foreground tracking-tight">
-                    You&apos;re All Set! 🎉
+                  <h2 className="font-mono text-sm font-bold uppercase tracking-[0.2em] text-primary">
+                    Setup Complete
                   </h2>
                   <p className="text-sm text-muted max-w-xs mx-auto">
                     <span className="font-bold text-foreground">{localHouseholdName || "Your household"}</span> is ready to go.
-                    Your payday, first bill, and payment mode are already set.
                   </p>
                 </div>
+
+                {/* Stats summary row (values already entered — no new data) */}
+                <div className="w-full grid grid-cols-3 divide-x divide-border border-y border-border">
+                  <div className="flex flex-col items-center gap-1 py-3 px-2">
+                    <span className="font-mono text-[9px] uppercase tracking-wider text-subtle">Payday</span>
+                    <span className="font-mono text-sm font-semibold text-primary truncate max-w-full">
+                      ${Number(payAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-center gap-1 py-3 px-2">
+                    <span className="font-mono text-[9px] uppercase tracking-wider text-subtle">First Bill</span>
+                    <span className="font-mono text-sm font-semibold text-primary truncate max-w-full">
+                      ${Number(billAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-center gap-1 py-3 px-2">
+                    <span className="font-mono text-[9px] uppercase tracking-wider text-subtle">Mode</span>
+                    <span className="font-mono text-[11px] font-semibold text-foreground leading-tight">
+                      {paymentMode ? "Joint Fund" : "Direct Pay"}
+                    </span>
+                  </div>
+                </div>
+
                 <button
                   onClick={completeOnboarding}
-                  className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-gradient-to-r from-primary to-emerald-500 text-foreground text-sm font-bold shadow-lg shadow-primary/25 hover:brightness-110 active:scale-95 transition-all cursor-pointer"
+                  className="flex items-center gap-2 px-8 py-3.5 rounded-[2px] bg-primary text-primary-fg text-sm font-bold shadow-lg shadow-primary/25 hover:brightness-110 active:scale-95 transition-all cursor-pointer"
                 >
                   Enter App
                   <ArrowRight className="h-4 w-4" />
@@ -427,7 +505,7 @@ export default function Onboarding() {
               {currentStep > 1 ? (
                 <button
                   onClick={handleBack}
-                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-border text-sm font-bold text-muted hover:text-foreground hover:bg-surface-raised transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-[2px] border border-border text-sm font-bold text-muted hover:text-foreground hover:bg-surface-raised transition-colors cursor-pointer"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   Back
@@ -439,7 +517,7 @@ export default function Onboarding() {
                 <button
                   onClick={handleNext}
                   disabled={!canProceed()}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-emerald-500 text-foreground text-sm font-bold shadow-lg shadow-primary/25 hover:brightness-110 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-[2px] bg-primary text-primary-fg text-sm font-bold shadow-lg shadow-primary/25 hover:brightness-110 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
                 >
                   Next
                   <ArrowRight className="h-4 w-4" />

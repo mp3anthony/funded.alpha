@@ -106,7 +106,15 @@ export default function LoginPage() {
 
   return (
     <div className="flex-1 w-full flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-surface border border-border rounded-3xl p-6 sm:p-8 shadow-2xl">
+      <div className="relative w-full max-w-md bg-surface border border-border rounded-[2px] p-6 sm:p-8 shadow-2xl overflow-hidden">
+        {/* Lime gradient top-edge (inner bar — matches the Dialog shell) */}
+        <div
+          className="absolute inset-x-0 top-0 h-[2px] pointer-events-none z-10"
+          style={{
+            background:
+              "linear-gradient(90deg, var(--color-primary), transparent)",
+          }}
+        />
         <div className="text-center mb-8">
           <div className="flex justify-center mb-6">
             <Logo size="large" showWordmark={true} />
@@ -128,14 +136,14 @@ export default function LoginPage() {
         </div>
 
         {errorMsg && (
-          <div className="mb-6 p-4 rounded-xl bg-destructive/10 text-destructive text-sm font-medium flex items-center gap-3">
+          <div className="mb-6 p-4 rounded-[2px] bg-destructive/10 text-destructive text-sm font-medium flex items-center gap-3">
             <AlertCircle className="h-5 w-5 shrink-0" />
             <p>{errorMsg}</p>
           </div>
         )}
 
         {successMsg && (
-          <div className="mb-6 p-4 rounded-xl bg-primary/10 border border-primary/20 text-primary text-sm font-semibold flex items-center gap-3">
+          <div className="mb-6 p-4 rounded-[2px] bg-primary/10 border border-primary/20 text-primary text-sm font-semibold flex items-center gap-3">
             <Check className="h-5 w-5 shrink-0" />
             <p>{successMsg}</p>
           </div>
@@ -143,7 +151,7 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
-            <label className="block text-xs font-bold tracking-wider uppercase text-muted">
+            <label className="block font-heading text-xs font-semibold tracking-wider uppercase text-subtle">
               Email Address
             </label>
             <div className="relative">
@@ -154,7 +162,7 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@example.com"
                 required
-                className="w-full pl-10 pr-4 py-3 rounded-xl bg-surface-raised border border-border text-foreground text-sm font-medium focus:ring-2 focus:ring-secondary/40 focus:border-secondary outline-none transition-all"
+                className="w-full pl-10 pr-4 py-3 rounded-[2px] bg-surface-raised border border-border text-foreground text-sm font-medium focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all"
               />
             </div>
           </div>
@@ -162,7 +170,7 @@ export default function LoginPage() {
           {mode !== "forgot" && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="block text-xs font-bold tracking-wider uppercase text-muted">
+                <label className="block font-heading text-xs font-semibold tracking-wider uppercase text-subtle">
                   Password
                 </label>
                 {mode === "signin" && (
@@ -173,7 +181,7 @@ export default function LoginPage() {
                       setErrorMsg("");
                       setSuccessMsg("");
                     }}
-                    className="text-xs text-secondary hover:underline cursor-pointer font-semibold"
+                    className="text-xs text-primary hover:underline cursor-pointer font-semibold"
                   >
                     Forgot password?
                   </button>
@@ -187,7 +195,7 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="w-full pl-10 pr-12 py-3 rounded-xl bg-surface-raised border border-border text-foreground text-sm font-medium focus:ring-2 focus:ring-secondary/40 focus:border-secondary outline-none transition-all"
+                  className="w-full pl-10 pr-12 py-3 rounded-[2px] bg-surface-raised border border-border text-foreground text-sm font-medium focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all"
                 />
                 <button
                   type="button"
@@ -208,7 +216,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-secondary text-secondary-fg text-sm font-bold shadow-lg shadow-secondary/20 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none mt-2 cursor-pointer"
+            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-[2px] bg-primary text-primary-fg text-sm font-bold shadow-lg shadow-primary/20 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none mt-2 cursor-pointer"
           >
             {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : null}
             {mode === "signup" ? "Sign Up" : mode === "forgot" ? "Send Reset Link" : "Sign In"}
