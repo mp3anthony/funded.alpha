@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Trash2, Calendar, User, FileText, Sparkles, CheckCircle2 } from "lucide-react";
+import { Trash2, Calendar, FileText, Sparkles, CheckCircle2 } from "lucide-react";
 import { useApp, type PayHistory } from "@/context/AppContext";
 
 interface PayHistoryCardProps {
@@ -82,62 +82,60 @@ export default function PayHistoryCard({ history, onConfirmPending, hideMemberIn
 
   return (
     <div
-      className={`bg-surface border rounded-2xl p-5 shadow-sm flex items-center justify-between gap-4 transition-all hover:border-white/20 ${
-        isPending
-          ? "border-accent/50 bg-accent/5"
-          : "border-border"
+      className={`flex items-start justify-between gap-4 py-3 border-t ${
+        isPending ? "border-accent/40" : "border-border"
       }`}
     >
-      <div className="flex-1 min-w-0 space-y-2">
+      <div className="flex-1 min-w-0 space-y-1.5">
         {/* Top Row: Member & Amount */}
         {!hideMemberInfo ? (
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-foreground font-semibold text-sm truncate">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
               {member?.avatar_url ? (
-                <img src={member.avatar_url} alt={memberName} className="h-6 w-6 rounded-full object-cover shrink-0" />
+                <img src={member.avatar_url} alt={memberName} className="h-6 w-6 rounded-md object-cover shrink-0 border border-primary" />
               ) : (
-                <div className="h-6 w-6 rounded-full bg-gradient-to-tr from-primary to-emerald-500 flex items-center justify-center text-foreground font-bold text-[10px] shrink-0">
+                <div className="h-6 w-6 rounded-md bg-surface-elevated border border-primary flex items-center justify-center text-foreground font-bold text-[10px] shrink-0">
                   {member?.avatar || memberName.charAt(0).toUpperCase()}
                 </div>
               )}
-              <span className="truncate">{memberName}</span>
+              <span className="truncate font-body font-semibold text-[15px] text-foreground">{memberName}</span>
             </div>
             <span className="font-mono font-extrabold text-primary text-base whitespace-nowrap">
               ${formattedAmount}
             </span>
           </div>
         ) : (
-          <div className="font-mono font-extrabold text-primary text-base whitespace-nowrap mb-1">
+          <div className="font-mono font-extrabold text-primary text-lg whitespace-nowrap">
             ${formattedAmount}
           </div>
         )}
 
-        {/* Date & Status / Automation rule allocations row */}
-        <div className="flex items-center justify-between gap-2 pt-0.5">
-          <div className="flex items-center gap-1.5 text-xs text-muted font-mono">
-            <Calendar size={13} className="shrink-0" />
+        {/* Date & Status / automation-rule allocation row */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 text-[11px] text-muted font-mono uppercase tracking-wider">
+            <Calendar size={12} className="shrink-0" />
             <span>{formattedDate}</span>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-3 shrink-0">
             {isPending && (
-              <span className="flex items-center gap-1 bg-accent/10 border border-accent/30 text-[9px] text-accent font-mono rounded-full px-2.5 py-0.5 uppercase font-bold">
+              <span className="text-[10px] text-accent font-mono uppercase font-bold tracking-wider">
                 Pending
               </span>
             )}
 
             {history.rule_id && rule && (
-              <div className="flex items-center gap-1 bg-primary/10 border border-primary/20 text-[9px] text-primary font-mono rounded-full px-2.5 py-0.5 w-fit uppercase font-bold shrink-0">
-                <Sparkles size={10} className="shrink-0 animate-pulse text-primary" />
-                <span>Rule: +${allocationAmount.toFixed(2)} to {allocationTargetName}</span>
-              </div>
+              <span className="flex items-center gap-1 text-[10px] text-primary font-mono uppercase font-bold tracking-wider shrink-0">
+                <Sparkles size={10} className="shrink-0 text-primary" />
+                +${allocationAmount.toFixed(2)} to {allocationTargetName}
+              </span>
             )}
           </div>
         </div>
 
         {/* Notes (Conditional) */}
         {history.notes && (
-          <div className="flex items-start gap-1.5 bg-white/5 border border-border-strong rounded-lg px-3 py-2 text-xs text-subtle">
+          <div className="flex items-start gap-1.5 text-xs text-subtle pt-0.5">
             <FileText size={13} className="mt-0.5 shrink-0 text-muted" />
             <span className="break-words font-body">{history.notes}</span>
           </div>
@@ -145,11 +143,11 @@ export default function PayHistoryCard({ history, onConfirmPending, hideMemberIn
       </div>
 
       {/* Action buttons */}
-      <div className="shrink-0 flex flex-col gap-2">
+      <div className="shrink-0 flex items-center gap-1">
         {isPending && (
           <button
             onClick={handleConfirm}
-            className="p-2.5 rounded-xl border border-primary/20 bg-primary/10 text-primary hover:bg-primary/20 hover:border-primary/40 transition-all active:scale-95 cursor-pointer"
+            className="p-2 rounded-lg text-primary hover:bg-primary/10 transition-all active:scale-95 cursor-pointer"
             title="Confirm this pay entry"
           >
             <CheckCircle2 size={16} />
@@ -158,7 +156,7 @@ export default function PayHistoryCard({ history, onConfirmPending, hideMemberIn
         <button
           onClick={handleDelete}
           disabled={isDeleting}
-          className="p-2.5 rounded-xl border border-border bg-white/5 text-muted hover:text-destructive hover:bg-destructive/10 hover:border-destructive/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          className="p-2 rounded-lg text-muted hover:text-destructive hover:bg-destructive/10 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           title="Delete history entry"
         >
           <Trash2 size={16} />
