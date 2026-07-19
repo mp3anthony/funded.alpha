@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect } from "react";
-import { X, Calendar, User, Clock } from "lucide-react";
+import { Calendar, Clock } from "lucide-react";
 import { useApp, type PaySchedule, type Member } from "@/context/AppContext";
+import Dialog from "@/components/ui/Dialog";
 
 interface PayScheduleDetailSheetProps {
   isOpen: boolean;
@@ -22,17 +22,6 @@ export default function PayScheduleDetailSheet({
   onDelete,
 }: PayScheduleDetailSheetProps) {
   const { isJointFund, householdContributions } = useApp();
-
-  useEffect(() => {
-    if (!isOpen) return;
-    document.body.classList.add("modal-open");
-    return () => {
-      const activeModals = document.querySelectorAll(".modal-backdrop");
-      if (activeModals.length <= 1) {
-        document.body.classList.remove("modal-open");
-      }
-    };
-  }, [isOpen]);
 
   if (!isOpen || !paySchedule) return null;
 
@@ -80,26 +69,30 @@ export default function PayScheduleDetailSheet({
   }
 
   return (
-    <div className="fixed inset-0 z-[100] modal-backdrop flex items-center justify-center p-4 bg-foreground/20 dark:bg-black/80 backdrop-blur-sm md:items-stretch md:justify-end md:p-0 md:bg-foreground/20 dark:bg-foreground/20 dark:bg-black/80 animate-in fade-in duration-200">
-      <div className="absolute inset-0" onClick={onClose} />
-
-      {/* Sheet Content */}
-      <div className="relative w-full max-w-md max-h-[90dvh] md:h-screen md:max-h-screen bg-surface border border-border md:border-y-0 md:border-r-0 md:border-l rounded-2xl md:rounded-none md:rounded-l-3xl flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 md:zoom-in-100 md:slide-in-from-right duration-250">
-        
-        {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-surface/90 px-6 py-4 backdrop-blur">
-          <h2 className="font-heading text-lg font-bold text-foreground">Schedule Details</h2>
-          <button 
-            onClick={onClose}
-            className="rounded-full p-2 text-muted hover:bg-white/5 hover:text-foreground transition-colors focus:outline-none"
+    <Dialog
+      open={isOpen}
+      onClose={onClose}
+      title="Schedule Details"
+      footer={
+        <>
+          <button
+            onClick={onDelete}
+            className="flex-1 py-3 bg-destructive/15 text-destructive border border-destructive/20 rounded-[2px] font-heading font-bold uppercase tracking-wider text-xs hover:bg-destructive hover:text-foreground transition-all active:scale-[0.98] cursor-pointer"
           >
-            <X size={18} />
+            Delete
           </button>
-        </div>
+          <button
+            onClick={onEdit}
+            className="flex-1 py-3 bg-primary text-primary-fg rounded-[2px] font-heading font-bold uppercase tracking-wider text-xs hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer"
+          >
+            Edit Schedule
+          </button>
+        </>
+      }
+    >
+      {/* Content Body */}
+      <div className="space-y-5">
 
-        {/* Content Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
-          
           {/* Member Name & Frequency */}
           <div className="flex flex-col space-y-1">
             <div className="flex items-center justify-between">
@@ -147,7 +140,7 @@ export default function PayScheduleDetailSheet({
           </div>
 
           {contribution && (
-            <div className="mt-4 p-4 rounded-xl bg-primary/5 border border-primary/10 flex flex-col space-y-1">
+            <div className="mt-4 p-4 rounded-[2px] bg-primary/5 border border-primary/10 flex flex-col space-y-1">
               <span className="text-muted uppercase text-xs font-semibold">Expected Contribution</span>
               <span className="text-primary font-bold text-lg font-heading tracking-tight">
                 ${Number(contribution.amount).toFixed(2)} <span className="text-sm font-normal font-mono text-muted tracking-normal">per {contribution.frequency}</span>
@@ -155,28 +148,7 @@ export default function PayScheduleDetailSheet({
             </div>
           )}
 
-        </div>
-
-        {/* Footer Actions */}
-        <div 
-          style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1rem)" }}
-          className="sticky bottom-0 z-10 border-t border-border bg-surface/95 px-6 pt-4 pb-4 backdrop-blur flex space-x-3 shrink-0"
-        >
-          <button
-            onClick={onDelete}
-            className="flex-1 py-3 bg-destructive/15 text-destructive border border-destructive/20 rounded-xl font-heading font-bold uppercase tracking-wider text-xs hover:bg-destructive hover:text-foreground transition-all active:scale-[0.98] cursor-pointer"
-          >
-            Delete
-          </button>
-          <button
-            onClick={onEdit}
-            className="flex-1 py-3 bg-primary text-primary-fg rounded-xl font-heading font-bold uppercase tracking-wider text-xs hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer"
-          >
-            Edit Schedule
-          </button>
-        </div>
-
       </div>
-    </div>
+    </Dialog>
   );
 }

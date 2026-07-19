@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect } from "react";
-import { X, Calendar, Target, Award, Play, Pause, Check } from "lucide-react";
+import { Calendar, Award, Play, Pause, Check } from "lucide-react";
 import type { Fund } from "@/context/AppContext";
+import Dialog from "@/components/ui/Dialog";
 
 interface GoalDetailSheetProps {
   isOpen: boolean;
@@ -19,17 +19,6 @@ export default function GoalDetailSheet({
   onEdit,
   onDelete,
 }: GoalDetailSheetProps) {
-  useEffect(() => {
-    if (!isOpen) return;
-    document.body.classList.add("modal-open");
-    return () => {
-      const activeModals = document.querySelectorAll(".modal-backdrop");
-      if (activeModals.length <= 1) {
-        document.body.classList.remove("modal-open");
-      }
-    };
-  }, [isOpen]);
-
   if (!isOpen || !goal) return null;
 
   const percentage = Math.min((goal.currentAmount / goal.targetAmount) * 100, 100);
@@ -79,27 +68,30 @@ export default function GoalDetailSheet({
   }
 
   return (
-    <div className="fixed inset-0 z-[100] modal-backdrop flex items-center justify-center p-4 bg-foreground/20 dark:bg-black/80 backdrop-blur-sm md:items-stretch md:justify-end md:p-0 md:bg-foreground/20 dark:bg-foreground/20 dark:bg-black/80 animate-in fade-in duration-200">
-      {/* Backdrop overlay */}
-      <div className="absolute inset-0" onClick={onClose} />
-
-      {/* Sheet Content */}
-      <div className="relative w-full max-w-md max-h-[90dvh] md:h-screen md:max-h-screen bg-surface border border-border md:border-y-0 md:border-r-0 md:border-l rounded-2xl md:rounded-none md:rounded-l-3xl flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 md:zoom-in-100 md:slide-in-from-right duration-250">
-        
-        {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-surface/90 px-6 py-4 backdrop-blur">
-          <h2 className="font-heading text-xl font-bold text-foreground">Goal Details</h2>
-          <button 
-            onClick={onClose}
-            className="rounded-full p-2 text-muted hover:bg-white/5 hover:text-foreground transition-colors focus:outline-none"
+    <Dialog
+      open={isOpen}
+      onClose={onClose}
+      title="Goal Details"
+      footer={
+        <>
+          <button
+            onClick={onDelete}
+            className="flex-1 rounded-[2px] py-3.5 bg-destructive/15 text-destructive border border-destructive/20 font-heading font-bold uppercase tracking-wider text-xs hover:bg-destructive hover:text-foreground transition-all active:scale-[0.98] cursor-pointer"
           >
-            <X size={20} />
+            Delete Goal
           </button>
-        </div>
+          <button
+            onClick={onEdit}
+            className="flex-1 rounded-[2px] py-3.5 bg-primary text-primary-fg font-heading font-bold uppercase tracking-wider text-xs hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer"
+          >
+            Edit Goal
+          </button>
+        </>
+      }
+    >
+      {/* Content Body */}
+      <div className="space-y-6">
 
-        {/* Content Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
-          
           {/* Goal Name & Category */}
           <div className="flex flex-col space-y-1">
             <div className="flex items-center justify-between">
@@ -119,7 +111,7 @@ export default function GoalDetailSheet({
           </div>
 
           {/* Progress Section */}
-          <div className="space-y-3 bg-surface-raised border border-border p-5 rounded-2xl">
+          <div className="space-y-3 bg-surface-raised border border-border p-5 rounded-[2px]">
             <div className="flex justify-between items-center text-xs uppercase font-mono">
               <span className="text-subtle font-semibold">Progress</span>
               <span className={`font-bold ${goal.accentText}`}>{percentage.toFixed(1)}%</span>
@@ -161,28 +153,7 @@ export default function GoalDetailSheet({
             </div>
           </div>
 
-        </div>
-
-        {/* Footer Actions */}
-        <div 
-          style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1rem)" }}
-          className="sticky bottom-0 z-10 border-t border-border bg-surface/95 px-6 pt-4 pb-4 backdrop-blur flex space-x-3 shrink-0"
-        >
-          <button
-            onClick={onDelete}
-            className="flex-1 rounded-xl py-3.5 bg-destructive/15 text-destructive border border-destructive/20 font-heading font-bold uppercase tracking-wider text-xs hover:bg-destructive hover:text-foreground transition-all active:scale-[0.98] cursor-pointer"
-          >
-            Delete Goal
-          </button>
-          <button
-            onClick={onEdit}
-            className="flex-1 rounded-xl py-3.5 bg-primary text-primary-fg font-heading font-bold uppercase tracking-wider text-xs hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer"
-          >
-            Edit Goal
-          </button>
-        </div>
-
       </div>
-    </div>
+    </Dialog>
   );
 }
