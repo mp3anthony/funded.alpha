@@ -8,8 +8,10 @@ import { cn } from "@/lib/utils";
 /* ─────────────────────────────────────────────────────────────
    Dialog — the single "1d" popup template every modal/sheet uses.
 
-   One shell: 20px-ish radius, header (title + X), scrollable body,
-   optional footer. Destructive flows only swap the solid button colour.
+   One shell (editorial turn-3 spec): squared card (2px radius) with a
+   lime gradient top-edge, header (title + X, hairline under), scrollable
+   body, optional footer (hairline over). Destructive flows only swap the
+   solid button colour.
 
    Two behaviours this MUST preserve to fit the existing app:
    • The backdrop carries the `modal-backdrop` class — AppShell's
@@ -19,6 +21,11 @@ import { cn } from "@/lib/utils";
      AppShell overflow-hidden wrapper is reclassified to absolute on iOS
      WebKit (see AGENTS.md invariant #2 and the pre-existing household
      modals that already portal for this reason).
+
+   The lime top-edge is an inner clipped bar (not a CSS border-top): the
+   mobile globals.css rule forces `border: 1px … !important` on the card,
+   which would otherwise overwrite a real border-top. An inner bar lives
+   inside the card's overflow-hidden and survives that override.
    ───────────────────────────────────────────────────────────── */
 
 interface DialogProps {
@@ -68,11 +75,20 @@ export default function Dialog({
     >
       <div
         className={cn(
-          "bg-surface border border-border-strong rounded-2xl w-full max-h-[92dvh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200",
+          "relative bg-surface border border-border-strong rounded-[2px] w-full max-h-[92dvh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200",
           maxWidthClass
         )}
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Lime gradient top-edge (inner bar — see file header note) */}
+        <div
+          className="absolute inset-x-0 top-0 h-[2px] pointer-events-none z-10"
+          style={{
+            background:
+              "linear-gradient(90deg, var(--color-primary), transparent)",
+          }}
+        />
+
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-border shrink-0">
           <h3 className="text-[17px] font-bold text-foreground font-heading flex items-center gap-2 min-w-0">
@@ -135,7 +151,7 @@ export function DialogButton({
   return (
     <button
       className={cn(
-        "flex-1 py-3 rounded-xl text-sm font-bold transition-all cursor-pointer disabled:opacity-60 disabled:pointer-events-none",
+        "flex-1 py-3 rounded-[2px] text-sm font-bold transition-all cursor-pointer disabled:opacity-60 disabled:pointer-events-none",
         styles[variant],
         className
       )}
@@ -143,5 +159,48 @@ export function DialogButton({
     >
       {children}
     </button>
+  );
+}
+
+/* ── DialogSection — Syne label + lime fade-rule ────────────────
+   The editorial section header used inside modal bodies. Matches the
+   shipped page pattern (font-heading bold + h-0.5 lime→transparent
+   rule): a Syne label, an optional mono count, the fade-rule, and an
+   optional trailing node (e.g. an "Add" affordance). */
+
+interface DialogSectionProps {
+  label: React.ReactNode;
+  /** Optional mono count shown after the label, e.g. member count. */
+  count?: React.ReactNode;
+  /** Optional trailing content pinned to the right of the rule. */
+  trailing?: React.ReactNode;
+  className?: string;
+}
+
+export function DialogSection({
+  label,
+  count,
+  trailing,
+  className,
+}: DialogSectionProps) {
+  return (
+    <div className={cn("flex items-center gap-3", className)}>
+      <span className="font-heading font-bold text-[15px] text-foreground shrink-0">
+        {label}
+      </span>
+      {count != null && (
+        <span className="font-mono text-[11px] font-semibold text-subtle shrink-0">
+          {count}
+        </span>
+      )}
+      <span
+        className="h-0.5 flex-1 rounded-sm"
+        style={{
+          background:
+            "linear-gradient(90deg, var(--color-primary), transparent)",
+        }}
+      />
+      {trailing}
+    </div>
   );
 }
