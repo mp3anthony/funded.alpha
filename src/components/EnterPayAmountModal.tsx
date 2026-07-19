@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { X, ArrowDown, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { useApp, type PaySchedule } from "@/context/AppContext";
+import Dialog, { DialogButton } from "@/components/ui/Dialog";
 
 interface EnterPayAmountModalProps {
   isOpen: boolean;
@@ -37,17 +38,6 @@ export default function EnterPayAmountModal({
       setNotes(initialNotes ?? "");
     }
   }, [isOpen, schedule, initialAmount, initialNotes]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    document.body.classList.add("modal-open");
-    return () => {
-      const activeModals = document.querySelectorAll(".modal-backdrop");
-      if (activeModals.length <= 1) {
-        document.body.classList.remove("modal-open");
-      }
-    };
-  }, [isOpen]);
 
   // Compute triggered rules and allocation preview in real-time
   const allocationPreview = useMemo(() => {
@@ -104,31 +94,29 @@ export default function EnterPayAmountModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] modal-backdrop flex items-center justify-center bg-foreground/20 dark:bg-foreground/20 dark:bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      {/* Backdrop overlay */}
-      <div className="absolute inset-0" onClick={onClose} />
-
-      {/* Modal Container */}
-      <form
-        onSubmit={handleConfirm}
-        className="relative w-full max-w-sm bg-surface border border-border rounded-2xl shadow-2xl max-h-[92dvh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300"
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-border shrink-0">
-          <h3 className="font-heading font-bold text-base text-foreground">
-            {title || "Review & Log Pay"}
-          </h3>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full p-1 text-muted hover:bg-white/5 hover:text-foreground transition-colors"
+    <Dialog
+      open={isOpen}
+      onClose={onClose}
+      title={title || "Review & Log Pay"}
+      maxWidthClass="max-w-sm"
+      footer={
+        <>
+          <DialogButton variant="ghost" type="button" onClick={onClose} className="uppercase tracking-wider">
+            Cancel
+          </DialogButton>
+          <DialogButton
+            variant="primary"
+            type="submit"
+            form="enter-pay-amount-form"
+            disabled={!isValid}
+            className="uppercase tracking-wider"
           >
-            <X size={18} />
-          </button>
-        </div>
-
-        {/* Scrollable Body */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-4">
+            {submitLabel || "Confirm & Log Pay"}
+          </DialogButton>
+        </>
+      }
+    >
+      <form id="enter-pay-amount-form" onSubmit={handleConfirm} className="space-y-4">
           {/* Form Fields */}
           <div className="space-y-4">
             <div className="flex flex-col space-y-1.5">
@@ -144,7 +132,7 @@ export default function EnterPayAmountModal({
                   min="0.01"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="w-full bg-background border border-border rounded-xl pl-8 pr-4 py-3 font-mono text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+                  className="w-full bg-background border border-border rounded-[2px] pl-8 pr-4 py-3 font-mono text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
                   autoFocus
                   required
                 />
@@ -159,7 +147,7 @@ export default function EnterPayAmountModal({
                 placeholder="e.g. Regular monthly pay, overtime bonus"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 h-20 resize-none font-body"
+                className="w-full bg-background border border-border rounded-[2px] px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 h-20 resize-none font-body"
               />
             </div>
           </div>
@@ -173,7 +161,7 @@ export default function EnterPayAmountModal({
                   Allocation Preview
                 </span>
               </div>
-              <div className="bg-background border border-border rounded-xl p-3.5 space-y-2.5 font-mono text-xs">
+              <div className="bg-background border border-border rounded-[2px] p-3.5 space-y-2.5 font-mono text-xs">
                 {/* Gross */}
                 <div className="flex items-center justify-between text-foreground">
                   <span className="text-muted uppercase">Gross Pay</span>
@@ -213,30 +201,7 @@ export default function EnterPayAmountModal({
               </div>
             </div>
           )}
-        </div>
-
-        {/* Actions Footer */}
-        <div className="flex gap-3 p-5 border-t border-border shrink-0">
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex-1 py-3 rounded-xl border border-border text-xs font-bold text-muted hover:text-foreground hover:bg-white/5 transition-colors cursor-pointer uppercase tracking-wider"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={!isValid}
-            className={`flex-1 py-3 rounded-xl font-bold text-xs uppercase tracking-wider shadow-lg transition-all ${
-              isValid
-                ? "bg-primary text-primary-fg hover:brightness-110 active:scale-95 cursor-pointer"
-                : "bg-surface-raised text-zinc-500 cursor-not-allowed"
-            }`}
-          >
-            {submitLabel || "Confirm & Log Pay"}
-          </button>
-        </div>
       </form>
-    </div>
+    </Dialog>
   );
 }
