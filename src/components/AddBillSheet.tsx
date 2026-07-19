@@ -1,11 +1,10 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
-import { X } from "lucide-react";
+import React, { useState } from "react";
 import { useApp, useCurrentUser, type Bill, type BillSplit } from "@/context/AppContext";
 import ContributorSplits, { type SplitResult } from "./ContributorSplits";
+import Dialog, { DialogButton } from "@/components/ui/Dialog";
 
 interface AddBillSheetProps {
   isOpen: boolean;
@@ -31,17 +30,6 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
   const [paidByMode, setPaidByMode] = useState<"joint" | "individual">("individual");
   const [isSaving, setIsSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    document.body.classList.add("modal-open");
-    return () => {
-      const activeModals = document.querySelectorAll(".modal-backdrop");
-      if (activeModals.length <= 1) {
-        document.body.classList.remove("modal-open");
-      }
-    };
-  }, [isOpen]);
 
   // Pre-fill fields if in edit mode
   React.useEffect(() => {
@@ -135,34 +123,37 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
     }
   };
 
-  if (typeof document === "undefined") return null;
-
-  return createPortal(
-    <div className="fixed inset-0 z-[100] modal-backdrop flex items-center justify-center p-4 bg-foreground/20 dark:bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-      {/* Overlay to close */}
-      <div className="absolute inset-0" onClick={onClose} />
-
-      {/* Sheet Content */}
-      <div className="relative w-full max-w-md max-h-[90dvh] bg-surface border border-border rounded-2xl flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-250">
-        
-        {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-surface/90 px-4 py-3 sm:px-6 sm:py-4 backdrop-blur">
-          <h2 className="font-heading text-xl font-bold text-foreground">
-            {existingBill ? "Edit Bill" : "Add Bill"}
-          </h2>
-          <button 
-            type="button"
-            onClick={onClose}
-            className="rounded-full p-2 text-muted hover:bg-white/5 hover:text-foreground transition-colors focus:outline-none"
+  return (
+    <Dialog
+      open={isOpen}
+      onClose={onClose}
+      title={existingBill ? "Edit Bill" : "Add Bill"}
+      footer={
+        <>
+          <DialogButton variant="ghost" onClick={onClose}>
+            Cancel
+          </DialogButton>
+          <DialogButton
+            variant="primary"
+            onClick={handleSave}
+            disabled={!isFormValid || isSaving}
+            className="uppercase tracking-wider"
           >
-            <X size={20} />
-          </button>
-        </div>
-
-        {/* Form Body */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 md:px-6 md:py-6 space-y-4 md:space-y-6">
+            {existingBill
+              ? isSaving
+                ? "Updating..."
+                : "Update Bill"
+              : isSaving
+                ? "Saving..."
+                : "Save Bill"}
+          </DialogButton>
+        </>
+      }
+    >
+      {/* Form Body */}
+      <div className="space-y-4 md:space-y-6">
           {errorMsg && (
-            <div className="bg-destructive/10 border border-destructive/50 rounded-xl p-3 text-destructive text-xs font-mono break-words whitespace-pre-wrap">
+            <div className="bg-destructive/10 border border-destructive/50 rounded-[2px] p-3 text-destructive text-xs font-mono break-words whitespace-pre-wrap">
               <span className="font-bold">Failed to save bill:</span><br/>
               {errorMsg}
             </div>
@@ -178,7 +169,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
               placeholder="e.g., Internet"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-xl border border-border bg-surface-raised px-4 py-2.5 md:py-3 text-foreground placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
+              className="w-full rounded-[2px] border border-border bg-surface-raised px-4 py-2.5 md:py-3 text-foreground placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
             />
           </div>
 
@@ -191,7 +182,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full rounded-xl border border-border bg-surface-raised px-4 py-2.5 md:py-3 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all appearance-none text-sm cursor-pointer"
+                className="w-full rounded-[2px] border border-border bg-surface-raised px-4 py-2.5 md:py-3 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all appearance-none text-sm cursor-pointer"
               >
                 <option value="Subscriptions">Subscriptions</option>
                 <option value="Living Costs">Living Costs</option>
@@ -221,7 +212,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
                 placeholder="0.00"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full rounded-xl border border-border bg-surface-raised pl-8 pr-4 py-2.5 md:py-3 font-mono text-foreground placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
+                className="w-full rounded-[2px] border border-border bg-surface-raised pl-8 pr-4 py-2.5 md:py-3 font-mono text-foreground placeholder:text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
               />
             </div>
           </div>
@@ -240,7 +231,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
               <select
                 value={frequency.toLowerCase()}
                 onChange={(e) => setFrequency(e.target.value)}
-                className="w-full rounded-xl border border-border bg-background px-4 py-2.5 md:py-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 appearance-none transition-all cursor-pointer pr-10"
+                className="w-full rounded-[2px] border border-border bg-background px-4 py-2.5 md:py-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 appearance-none transition-all cursor-pointer pr-10"
               >
                 <option value="weekly">Weekly</option>
                 <option value="fortnightly">Fortnightly</option>
@@ -265,7 +256,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
                 type="date"
                 value={invoiceDate}
                 onChange={(e) => setInvoiceDate(e.target.value)}
-                className="w-full min-w-0 rounded-xl border border-border bg-surface-raised px-4 py-2.5 md:py-3 font-mono text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                className="w-full min-w-0 rounded-[2px] border border-border bg-surface-raised px-4 py-2.5 md:py-3 font-mono text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
               />
             </div>
             
@@ -277,7 +268,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="w-full min-w-0 rounded-xl border border-border bg-surface-raised px-4 py-2.5 md:py-3 font-mono text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                className="w-full min-w-0 rounded-[2px] border border-border bg-surface-raised px-4 py-2.5 md:py-3 font-mono text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
               />
             </div>
           </div>
@@ -291,7 +282,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
               <select
                 value={paymentType}
                 onChange={(e) => setPaymentType(e.target.value as "Manual" | "Auto")}
-                className="w-full rounded-xl border border-border bg-background px-4 py-2.5 md:py-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 appearance-none transition-all cursor-pointer pr-10"
+                className="w-full rounded-[2px] border border-border bg-background px-4 py-2.5 md:py-3 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 appearance-none transition-all cursor-pointer pr-10"
               >
                 <option value="Manual">Manual</option>
                 <option value="Auto">Auto-Pay</option>
@@ -313,7 +304,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
               <select
                 value={assignee}
                 onChange={(e) => setAssignee(e.target.value)}
-                className="w-full rounded-xl border border-border bg-surface-raised px-4 py-2.5 md:py-3 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all appearance-none text-sm"
+                className="w-full rounded-[2px] border border-border bg-surface-raised px-4 py-2.5 md:py-3 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all appearance-none text-sm"
               >
                 <option value="" disabled>Select a member</option>
                 {displayMembers.map((member) => (
@@ -347,7 +338,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
                   <select
                     value={paidByMode}
                     onChange={(e) => setPaidByMode(e.target.value as "joint" | "individual")}
-                    className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 appearance-none transition-all cursor-pointer pr-10 capitalize tracking-wider font-bold"
+                    className="w-full rounded-[2px] border border-border bg-background px-4 py-2.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 appearance-none transition-all cursor-pointer pr-10 capitalize tracking-wider font-bold"
                   >
                     <option value="joint">Joint Fund</option>
                     <option value="individual">Individual Splits</option>
@@ -367,7 +358,7 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
                     initialSplits={existingSplits}
                   />
                 ) : (
-                  <div className="p-4 rounded-xl border border-dashed border-border bg-surface-raised/20 text-center">
+                  <div className="p-4 rounded-[2px] border border-dashed border-border bg-surface-raised/20 text-center">
                     <p className="text-xs text-muted font-mono">
                       Paid directly from the household Joint Fund account.
                     </p>
@@ -393,41 +384,11 @@ export default function AddBillSheet({ isOpen, onClose, existingBill, existingSp
               placeholder="Add any additional details or context here..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full bg-surface border border-border rounded-xl p-3 font-mono text-sm min-h-[80px] resize-y placeholder:text-muted text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+              className="w-full bg-surface border border-border rounded-[2px] p-3 font-mono text-sm min-h-[80px] resize-y placeholder:text-muted text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
             />
           </div>
 
-        </div>
-
-        {/* Footer */}
-        <div 
-          style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
-          className="sticky bottom-0 z-10 border-t border-border bg-surface/95 px-4 sm:px-6 pt-3 pb-3 md:pt-4 md:pb-4 backdrop-blur flex items-center gap-3 shrink-0"
-        >
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex-1 py-3 md:py-4 rounded-xl border border-border text-sm font-bold text-muted hover:text-foreground hover:bg-white/5 transition-all cursor-pointer"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={!isFormValid || isSaving}
-            className={`flex-1 rounded-xl py-3 md:py-4 text-sm font-bold uppercase tracking-wider transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface focus:ring-primary cursor-pointer ${
-              isFormValid && !isSaving
-                ? "bg-primary text-primary-fg hover:brightness-110 active:scale-[0.98]" 
-                : "bg-surface-raised text-muted cursor-not-allowed"
-            }`}
-          >
-            {existingBill 
-              ? (isSaving ? "Updating..." : "Update Bill") 
-              : (isSaving ? "Saving..." : "Save Bill")}
-          </button>
-        </div>
-
       </div>
-    </div>,
-    document.body
+    </Dialog>
   );
 }

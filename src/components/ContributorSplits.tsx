@@ -158,13 +158,13 @@ export default function ContributorSplits({
       : "text-subtle";
 
   return (
-    <div className="flex flex-col space-y-5 rounded-xl border border-border bg-surface-raised/30 p-5">
+    <div className="flex flex-col space-y-5 rounded-[2px] border border-border bg-surface-raised/30 p-5">
       {/* Mode Select Dropdown */}
       <div className="relative w-full">
         <select
           value={splitMode}
           onChange={(e) => handleModeChange(e.target.value as "percentage" | "amount")}
-          className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all appearance-none text-sm font-semibold cursor-pointer pr-10"
+          className="w-full rounded-[2px] border border-border bg-background px-4 py-2.5 text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/50 transition-all appearance-none text-sm font-semibold cursor-pointer pr-10"
         >
           <option value="percentage">Split by Percentage (%)</option>
           <option value="amount">Split by Amount ($)</option>
@@ -211,7 +211,7 @@ export default function ContributorSplits({
                   placeholder="0"
                   value={inputValues[member.id] || ""}
                   onChange={(e) => handleInputChange(member.id, e.target.value)}
-                  className={`w-full rounded-lg border border-border bg-surface py-2 font-mono text-sm text-right text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all ${
+                  className={`w-full rounded-[2px] border border-border bg-surface py-2 font-mono text-sm text-right text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all ${
                     splitMode === "amount" ? "pl-7 pr-3" : "px-3 pr-7"
                   }`}
                 />
