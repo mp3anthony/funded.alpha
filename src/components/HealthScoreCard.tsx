@@ -119,91 +119,88 @@ export const HealthScoreCard = React.memo(function HealthScoreCard() {
   }, [members, isJointFund, householdContributions, paySchedules, billSplits]);
 
   return (
-    <div className="bg-surface border border-border rounded-[28px] p-6 flex flex-col gap-7 shadow-xl relative overflow-hidden">
-      {/* Top Header */}
-      <div className="relative z-10 flex flex-col space-y-1.5">
-        <button 
+    <div className="flex flex-col gap-6">
+      {/* Health hero — page anchor, no surface box */}
+      <div className="flex flex-col space-y-1.5">
+        <button
           onClick={() => setIsHealthExpanded(prev => !prev)}
-          className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-muted font-bold hover:text-foreground transition-colors text-left focus:outline-none w-fit"
+          className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-subtle font-bold hover:text-foreground transition-colors text-left focus:outline-none w-fit"
         >
           Household Health
           {isHealthExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
         </button>
         <div className="flex items-center gap-3">
-          <div 
-            className={`w-3.5 h-3.5 rounded-full ${dotColor} transition-colors duration-700`}
-            style={{ boxShadow: `0 0 12px ${glowColor}80` }}
+          <div
+            className={`w-3 h-3 rounded-full ${dotColor} transition-colors duration-700`}
+            style={{ boxShadow: `0 0 12px ${glowColor}A6` }}
           />
-          <h2 className="font-heading font-extrabold text-3xl tracking-tight text-foreground">
+          <h2 className="font-heading font-extrabold text-[28px] tracking-tight text-foreground">
             {statusText}
           </h2>
         </div>
         {isJointFund && (
-          <p className="text-sm text-subtle font-body pt-1">
-            {weeklySurplusActual >= 0 
-              ? `$${formatCurrency(weeklySurplusActual).replace('$', '')} surplus after bills this week` 
+          <p className="text-sm text-muted font-body pt-1">
+            {weeklySurplusActual >= 0
+              ? `$${formatCurrency(weeklySurplusActual).replace('$', '')} surplus after bills this week`
               : `-$${formatCurrency(Math.abs(weeklySurplusActual)).replace('$', '')} deficit after bills this week`}
           </p>
         )}
       </div>
 
-      {/* 2x2 Stat Grid */}
+      {/* Stat grid — borderless, hairline top-rule per cell */}
       {isHealthExpanded && (
-      <div className="relative z-10 grid grid-cols-2 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 gap-x-6">
         {/* Tile 1 */}
-        <div className="bg-surface-raised rounded-[20px] p-4 sm:p-5 flex flex-col justify-center gap-1.5 transition-colors hover:bg-surface-elevated">
-          <span className="font-mono text-[10px] uppercase tracking-widest text-muted font-bold">Weekly Income</span>
-          <span className="font-mono font-bold text-[22px] text-primary tracking-tight">{formatCurrency(weeklyIncome)}</span>
+        <div className="border-t border-border py-2.5 flex flex-col gap-1">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-subtle font-bold">Weekly Income</span>
+          <span className="font-mono font-bold text-[19px] text-primary tracking-tight">{formatCurrency(weeklyIncome)}</span>
         </div>
         {/* Tile 2 */}
-        <div className="bg-surface-raised rounded-[20px] p-4 sm:p-5 flex flex-col justify-center gap-1.5 transition-colors hover:bg-surface-elevated">
-          <span className="font-mono text-[10px] uppercase tracking-widest text-muted font-bold">Weekly Bills</span>
-          <span className="font-mono font-bold text-[22px] text-foreground tracking-tight">{formatCurrency(weeklyBills)}</span>
+        <div className="border-t border-border py-2.5 flex flex-col gap-1">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-subtle font-bold">Weekly Bills</span>
+          <span className="font-mono font-bold text-[19px] text-foreground tracking-tight">{formatCurrency(weeklyBills)}</span>
         </div>
         {/* Tile 3 */}
-        <div className="bg-surface-raised rounded-[20px] p-4 sm:p-5 flex flex-col justify-center gap-1.5 transition-colors hover:bg-surface-elevated">
-          <span className="font-mono text-[10px] uppercase tracking-widest text-muted font-bold">
+        <div className="border-t border-border py-2.5 flex flex-col gap-1">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-subtle font-bold">
             {isJointFund ? "Joint Fund Surplus" : "Surplus after bills"}
           </span>
-          <span className={`font-mono font-bold text-[22px] ${surplusColor} tracking-tight`}>{formatCurrency(weeklySurplus)}</span>
+          <span className={`font-mono font-bold text-[19px] ${surplusColor} tracking-tight`}>{formatCurrency(weeklySurplus)}</span>
         </div>
         {/* Tile 4 */}
-        <div className="bg-surface-raised rounded-[20px] p-4 sm:p-5 flex flex-col justify-center gap-1.5 transition-colors hover:bg-surface-elevated">
-          <span className="font-mono text-[10px] uppercase tracking-widest text-muted font-bold">Goals Total Added (Weekly)</span>
-          <span className="font-mono font-bold text-[22px] text-primary tracking-tight">{formatCurrency(sinkingFundsTotal)}</span>
+        <div className="border-t border-border py-2.5 flex flex-col gap-1">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-subtle font-bold">Goals Total Added (Weekly)</span>
+          <span className="font-mono font-bold text-[19px] text-primary tracking-tight">{formatCurrency(sinkingFundsTotal)}</span>
         </div>
       </div>
       )}
 
-      {/* Contributors Row */}
+      {/* Contributors — editorial subsection */}
       {visibleMembers.length > 0 && (
-        <div className="relative z-10 pt-1 flex flex-col space-y-4">
-          <button 
+        <div className="flex flex-col gap-3">
+          <button
             onClick={() => setIsContributorsExpanded(prev => !prev)}
-            className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-muted font-bold hover:text-foreground transition-colors text-left focus:outline-none w-fit"
+            className="group flex items-center gap-3 text-left focus:outline-none"
           >
-            Contributors
-            {isContributorsExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+            <span className="font-heading font-bold text-[13px] text-foreground shrink-0">Contributors</span>
+            {isContributorsExpanded ? <ChevronUp size={13} className="text-subtle" /> : <ChevronDown size={13} className="text-subtle" />}
+            <span className="h-0.5 flex-1 rounded-sm" style={{ background: "linear-gradient(90deg, var(--color-primary), transparent)" }} />
           </button>
           {isContributorsExpanded && (
-          <div className="grid grid-cols-2 gap-3 sm:gap-4">
+          <div className="flex flex-wrap gap-x-8 gap-y-3">
             {visibleMembers.map(member => {
               let weeklyAmount = 0;
-              let detailText1 = "";
-              let detailText2 = "";
 
               if (isJointFund) {
                 const contribution = householdContributions.find(c => String(c.member_id) === String(member.id));
                 if (contribution) {
                   weeklyAmount = convertAmount(contribution.amount, contribution.frequency, 'weekly');
-                  detailText1 = formatCurrency(contribution.amount);
-                  detailText2 = contribution.frequency.replace("fortnightly", "fortnightly");
                 }
               } else {
                 // Direct Pay
                 const memberPaySchedules = paySchedules.filter(ps => String(ps.member_id) === String(member.id));
                 const memberBillSplits = billSplits.filter(bs => String(bs.member_id) === String(member.id));
-                
+
                 if (memberPaySchedules.length > 0) {
                   weeklyAmount = memberPaySchedules.reduce((sum, schedule) => {
                     let amount = schedule.amount || 0;
@@ -216,43 +213,29 @@ export const HealthScoreCard = React.memo(function HealthScoreCard() {
                     }
                     return sum + convertAmount(amount, schedule.frequency, "weekly");
                   }, 0);
-                  
-                  detailText1 = `${memberPaySchedules.length} Income`;
-                  detailText2 = memberPaySchedules.length === 1 ? "Source" : "Sources";
                 } else if (memberBillSplits.length > 0) {
                   weeklyAmount = memberBillSplits.reduce((sum, split) => {
                     const bill = bills.find(b => b.id === split.bill_id);
                     if (!bill || bill.is_paused) return sum;
                     return sum + convertAmount(split.amount, bill.frequency || "monthly", "weekly");
                   }, 0);
-                  detailText1 = `${memberBillSplits.length} Bill`;
-                  detailText2 = memberBillSplits.length === 1 ? "Split" : "Splits";
                 }
               }
-              
+
               return (
-                <div key={member.id} className="bg-surface-raised rounded-[20px] p-3 sm:p-4 flex items-center gap-3 transition-colors hover:bg-surface-elevated overflow-hidden">
-                  <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 border-2 border-border-strong bg-surface">
+                <div key={member.id} className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-8 h-8 rounded-[10px] overflow-hidden shrink-0 bg-surface-elevated">
                     {member.avatar_url ? (
                       <img src={member.avatar_url} alt={member.name} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-xs font-bold text-muted">{member.avatar}</div>
+                      <div className="w-full h-full flex items-center justify-center text-[11px] font-bold font-mono text-muted">{member.avatar}</div>
                     )}
                   </div>
-                  <div className="flex flex-col min-w-0 gap-0.5">
-                    <span className="font-mono text-[10px] uppercase tracking-widest text-muted font-bold truncate">{member.name}</span>
-                    <div className="flex items-baseline gap-1">
-                      <span className="font-mono font-bold text-[15px] sm:text-[18px] text-primary truncate">{formatCurrency(weeklyAmount)}</span>
-                      <span className="font-mono text-[9px] sm:text-[10px] text-muted/80">/wk</span>
-                    </div>
-                    <div className="flex flex-col mt-0.5">
-                      <span className="font-mono text-[9px] sm:text-[10px] text-muted/60 leading-tight">
-                        {detailText1}
-                      </span>
-                      <span className="font-mono text-[9px] sm:text-[10px] text-muted/60 leading-tight">
-                        {detailText2}
-                      </span>
-                    </div>
+                  <div className="flex flex-col min-w-0">
+                    <span className="font-body text-xs font-semibold text-foreground truncate">{member.name}</span>
+                    <span className="font-mono text-[11px] font-bold text-primary truncate">
+                      {formatCurrency(weeklyAmount)}<span className="text-subtle font-normal">/wk</span>
+                    </span>
                   </div>
                 </div>
               );
