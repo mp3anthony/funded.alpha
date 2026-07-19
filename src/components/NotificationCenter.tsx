@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
-import { X, Bell, Settings as SettingsIcon, CheckCircle, Clock, AlertTriangle, Circle, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Bell, Settings as SettingsIcon, CheckCircle, Clock, AlertTriangle, Circle, Trash2 } from "lucide-react";
 import { useApp, type Notification, type NotificationSettings } from "@/context/AppContext";
+import Dialog from "@/components/ui/Dialog";
 import { useRouter } from "next/navigation";
 import { isStandaloneMode, isPushSupported, getPushPermissionState, subscribeToPush } from "@/lib/pushClient";
 import { supabase } from "@/lib/supabase";
@@ -106,7 +106,6 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
 
   useEffect(() => {
     if (!isOpen) return;
-    document.body.classList.add("modal-open");
 
     // Asynchronously load state to avoid set-state-in-effect warning
     Promise.resolve().then(() => {
@@ -126,13 +125,6 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
         setSnoozedIds(snoozes);
       }
     });
-
-    return () => {
-      const activeModals = document.querySelectorAll(".modal-backdrop");
-      if (activeModals.length <= 1) {
-        document.body.classList.remove("modal-open");
-      }
-    };
   }, [isOpen]);
 
   if (!isOpen) return null;
@@ -177,29 +169,16 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
     }
   };
 
-  if (typeof document === "undefined") return null;
-
-  return createPortal(
-    <div className="fixed inset-0 z-[100] modal-backdrop flex items-center justify-center p-4 bg-foreground/20 dark:bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="absolute inset-0" onClick={onClose} />
-      
-      <div className="relative w-full max-w-md max-h-[90dvh] bg-surface border border-border rounded-2xl flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-250">
-        
-        {/* Header */}
-        <div className="sticky top-0 z-10 flex flex-col border-b border-border bg-surface/90 px-6 py-4 backdrop-blur">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-heading text-xl font-bold text-foreground flex items-center gap-2">
-              <Bell size={20} /> Notifications
-            </h2>
-            <button 
-              onClick={onClose}
-              className="rounded-full p-2 text-muted hover:bg-white/5 hover:text-foreground transition-colors focus:outline-none"
-            >
-              <X size={20} />
-            </button>
-          </div>
-          
-          <div className="flex space-x-4 border-b border-border-strong">
+  return (
+    <Dialog
+      open={isOpen}
+      onClose={onClose}
+      title="Notifications"
+      icon={<Bell size={20} />}
+    >
+      <div className="-m-5">
+        {/* Tabs */}
+        <div className="flex space-x-4 border-b border-border-strong px-6 pt-1 sticky top-0 z-10 bg-surface">
             <button
               className={`pb-2 px-1 text-sm font-semibold transition-colors relative ${activeTab === 'list' ? 'text-primary' : 'text-muted hover:text-foreground'}`}
               onClick={() => setActiveTab('list')}
@@ -218,11 +197,10 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full" />
               )}
             </button>
-          </div>
         </div>
 
         {/* Content Body */}
-        <div className="flex-1 overflow-y-auto p-0">
+        <div className="p-0">
           {activeTab === "list" ? (
             <div className="divide-y divide-border">
               {(() => {
@@ -303,7 +281,7 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
                                   <Clock size={16} />
                                 </button>
                                 {activeSnoozeMenuId === notif.id && (
-                                  <div className="absolute right-0 mt-1 z-30 bg-surface-elevated border border-border-strong rounded-xl shadow-2xl p-2 flex flex-col gap-1 min-w-[90px] animate-in fade-in zoom-in-95 duration-100">
+                                  <div className="absolute right-0 mt-1 z-30 bg-surface-elevated border border-border-strong rounded-[2px] shadow-2xl p-2 flex flex-col gap-1 min-w-[90px] animate-in fade-in zoom-in-95 duration-100">
                                     <span className="text-[9px] font-bold text-muted uppercase tracking-wider text-center border-b border-border pb-1 mb-1">Snooze</span>
                                     <button onClick={() => handleSnooze(notif.id, 1)} className="text-left text-xs px-2 py-1 rounded hover:bg-white/5 font-semibold text-foreground">1 Day</button>
                                     <button onClick={() => handleSnooze(notif.id, 3)} className="text-left text-xs px-2 py-1 rounded hover:bg-white/5 font-semibold text-foreground">3 Days</button>
@@ -342,7 +320,7 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
           ) : (
             <div className="p-6 space-y-6">
               {isStandalone && pushSupported && (!serverSubscribed) && (
-                <div className="flex flex-col gap-3 p-4 bg-primary/10 border border-primary/20 rounded-xl">
+                <div className="flex flex-col gap-3 p-4 bg-primary/10 border border-primary/20 rounded-[2px]">
                   <div className="flex items-center gap-2 text-primary">
                     <Bell size={20} />
                     <h4 className="font-semibold">Enable Push Notifications</h4>
@@ -359,7 +337,7 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
                       <button
                         onClick={handleEnablePush}
                         disabled={isSubscribing}
-                        className="mt-2 w-full py-2 px-4 bg-primary text-primary-foreground font-bold rounded-lg hover:brightness-110 active:scale-95 transition-all disabled:opacity-50"
+                        className="mt-2 w-full py-2 px-4 bg-primary text-primary-foreground font-bold rounded-[2px] hover:brightness-110 active:scale-95 transition-all disabled:opacity-50"
                       >
                         {isSubscribing ? 'Enabling...' : (pushError ? 'Retry' : 'Enable Notifications')}
                       </button>
@@ -375,7 +353,7 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
 
               {notificationSettings ? (
                 <>
-                  <div className="flex items-center justify-between p-4 bg-surface-elevated rounded-xl border border-border">
+                  <div className="flex items-center justify-between p-4 bg-surface-elevated rounded-[2px] border border-border">
                     <div>
                       <h4 className="font-semibold text-foreground">Enable Notifications</h4>
                       <p className="text-sm text-muted">Master toggle for all alerts.</p>
@@ -454,7 +432,6 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
           )}
         </div>
       </div>
-    </div>,
-    document.body
+    </Dialog>
   );
 }

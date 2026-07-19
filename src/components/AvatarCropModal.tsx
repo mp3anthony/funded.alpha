@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import { createPortal } from "react-dom";
-import { X, Check, ZoomIn, ZoomOut, Loader2 } from "lucide-react";
+import { Check, ZoomIn, ZoomOut, Loader2 } from "lucide-react";
+import Dialog, { DialogButton } from "@/components/ui/Dialog";
 
 interface AvatarCropModalProps {
   /** Object URL of the picked file. */
@@ -61,25 +61,7 @@ export default function AvatarCropModal({
     imgFocalY: number;
   } | null>(null);
 
-  // ----- Scroll lock, consistent with other modals in the app -----
-  useEffect(() => {
-    document.body.classList.add("modal-open");
-    return () => {
-      const activeModals = document.querySelectorAll(".modal-backdrop");
-      if (activeModals.length <= 1) {
-        document.body.classList.remove("modal-open");
-      }
-    };
-  }, []);
-
-  // ----- ESC to cancel -----
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onCancel();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onCancel]);
+  // Scroll lock + Escape are handled by the shared <Dialog> shell.
 
   // ----- Measure the (responsive) square crop viewport -----
   useEffect(() => {
@@ -338,32 +320,42 @@ export default function AvatarCropModal({
     }
   }, [loading, processing, buildCropSource, onComplete]);
 
-  if (typeof document === "undefined") return null;
-
-  return createPortal(
-    <div className="fixed inset-0 z-[110] modal-backdrop flex items-center justify-center p-4 bg-foreground/20 dark:bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-      {/* Backdrop */}
-      <div className="absolute inset-0" onClick={onCancel} />
-
-      {/* Modal */}
-      <div className="relative w-full max-w-sm bg-surface border border-border rounded-2xl shadow-2xl max-h-[92dvh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-250">
-        {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-border shrink-0">
-          <h3 className="font-heading font-bold text-base text-foreground">
-            Adjust Photo
-          </h3>
-          <button
+  return (
+    <Dialog
+      open={true}
+      onClose={onCancel}
+      title="Adjust Photo"
+      maxWidthClass="max-w-sm"
+      footer={
+        <>
+          <DialogButton
+            variant="ghost"
             type="button"
             onClick={onCancel}
-            className="rounded-full p-1 text-muted hover:bg-white/5 hover:text-foreground transition-colors cursor-pointer"
-            aria-label="Cancel"
+            disabled={processing}
+            className="uppercase tracking-wider"
           >
-            <X size={18} />
-          </button>
-        </div>
-
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-4">
+            Cancel
+          </DialogButton>
+          <DialogButton
+            variant="primary"
+            type="button"
+            onClick={handleConfirm}
+            disabled={loading || processing}
+            className="uppercase tracking-wider flex items-center justify-center gap-1.5"
+          >
+            {processing ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : (
+              <Check size={14} />
+            )}
+            <span>{processing ? "Processing" : "Save Photo"}</span>
+          </DialogButton>
+        </>
+      }
+    >
+      {/* Body */}
+      <div className="space-y-4">
           {/* Crop viewport (square) */}
           <div
             ref={containerRef}
@@ -372,7 +364,7 @@ export default function AvatarCropModal({
             onPointerUp={endPointer}
             onPointerCancel={endPointer}
             onPointerLeave={endPointer}
-            className="relative w-full aspect-square rounded-xl overflow-hidden bg-background border border-border select-none touch-none cursor-grab active:cursor-grabbing"
+            className="relative w-full aspect-square rounded-[2px] overflow-hidden bg-background border border-border select-none touch-none cursor-grab active:cursor-grabbing"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -394,7 +386,7 @@ export default function AvatarCropModal({
                 margin: "6%",
               }}
             />
-            <div className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-white/10" />
+            <div className="pointer-events-none absolute inset-0 rounded-[2px] ring-1 ring-white/10" />
 
             {loading && (
               <div className="absolute inset-0 flex items-center justify-center bg-background/70">
@@ -411,7 +403,7 @@ export default function AvatarCropModal({
                 zoomTo(t.current.zoom / 1.25, t.current.V / 2, t.current.V / 2)
               }
               disabled={loading}
-              className="flex items-center justify-center h-10 w-10 rounded-xl border border-border text-muted hover:text-foreground hover:bg-white/5 transition-colors disabled:opacity-50 cursor-pointer"
+              className="flex items-center justify-center h-10 w-10 rounded-[2px] border border-border text-muted hover:text-foreground hover:bg-white/5 transition-colors disabled:opacity-50 cursor-pointer"
               aria-label="Zoom out"
             >
               <ZoomOut size={18} />
@@ -425,7 +417,7 @@ export default function AvatarCropModal({
                 zoomTo(t.current.zoom * 1.25, t.current.V / 2, t.current.V / 2)
               }
               disabled={loading}
-              className="flex items-center justify-center h-10 w-10 rounded-xl border border-border text-muted hover:text-foreground hover:bg-white/5 transition-colors disabled:opacity-50 cursor-pointer"
+              className="flex items-center justify-center h-10 w-10 rounded-[2px] border border-border text-muted hover:text-foreground hover:bg-white/5 transition-colors disabled:opacity-50 cursor-pointer"
               aria-label="Zoom in"
             >
               <ZoomIn size={18} />
@@ -437,34 +429,7 @@ export default function AvatarCropModal({
               {error}
             </p>
           )}
-        </div>
-
-        {/* Footer */}
-        <div className="flex gap-3 p-5 border-t border-border shrink-0">
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={processing}
-            className="flex-1 py-3 rounded-xl border border-border text-xs font-bold text-muted hover:text-foreground hover:bg-white/5 transition-colors cursor-pointer uppercase tracking-wider disabled:opacity-50"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleConfirm}
-            disabled={loading || processing}
-            className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl bg-primary text-primary-fg font-bold text-xs uppercase tracking-wider shadow-lg transition-all hover:brightness-110 active:scale-95 cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
-          >
-            {processing ? (
-              <Loader2 size={14} className="animate-spin" />
-            ) : (
-              <Check size={14} />
-            )}
-            <span>{processing ? "Processing" : "Save Photo"}</span>
-          </button>
-        </div>
       </div>
-    </div>,
-    document.body
+    </Dialog>
   );
 }

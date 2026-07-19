@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { X, ArrowUp, ArrowDown, GripVertical } from "lucide-react";
+import { ArrowUp, ArrowDown, GripVertical } from "lucide-react";
+import Dialog, { DialogButton } from "@/components/ui/Dialog";
 
 interface Props {
   isOpen: boolean;
@@ -38,18 +39,26 @@ export default function EditCategoryOrderModal({ isOpen, onClose, categories, on
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-foreground/20 dark:bg-foreground/20 dark:bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-[#111] border border-border rounded-3xl w-full max-w-sm max-h-[calc(100dvh-2rem)] overflow-hidden shadow-2xl flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <h2 className="text-lg font-bold text-foreground">Category Order</h2>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-white/5 text-muted hover:text-foreground transition-colors">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        
-        <div className="flex-1 min-h-0 p-4 space-y-2 overflow-y-auto">
+    <Dialog
+      open={isOpen}
+      onClose={onClose}
+      title="Category Order"
+      maxWidthClass="max-w-sm"
+      footer={
+        <DialogButton
+          variant="primary"
+          onClick={() => {
+            onSave(order);
+            onClose();
+          }}
+        >
+          Save Order
+        </DialogButton>
+      }
+    >
+      <div className="space-y-2">
           {order.map((cat, i) => (
-            <div key={cat} className="flex items-center justify-between bg-white/5 p-3 rounded-xl border border-border-strong">
+            <div key={cat} className="flex items-center justify-between bg-white/5 p-3 rounded-[2px] border border-border-strong">
               <div className="flex items-center gap-3">
                 <GripVertical className="h-4 w-4 text-muted/50" />
                 <span className="text-sm font-semibold text-foreground">{cat}</span>
@@ -58,34 +67,21 @@ export default function EditCategoryOrderModal({ isOpen, onClose, categories, on
                 <button 
                   onClick={() => moveUp(i)}
                   disabled={i === 0}
-                  className="p-1.5 rounded-lg hover:bg-white/10 text-muted disabled:opacity-30 disabled:hover:bg-transparent"
+                  className="p-1.5 rounded-[2px] hover:bg-white/10 text-muted disabled:opacity-30 disabled:hover:bg-transparent"
                 >
                   <ArrowUp className="h-4 w-4" />
                 </button>
                 <button 
                   onClick={() => moveDown(i)}
                   disabled={i === order.length - 1}
-                  className="p-1.5 rounded-lg hover:bg-white/10 text-muted disabled:opacity-30 disabled:hover:bg-transparent"
+                  className="p-1.5 rounded-[2px] hover:bg-white/10 text-muted disabled:opacity-30 disabled:hover:bg-transparent"
                 >
                   <ArrowDown className="h-4 w-4" />
                 </button>
               </div>
             </div>
           ))}
-        </div>
-
-        <div className="p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-border">
-          <button
-            onClick={() => {
-              onSave(order);
-              onClose();
-            }}
-            className="w-full py-3 bg-primary text-primary-fg font-bold rounded-xl hover:opacity-90 transition-opacity"
-          >
-            Save Order
-          </button>
-        </div>
       </div>
-    </div>
+    </Dialog>
   );
 }
