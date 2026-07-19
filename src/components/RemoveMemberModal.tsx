@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
-import { Users, Trash2, X, AlertTriangle, Loader2 } from "lucide-react";
+import React, { useState, useMemo } from "react";
+import { Trash2, AlertTriangle, Loader2 } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import { type Member } from "@/types";
+import Dialog, { DialogButton } from "@/components/ui/Dialog";
 
 interface RemoveMemberModalProps {
   isOpen: boolean;
@@ -53,17 +54,6 @@ export default function RemoveMemberModal({
     return { billsCount: bCount, goalsCount: gCount, schedulesCount: sCount };
   }, [member, billSplits, funds, paySchedules]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    document.body.classList.add("modal-open");
-    return () => {
-      const activeModals = document.querySelectorAll(".modal-backdrop");
-      if (activeModals.length <= 1) {
-        document.body.classList.remove("modal-open");
-      }
-    };
-  }, [isOpen]);
-
   if (!isOpen || !member) return null;
 
   async function handleRemove(e: React.FormEvent) {
@@ -105,32 +95,34 @@ export default function RemoveMemberModal({
   }
 
   return (
-    <div
-      className="fixed inset-0 z-[100] modal-backdrop flex items-center justify-center bg-foreground/20 dark:bg-foreground/20 dark:bg-black/80 backdrop-blur-sm p-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-surface border border-border rounded-2xl w-full max-w-lg max-h-[92dvh] flex flex-col shadow-2xl overflow-hidden transform transition-all animate-in fade-in zoom-in duration-200"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-border shrink-0">
-          <h3 className="text-lg font-bold text-foreground font-heading flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-destructive" />
-            Remove Household Member
-          </h3>
-          <button
-            onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-muted hover:text-foreground hover:bg-white/5 transition-colors cursor-pointer"
+    <Dialog
+      open={isOpen}
+      onClose={onClose}
+      title="Remove Household Member"
+      icon={<AlertTriangle className="h-5 w-5 text-destructive" />}
+      maxWidthClass="max-w-lg"
+      footer={
+        <>
+          <DialogButton variant="ghost" type="button" onClick={onClose} disabled={loading}>
+            Cancel
+          </DialogButton>
+          <DialogButton
+            variant="destructive"
+            type="submit"
+            form="remove-member-form"
+            disabled={loading}
+            className="flex items-center justify-center gap-1.5"
           >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-
-        <form onSubmit={handleRemove} className="flex flex-col flex-1 overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-5 md:p-6 space-y-5 md:space-y-6">
+            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+            <Trash2 className="h-4 w-4" />
+            Remove Member
+          </DialogButton>
+        </>
+      }
+    >
+        <form id="remove-member-form" onSubmit={handleRemove} className="space-y-5 md:space-y-6">
             {error && (
-              <div className="p-3.5 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-medium">
+              <div className="p-3.5 rounded-[2px] bg-destructive/10 border border-destructive/20 text-destructive text-xs font-medium">
                 {error}
               </div>
             )}
@@ -143,20 +135,20 @@ export default function RemoveMemberModal({
             </div>
 
             {/* Affected items breakdown */}
-            <div className="p-4 rounded-xl bg-foreground/5 border border-border-strong space-y-3">
+            <div className="p-4 rounded-[2px] bg-foreground/5 border border-border-strong space-y-3">
               <h4 className="text-xs font-bold text-muted uppercase tracking-wider">
                 Affected Financial Items
               </h4>
               <div className="grid grid-cols-3 gap-4 font-mono">
-                <div className="p-3 rounded-lg bg-foreground/5 text-center">
+                <div className="p-3 rounded-[2px] bg-foreground/5 text-center">
                   <span className="block text-2xl font-bold text-foreground">{billsCount}</span>
                   <span className="text-[9px] text-subtle uppercase tracking-wider">Bill Splits</span>
                 </div>
-                <div className="p-3 rounded-lg bg-foreground/5 text-center">
+                <div className="p-3 rounded-[2px] bg-foreground/5 text-center">
                   <span className="block text-2xl font-bold text-foreground">{goalsCount}</span>
                   <span className="text-[9px] text-subtle uppercase tracking-wider">Goals Owned</span>
                 </div>
-                <div className="p-3 rounded-lg bg-foreground/5 text-center">
+                <div className="p-3 rounded-[2px] bg-foreground/5 text-center">
                   <span className="block text-2xl font-bold text-foreground">{schedulesCount}</span>
                   <span className="text-[9px] text-subtle uppercase tracking-wider">Pay Schedules</span>
                 </div>
@@ -183,7 +175,7 @@ export default function RemoveMemberModal({
                       id="reassign-bills"
                       value={reassignBillsTo}
                       onChange={(e) => setReassignBillsTo(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl bg-surface border border-border text-foreground text-sm font-medium focus:ring-2 focus:ring-[#c8ff00]/30 focus:border-primary outline-none transition-all cursor-pointer"
+                      className="w-full px-4 py-3 rounded-[2px] bg-surface border border-border text-foreground text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
                     >
                       {otherMembers.length > 0 ? (
                         otherMembers.map((m) => (
@@ -214,7 +206,7 @@ export default function RemoveMemberModal({
                       id="reassign-goals"
                       value={reassignGoalsTo}
                       onChange={(e) => setReassignGoalsTo(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl bg-surface border border-border text-foreground text-sm font-medium focus:ring-2 focus:ring-[#c8ff00]/30 focus:border-primary outline-none transition-all cursor-pointer"
+                      className="w-full px-4 py-3 rounded-[2px] bg-surface border border-border text-foreground text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all cursor-pointer"
                     >
                       {otherMembers.length > 0 ? (
                         otherMembers.map((m) => (
@@ -239,30 +231,7 @@ export default function RemoveMemberModal({
                 Only their pay schedules will be deleted. No goals or active bill splits are affected.
               </p>
             )}
-          </div>
-
-          {/* Footer */}
-          <div className="flex items-center gap-3 p-5 border-t border-border font-body shrink-0">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={loading}
-              className="flex-1 py-3 rounded-xl border border-border text-sm font-bold text-muted hover:text-foreground hover:bg-white/5 transition-colors cursor-pointer disabled:opacity-40"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 py-3 rounded-xl bg-destructive text-foreground text-sm font-bold hover:brightness-110 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-1.5 cursor-pointer"
-            >
-              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-              <Trash2 className="h-4 w-4" />
-              Remove Member
-            </button>
-          </div>
         </form>
-      </div>
-    </div>
+    </Dialog>
   );
 }
