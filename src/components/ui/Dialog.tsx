@@ -22,11 +22,12 @@ import { cn } from "@/lib/utils";
      WebKit (see AGENTS.md invariant #2 and the pre-existing household
      modals that already portal for this reason).
 
-   The card's height cap is `max-h-full`, NOT a dvh value. globals.css
-   sizes .modal-backdrop to --visual-viewport-height, which shrinks when
-   the iOS keyboard opens; dvh tracks the layout viewport and does not.
-   A dvh cap therefore let tall forms grow past a centred backdrop and
-   spill out top AND bottom, with the body below never scrolling.
+   The card's height cap is `max-h-full`, NOT a dvh value. The backdrop is
+   full-screen but pads itself down to the keyboard-free area (see the
+   .modal-backdrop comment in globals.css), so 100% of its content box IS
+   the visible area. dvh tracks the layout viewport, which iOS does not
+   shrink for the keyboard, so a dvh cap let tall forms spill out top and
+   bottom with the body below never scrolling.
 
    The lime top-edge is an inner clipped bar (not a CSS border-top): the
    mobile globals.css rule forces `border: 1px … !important` on the card,

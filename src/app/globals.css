@@ -254,21 +254,39 @@ body.modal-open {
   overscroll-behavior: none !important;
 }
 
-/* Base style for modal backdrops to position them relative to visual viewport */
+/* Modal backdrop.
+
+   The element has two jobs, and they want different boxes:
+     1. dim/blur the page — must cover the WHOLE screen, always;
+     2. define the box the card is centred and capped in — must be only the
+        part of the screen the keyboard isn't covering.
+
+   Sizing the element itself to the visual viewport satisfies (2) but breaks
+   (1): the overlay stops at the keyboard and the live page shows through the
+   strip above it. So the element stays full-screen for the dim, and expresses
+   the visible area through its PADDING. The card is a flex child capped at
+   max-height:100%, so it centres and sizes against the content box — the
+   visible area — while the background stays covered edge to edge.
+
+   Padding also carries the safe-area insets: backdrops portal to document.body
+   to dodge the iOS fixed-in-overflow bug (AGENTS.md invariant #2), so they sit
+   outside AppShell and inherit none of its safe-area handling. Under
+   viewport-fit=cover the viewport runs under the status bar, which would
+   otherwise hide the card's header. */
 .modal-backdrop {
   position: fixed !important;
-  top: var(--visual-viewport-offsetTop, 0px) !important;
-  height: var(--visual-viewport-height, 100dvh) !important;
+  top: 0 !important;
   left: 0 !important;
   right: 0 !important;
+  height: 100dvh !important;
   overflow-x: hidden !important;
   overscroll-behavior: contain !important;
-  /* Backdrops portal to document.body, so they sit OUTSIDE AppShell and
-     inherit none of its safe-area padding. Under viewport-fit=cover the
-     viewport runs under the status bar and home indicator, so without
-     this the centred card's top edge lands behind the status bar. */
-  padding-top: calc(16px + env(safe-area-inset-top, 0px)) !important;
-  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+  padding-top: calc(
+    16px + env(safe-area-inset-top, 0px) + var(--visual-viewport-offsetTop, 0px)
+  ) !important;
+  padding-bottom: calc(
+    16px + env(safe-area-inset-bottom, 0px) + var(--keyboard-inset, 0px)
+  ) !important;
   padding-left: calc(16px + env(safe-area-inset-left, 0px)) !important;
   padding-right: calc(16px + env(safe-area-inset-right, 0px)) !important;
 }

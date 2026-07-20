@@ -77,6 +77,37 @@ The media query no longer declares `padding` at all — a flat shorthand there
 would silently reset all four insets, so a comment marks the omission as
 deliberate.
 
+## Third cause, found on second retest: the overlay had two jobs
+
+With the card finally sized correctly, the live page showed through the strip
+between the card and the keyboard — undimmed, unblurred.
+
+The backdrop element was doing two things that want different boxes: dimming the
+page (wants the whole screen, always) and defining the box the card is centred
+and capped in (wants only the keyboard-free area). Sizing the element to the
+visual viewport served the second and quietly broke the first. Each of the two
+earlier fixes had pushed it further in that direction, so this was self-inflicted
+— worth recording, because the symptom looked like a fresh bug rather than the
+consequence it was.
+
+The fix separates the two **without splitting the DOM**: the element stays
+full-screen for the dim, and expresses the visible area as *padding* instead.
+The card is a flex child capped at `max-height: 100%`, so it centres and sizes
+against the content box while the background stays covered edge to edge.
+`--keyboard-inset` (new, from `useVisualViewportVars`) carries the keyboard's
+height, derived from the gap between the layout and visual viewports.
+
+**Rejected: a nested wrapper** — full-screen dim on the outside, visible-area
+flex box inside. Structurally the more obvious expression of "two jobs, two
+boxes", and it was the first thing tried. It relocates what `.modal-backdrop >
+div` selects, which is load-bearing for the card sizing rule and for AppShell's
+scroll-lock MutationObserver. Padding achieves the same geometry with no DOM
+change and nothing to re-point.
+
+**Rejected: `height: 100dvh` with the card offset by margin** — same geometry,
+but flex centring stops being centring, so short modals would need a separate
+code path from tall ones.
+
 ## Scope
 
 No other modal declares its own height cap, so `Dialog` plus the one
