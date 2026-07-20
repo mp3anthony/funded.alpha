@@ -94,14 +94,14 @@ export default function BillCard({
 
   return (
     <>
-      <button 
+      <button
         onClick={() => setIsDetailOpen(true)}
-        className="w-full text-left rounded-2xl bg-surface border border-border flex hover:border-primary/30 hover:bg-surface-raised transition-all group focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background p-4 items-center gap-3"
+        className="w-full text-left border-t border-border flex items-center gap-3 py-3 group hover:bg-surface/40 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset rounded-sm"
       >
-      {/* Leading assignee avatar — spans both text rows */}
+      {/* Leading assignee chip — small identity cue at hairline-row scale */}
       {assignee && (
         <div
-          className="shrink-0 flex h-14 w-14 items-center justify-center overflow-hidden rounded-lg bg-surface-elevated text-base font-bold text-foreground border border-primary shadow-sm"
+          className="shrink-0 flex h-7 w-7 items-center justify-center overflow-hidden rounded-lg bg-surface-elevated text-[11px] font-bold text-foreground border border-primary"
           title={`Assignee: ${assignee.name}`}
         >
           {assignee.avatar_url ? (
@@ -116,33 +116,29 @@ export default function BillCard({
         </div>
       )}
 
-      {/* Right column: name + amount over due date + tap-for-more */}
-      <div className="flex flex-col flex-1 min-w-0 gap-2">
-        {/* Row 1: Name & Amount */}
-        <div className="flex items-center justify-between w-full gap-3">
-          <h3 className="font-body font-semibold text-lg text-foreground tracking-wide truncate">
-            {bill.name}
-          </h3>
-          <span className="shrink-0 font-mono font-extrabold text-primary tracking-tight text-2xl">
-            ${formattedAmount}
-          </span>
-        </div>
+      {/* Middle: name over due date */}
+      <div className="flex flex-col flex-1 min-w-0">
+        <span className="font-body font-semibold text-[15px] text-foreground truncate">
+          {bill.name}
+        </span>
+        <span
+          className={`font-mono text-[10px] uppercase font-medium tracking-wider mt-0.5 transition-colors ${
+            isUrgent ? "text-[#ff4500]" : "text-muted"
+          }`}
+        >
+          DUE {dueDateDisplay}
+        </span>
+      </div>
 
-        {/* Row 2: Due Date · Tap for more */}
-        <div className="flex w-full items-center justify-between gap-2">
-          <span
-            className={`min-w-0 truncate font-mono text-xs uppercase font-medium transition-colors ${
-              isUrgent ? "text-[#ff4500]" : "text-muted"
-            }`}
-          >
-            DUE {dueDateDisplay}
-          </span>
-
-          <span className="shrink-0 flex items-center gap-1 text-[9px] font-semibold text-muted/60 uppercase tracking-widest group-hover:text-primary transition-colors">
-            Tap for more
-            <span aria-hidden="true">›</span>
-          </span>
-        </div>
+      {/* Right: amount over tap-for-more hint */}
+      <div className="flex flex-col items-end shrink-0">
+        <span className="font-mono font-extrabold text-primary tracking-tight text-lg">
+          ${formattedAmount}
+        </span>
+        <span className="flex items-center gap-1 text-[9px] font-semibold text-muted/60 uppercase tracking-widest group-hover:text-primary transition-colors mt-0.5">
+          Tap for more
+          <span aria-hidden="true">›</span>
+        </span>
       </div>
       </button>
 

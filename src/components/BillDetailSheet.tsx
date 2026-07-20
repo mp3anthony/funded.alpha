@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useEffect } from "react";
-import { createPortal } from "react-dom";
-import { X, Calendar, AlertTriangle } from "lucide-react";
+import { Calendar, AlertTriangle } from "lucide-react";
 import { useApp, type Bill, type BillSplit, type Member } from "@/context/AppContext";
+import Dialog, { DialogSection } from "@/components/ui/Dialog";
 
 interface BillDetailSheetProps {
   isOpen: boolean;
@@ -26,17 +25,6 @@ export default function BillDetailSheet({
 }: BillDetailSheetProps) {
   const { isJointFund, markAsPaid, markAsUnpaid, togglePauseBill } = useApp();
 
-  useEffect(() => {
-    if (!isOpen) return;
-    document.body.classList.add("modal-open");
-    return () => {
-      const activeModals = document.querySelectorAll(".modal-backdrop");
-      if (activeModals.length <= 1) {
-        document.body.classList.remove("modal-open");
-      }
-    };
-  }, [isOpen]);
-
   if (!isOpen || !bill) return null;
 
   // Find assignee
@@ -54,30 +42,65 @@ export default function BillDetailSheet({
     maximumFractionDigits: 2,
   });
 
-  if (typeof document === "undefined") return null;
+  return (
+    <Dialog
+      open={isOpen}
+      onClose={onClose}
+      title="Bill Details"
+      footer={
+        <div className="w-full flex flex-col space-y-3">
+          {bill.status === "Paid" ? (
+            <button
+              onClick={() => {
+                markAsUnpaid(bill);
+                onClose();
+              }}
+              className="w-full rounded-[2px] py-3.5 bg-accent/20 text-accent border border-accent/30 font-heading font-bold uppercase tracking-wider text-xs hover:bg-accent hover:text-foreground transition-all active:scale-[0.98] cursor-pointer"
+            >
+              Mark as Unpaid
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                markAsPaid(bill);
+                onClose();
+              }}
+              className="w-full rounded-[2px] py-3.5 bg-emerald-500/20 text-emerald-500 border border-emerald-500/30 font-heading font-bold uppercase tracking-wider text-xs hover:bg-emerald-500 hover:text-foreground transition-all active:scale-[0.98] cursor-pointer"
+            >
+              Mark as Paid
+            </button>
+          )}
 
-  return createPortal(
-    <div className="fixed inset-0 z-[100] modal-backdrop flex items-center justify-center p-4 bg-foreground/20 dark:bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-      {/* Backdrop overlay */}
-      <div className="absolute inset-0" onClick={onClose} />
-
-      {/* Sheet Content */}
-      <div className="relative w-full max-w-md max-h-[90dvh] bg-surface border border-border rounded-2xl flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-250">
-        
-        {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-surface/90 px-6 py-4 backdrop-blur">
-          <h2 className="font-heading text-xl font-bold text-foreground">Bill Details</h2>
-          <button 
-            onClick={onClose}
-            className="rounded-full p-2 text-muted hover:bg-white/5 hover:text-foreground transition-colors focus:outline-none"
-          >
-            <X size={20} />
-          </button>
+          <div className="flex space-x-2 w-full">
+            <button
+              onClick={onDelete}
+              className="flex-1 rounded-[2px] py-3 bg-destructive/15 text-destructive border border-destructive/20 font-heading font-bold uppercase tracking-wider text-[10px] hover:bg-destructive hover:text-foreground transition-all active:scale-[0.98] cursor-pointer"
+            >
+              Delete
+            </button>
+            <button
+              onClick={onEdit}
+              className="flex-1 rounded-[2px] py-3 bg-primary text-primary-fg font-heading font-bold uppercase tracking-wider text-[10px] hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer"
+            >
+              Edit
+            </button>
+            {bill.is_recurring && (
+              <button
+                onClick={() => {
+                  togglePauseBill(bill.id, !bill.is_paused);
+                }}
+                className="flex-1 rounded-[2px] py-3 bg-surface-elevated text-foreground border border-border font-heading font-bold uppercase tracking-wider text-[10px] hover:bg-white/10 active:scale-[0.98] transition-all cursor-pointer"
+              >
+                {bill.is_paused ? "Resume" : "Pause"}
+              </button>
+            )}
+          </div>
         </div>
+      }
+    >
+      {/* Content Body */}
+      <div className="space-y-6">
 
-        {/* Content Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
-          
           {/* Bill Title, Badges & Amount */}
           <div className="flex flex-col space-y-4">
             
@@ -146,12 +169,10 @@ export default function BillDetailSheet({
 
           {/* Splits Breakdown */}
           <div className="space-y-3">
-            <h4 className="font-heading text-sm font-semibold text-subtle uppercase tracking-wider">
-              Paid By
-            </h4>
+            <DialogSection label="Paid By" />
 
             {splits.length === 0 ? (
-              <div className="flex items-center space-x-2.5 p-3.5 bg-surface-raised rounded-xl border border-border">
+              <div className="flex items-center space-x-2.5 p-3.5 bg-surface-raised rounded-[2px] border border-border">
                 {isJointFund ? (
                   <>
                     <div className="h-2 w-2 rounded-full bg-primary animate-pulse shrink-0" />
@@ -173,7 +194,7 @@ export default function BillDetailSheet({
                   return (
                     <div 
                       key={split.id}
-                      className={`flex items-center justify-between p-3 rounded-xl bg-surface-raised border border-border ${
+                      className={`flex items-center justify-between p-3 rounded-[2px] bg-surface-raised border border-border ${
                         split.is_assignee ? "border-l-2 border-l-primary" : ""
                       }`}
                     >
@@ -210,72 +231,15 @@ export default function BillDetailSheet({
 
           {/* Notes Section */}
           {bill.notes && (
-            <div className="space-y-2 border-t border-border pt-4">
-              <h4 className="font-heading text-sm font-semibold text-subtle uppercase tracking-wider">
-                Notes
-              </h4>
-              <p className="text-sm text-muted bg-surface p-3 rounded-xl border border-border-strong font-mono leading-relaxed whitespace-pre-wrap">
+            <div className="space-y-2 pt-2">
+              <DialogSection label="Notes" />
+              <p className="text-sm text-muted bg-surface p-3 rounded-[2px] border border-border-strong font-mono leading-relaxed whitespace-pre-wrap">
                 {bill.notes}
               </p>
             </div>
           )}
 
-        </div>
-
-        <div 
-          style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1rem)" }}
-          className="sticky bottom-0 z-10 border-t border-border bg-surface/95 px-6 pt-4 pb-4 backdrop-blur flex flex-col space-y-3 shrink-0"
-        >
-          {bill.status === "Paid" ? (
-            <button
-              onClick={() => {
-                markAsUnpaid(bill);
-                onClose();
-              }}
-              className="w-full rounded-xl py-3.5 bg-accent/20 text-accent border border-accent/30 font-heading font-bold uppercase tracking-wider text-xs hover:bg-accent hover:text-foreground transition-all active:scale-[0.98] cursor-pointer"
-            >
-              Mark as Unpaid
-            </button>
-          ) : (
-            <button
-              onClick={() => {
-                markAsPaid(bill);
-                onClose();
-              }}
-              className="w-full rounded-xl py-3.5 bg-emerald-500/20 text-emerald-500 border border-emerald-500/30 font-heading font-bold uppercase tracking-wider text-xs hover:bg-emerald-500 hover:text-foreground transition-all active:scale-[0.98] cursor-pointer"
-            >
-              Mark as Paid
-            </button>
-          )}
-
-          <div className="flex space-x-2 w-full">
-            <button
-              onClick={onDelete}
-              className="flex-1 rounded-xl py-3 bg-destructive/15 text-destructive border border-destructive/20 font-heading font-bold uppercase tracking-wider text-[10px] hover:bg-destructive hover:text-foreground transition-all active:scale-[0.98] cursor-pointer"
-            >
-              Delete
-            </button>
-            <button
-              onClick={onEdit}
-              className="flex-1 rounded-xl py-3 bg-primary text-primary-fg font-heading font-bold uppercase tracking-wider text-[10px] hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer"
-            >
-              Edit
-            </button>
-            {bill.is_recurring && (
-              <button
-                onClick={() => {
-                  togglePauseBill(bill.id, !bill.is_paused);
-                }}
-                className="flex-1 rounded-xl py-3 bg-surface-elevated text-foreground border border-border font-heading font-bold uppercase tracking-wider text-[10px] hover:bg-white/10 active:scale-[0.98] transition-all cursor-pointer"
-              >
-                {bill.is_paused ? "Resume" : "Pause"}
-              </button>
-            )}
-          </div>
-        </div>
-
       </div>
-    </div>,
-    document.body
+    </Dialog>
   );
 }

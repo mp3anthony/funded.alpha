@@ -46,43 +46,39 @@ export const ActiveGoalsCard = React.memo(function ActiveGoalsCard({
   }, [funds]);
 
   return (
-    <div className={`bg-surface border border-border rounded-2xl p-6 flex flex-col shadow-xl transition-all duration-300 hover:border-white/20 ${isMinimised ? "h-fit" : "h-full"}`}>
-      {/* Header */}
-      <div className={`flex items-center justify-between gap-3 ${isMinimised ? "" : "mb-5"}`}>
-        <h3 className="font-heading font-bold text-sm sm:text-base text-foreground tracking-wide flex items-start gap-2 min-w-0">
-          <Target className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-          <span className="break-words">Savings Goals</span>
-        </h3>
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          <Link
-            href="/funds"
-            prefetch={false}
-            className="text-[10px] font-heading font-bold uppercase tracking-wider text-primary hover:text-foreground transition-colors flex items-center gap-1 group whitespace-nowrap"
-          >
-            <span>View All</span>
-            <ArrowUpRight className="h-3 w-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-          </Link>
-          <button
-            onClick={handleToggle}
-            className="text-muted hover:text-foreground transition-colors p-1 flex items-center justify-center focus:outline-none"
-            aria-label={isMinimised ? "Expand Savings Goals" : "Minimize Savings Goals"}
-          >
-            {isMinimised ? (
-              <ChevronDown className="h-4 w-4" />
-            ) : (
-              <ChevronUp className="h-4 w-4" />
-            )}
-          </button>
-        </div>
+    <div className="flex flex-col">
+      {/* Header — editorial section with lime rule */}
+      <div className={`flex items-center gap-3 ${isMinimised ? "" : "mb-4"}`}>
+        <span className="font-heading font-bold text-[15px] text-foreground shrink-0">Savings Goals</span>
+        <span className="h-0.5 flex-1 rounded-sm" style={{ background: "linear-gradient(90deg, var(--color-primary), transparent)" }} />
+        <Link
+          href="/funds"
+          prefetch={false}
+          className="text-[10px] font-heading font-bold uppercase tracking-wider text-primary hover:text-foreground transition-colors flex items-center gap-1 group whitespace-nowrap shrink-0"
+        >
+          <span>View All</span>
+          <ArrowUpRight className="h-3 w-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+        </Link>
+        <button
+          onClick={handleToggle}
+          className="text-subtle hover:text-foreground transition-colors flex items-center justify-center focus:outline-none shrink-0"
+          aria-label={isMinimised ? "Expand Savings Goals" : "Minimize Savings Goals"}
+        >
+          {isMinimised ? (
+            <ChevronDown className="h-4 w-4" />
+          ) : (
+            <ChevronUp className="h-4 w-4" />
+          )}
+        </button>
       </div>
 
       {/* Content */}
       {!isMinimised && (
-        <div className="flex-1 flex flex-col justify-center">
+        <div className="flex flex-col">
           {activeGoalsList.length === 0 ? (
             <div className="py-8 text-center flex flex-col items-center justify-center space-y-2.5">
               <div className="p-3 bg-foreground/5 rounded-full border border-border-strong">
-                <Target className="h-6 w-6 text-neutral-600" />
+                <Target className="h-6 w-6 text-subtle" />
               </div>
               <div className="space-y-1">
                 <p className="text-sm font-semibold text-muted">No active goals</p>

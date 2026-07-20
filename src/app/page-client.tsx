@@ -62,19 +62,16 @@ export default function HomeClient() {
   };
 
   return (
-    <div className="flex-1 w-full max-w-7xl mx-auto px-4 pt-4 pb-8 space-y-6">
-      <PageHeader
-        title="Dashboard"
-        subtitle="Your household financial overview"
-      />
+    <div className="flex-1 w-full max-w-2xl lg:max-w-4xl mx-auto px-6 pt-4 pb-10">
+      <PageHeader title="Dashboard" />
 
-      {/* Main Grid Layout */}
-      <div className="space-y-6">
-        {/* Health Score Card - Full Width */}
+      {/* Editorial sections */}
+      <div className="space-y-9 pt-2">
+        {/* Health Score — page anchor */}
         <HealthScoreCard />
 
-        {/* Two-Column Mid Row (Upcoming Bills & Active Goals) */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Bills & Goals */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-9 lg:gap-8">
           <div className="lg:col-span-2">
             <UpcomingBillsCard
               bills={bills}

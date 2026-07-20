@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Plus, User, Trash2, CheckCircle2, AlertCircle, Clock, PiggyBank, DollarSign, ChevronDown, ChevronRight } from "lucide-react";
+import { Plus, Trash2, CheckCircle2, Clock, ChevronDown, ChevronUp } from "lucide-react";
 import { useApp, useCurrentUser, type PaySchedule, type PayHistory } from "@/context/AppContext";
 import AddPayScheduleSheet from "@/components/AddPayScheduleSheet";
 import EnterPayAmountModal from "@/components/EnterPayAmountModal";
@@ -9,6 +9,7 @@ import PayHistoryCard from "@/components/PayHistoryCard";
 import SurplusSuggestionModal from "@/components/SurplusSuggestionModal";
 import PayScheduleDetailSheet from "@/components/PayScheduleDetailSheet";
 import PageHeader from "@/components/PageHeader";
+import SectionHeader from "@/components/ui/SectionHeader";
 
 export default function PaydayClient() {
   const { paySchedules, payHistory, householdMembers, deletePaySchedule, logPay, calculateAveragePay, addToGoal, isJointFund, householdContributions, checkAndApplyRules, applyRuleAllocation, funds, autoLogMissedPays, confirmAndUpdatePay } = useApp();
@@ -215,136 +216,130 @@ export default function PaydayClient() {
       />
 
       {/* Upcoming Pays */}
-      <div className="space-y-4">
-        <h2 className="text-base font-bold text-subtle uppercase tracking-wider px-1 font-heading">
-          Upcoming Pays
-        </h2>
+      <div>
+        <SectionHeader title="Upcoming Pays" count={paySchedules.length} />
 
         {paySchedules.length === 0 ? (
-          <div className="bg-surface border border-border rounded-2xl p-10 text-center shadow-sm">
-            <DollarSign className="h-10 w-10 text-muted mx-auto mb-3" />
-            <p className="text-sm font-semibold text-muted">No pay schedules active.</p>
-            <p className="text-xs text-subtle mt-1">Create a schedule to automate or log household income.</p>
+          <div className="py-10 text-center">
+            <p className="text-muted font-mono text-sm">No pay schedules active.</p>
+            <p className="text-subtle text-xs mt-1 font-body">
+              Create a schedule to automate or log household income.
+            </p>
           </div>
         ) : (
-          <div className="rounded-2xl bg-surface border border-border shadow-sm overflow-hidden">
-            <div className="divide-y divide-border-strong">
-              {sortedSchedules.map((schedule) => {
-                const member = householdMembers.find((m) => String(m.id) === String(schedule.member_id));
-                const memberName = member ? member.name : "Unknown Member";
-                const countdown = getCountdown(schedule);
-                const isReady = isLoggable(schedule);
+          <div className="flex flex-col">
+            {sortedSchedules.map((schedule) => {
+              const member = householdMembers.find((m) => String(m.id) === String(schedule.member_id));
+              const memberName = member ? member.name : "Unknown Member";
+              const countdown = getCountdown(schedule);
+              const isReady = isLoggable(schedule);
 
-                const formattedAmount = schedule.is_fixed_amount && schedule.amount
-                  ? `$${Number(schedule.amount).toLocaleString("en-US", { minimumFractionDigits: 2 })}`
-                  : "Variable";
+              const formattedAmount = schedule.is_fixed_amount && schedule.amount
+                ? `$${Number(schedule.amount).toLocaleString("en-US", { minimumFractionDigits: 2 })}`
+                : "Variable";
 
-                const CountdownIcon = countdown.icon;
+              const CountdownIcon = countdown.icon;
 
-                return (
-                  <div
-                    key={schedule.id}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => {
+              return (
+                <div
+                  key={schedule.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => {
+                    setSelectedSchedule(schedule);
+                    setIsDetailOpen(true);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
                       setSelectedSchedule(schedule);
                       setIsDetailOpen(true);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        setSelectedSchedule(schedule);
-                        setIsDetailOpen(true);
-                      }
-                    }}
-                    className="flex flex-col gap-3 p-4 hover:bg-surface-raised transition-all cursor-pointer group"
-                  >
-                    {/* Top zone: avatar · name/amount + freq/countdown · delete */}
-                    <div className="flex items-center gap-3">
-                      {/* Leading avatar */}
-                      <div className="shrink-0 flex h-14 w-14 items-center justify-center overflow-hidden rounded-lg bg-surface-elevated border border-primary text-base font-bold text-foreground">
-                        {member?.avatar_url ? (
-                          <img src={member.avatar_url} alt={memberName} className="h-full w-full object-cover" />
-                        ) : (
-                          member?.avatar || memberName.charAt(0).toUpperCase()
-                        )}
+                    }
+                  }}
+                  className="border-t border-border hover:bg-surface/40 transition-colors cursor-pointer group focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset rounded-sm"
+                >
+                  {/* Info row: avatar · name/amount + freq/countdown · delete */}
+                  <div className="flex items-center gap-3 py-3">
+                    {/* Square assignee avatar with lime border */}
+                    <div className="shrink-0 flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg bg-surface-elevated border border-primary text-sm font-bold text-foreground">
+                      {member?.avatar_url ? (
+                        <img src={member.avatar_url} alt={memberName} className="h-full w-full object-cover" />
+                      ) : (
+                        member?.avatar || memberName.charAt(0).toUpperCase()
+                      )}
+                    </div>
+
+                    {/* Middle: name+amount over frequency+countdown */}
+                    <div className="flex flex-col flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <h3 className="font-body font-semibold text-[15px] text-foreground truncate">
+                          {memberName}
+                        </h3>
+                        <span className={`shrink-0 font-mono font-extrabold tracking-tight text-lg ${schedule.is_fixed_amount ? "text-primary" : "text-muted"}`}>
+                          {formattedAmount}
+                        </span>
                       </div>
 
-                      {/* Right column: name+amount over frequency+countdown */}
-                      <div className="flex flex-col flex-1 min-w-0 gap-2">
-                        {/* Row 1: Name & Amount */}
-                        <div className="flex items-center justify-between gap-2">
-                          <h3 className="font-body font-semibold text-lg text-foreground truncate">
-                            {memberName}
-                          </h3>
-                          <span className={`shrink-0 font-mono font-extrabold tracking-tight text-xl ${schedule.is_fixed_amount ? "text-primary" : "text-muted"}`}>
-                            {formattedAmount}
-                          </span>
-                        </div>
-
-                        {/* Row 2: Frequency & Countdown badge */}
-                        <div className="flex w-full items-center justify-between gap-2">
-                          <span className="min-w-0 truncate font-mono text-xs uppercase text-muted">
-                            {schedule.frequency}
-                          </span>
-                          <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border shrink-0 ${countdown.color}`}>
-                            <CountdownIcon size={12} className="shrink-0" />
-                            <span>{countdown.text}</span>
-                          </div>
-                        </div>
+                      <div className="flex items-center justify-between gap-2 mt-0.5">
+                        <span className="min-w-0 truncate font-mono text-[10px] uppercase tracking-wider text-muted">
+                          {schedule.frequency}
+                        </span>
+                        <span className={`flex items-center gap-1 shrink-0 font-mono text-[10px] uppercase font-semibold tracking-wider ${isReady ? "text-primary" : "text-muted"}`}>
+                          <CountdownIcon size={11} className="shrink-0" />
+                          {countdown.text}
+                        </span>
                       </div>
+                    </div>
 
-                      {/* Delete button */}
+                    {/* Delete button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteSchedule(schedule);
+                      }}
+                      className="shrink-0 p-1.5 text-muted hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors cursor-pointer"
+                      title="Delete Schedule"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+
+                  {/* Log-Pay CTA — only shown when pay is due */}
+                  {isReady && (
+                    <div className="pb-3">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDeleteSchedule(schedule);
+                          setActiveVariableSchedule(schedule);
                         }}
-                        className="shrink-0 p-1.5 text-muted hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors cursor-pointer"
-                        title="Delete Schedule"
+                        className="w-full py-2.5 rounded-xl font-heading text-xs font-bold uppercase bg-primary text-primary-fg hover:brightness-110 active:scale-[0.98] cursor-pointer transition-all"
                       >
-                        <Trash2 size={14} />
+                        {schedule.is_fixed_amount ? "Log Pay" : "Enter Pay Amount"}
                       </button>
                     </div>
-
-                    {/* Log-Pay CTA — only shown when pay is due */}
-                    {isReady && (
-                      <div className="pt-3 mt-1 border-t border-border-strong">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setActiveVariableSchedule(schedule);
-                          }}
-                          className="w-full py-2.5 rounded-xl font-heading text-xs font-bold uppercase bg-primary text-primary-fg hover:brightness-110 active:scale-[0.98] cursor-pointer transition-all"
-                        >
-                          {schedule.is_fixed_amount ? "Log Pay" : "Enter Pay Amount"}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
 
       {/* Recent Pay History */}
-      <div className="space-y-4">
-        <h2 className="text-base font-bold text-subtle uppercase tracking-wider px-1 font-heading">
-          Recent Pay History
-        </h2>
+      <div>
+        <SectionHeader title="Recent Pay History" />
 
         {payHistory.length === 0 ? (
-          <div className="bg-surface border border-border rounded-2xl p-10 text-center shadow-sm">
-            <PiggyBank className="h-10 w-10 text-muted mx-auto mb-3" />
-            <p className="text-sm font-semibold text-muted">No history logged yet.</p>
-            <p className="text-xs text-subtle mt-1">Logged payday transactions will appear here.</p>
+          <div className="py-10 text-center">
+            <p className="text-muted font-mono text-sm">No history logged yet.</p>
+            <p className="text-subtle text-xs mt-1 font-body">
+              Logged payday transactions will appear here.
+            </p>
           </div>
         ) : (
           <>
-            {/* Contributor filter */}
-            <div className="flex flex-col gap-3 px-1">
+            {/* Contributor filter — hairline underline select */}
+            <div className="px-1 mb-4 max-w-xs">
               <div className="space-y-1.5">
                 <label htmlFor="contributor-filter" className="text-[10px] font-bold text-muted uppercase tracking-wider ml-1">
                   Contributor
@@ -354,7 +349,7 @@ export default function PaydayClient() {
                     id="contributor-filter"
                     value={selectedContributor}
                     onChange={(e) => setSelectedContributor(e.target.value)}
-                    className="w-full rounded-xl border border-primary/30 bg-background px-2 py-2 text-[10px] font-semibold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-6"
+                    className="w-full border-b border-border bg-transparent px-1 py-1.5 text-[11px] font-semibold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-5"
                   >
                     <option value="All">All Contributors</option>
                     {contributorOptions.map((m) => (
@@ -371,60 +366,65 @@ export default function PaydayClient() {
             </div>
 
             {isEmpty && selectedContributor !== "All" ? (
-              <div className="bg-surface border border-border rounded-2xl p-10 text-center shadow-sm">
-                <PiggyBank className="h-10 w-10 text-muted mx-auto mb-3" />
-                <p className="text-sm font-semibold text-muted">
+              <div className="py-10 text-center">
+                <p className="text-muted font-mono text-sm">
                   No pays logged for {householdMembers.find((m) => String(m.id) === String(selectedContributor))?.name || "this contributor"} yet.
                 </p>
-                <p className="text-xs text-subtle mt-1">Logged payday transactions will appear here.</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-6">
                 {visibleGroups.map(([memberId, histories]) => {
                   const member = householdMembers.find((m) => String(m.id) === String(memberId));
                   const memberName = member ? member.name : "Unknown Member";
                   // True means collapsed (minimized). Defaults to collapsed; force-expanded when filtered to one member.
                   const isMinimized = selectedContributor === "All" ? (minimizedMembers[memberId] ?? true) : false;
 
-                  const headerContent = (
-                    <div className="flex items-center gap-2.5">
-                      <span className="text-base font-semibold text-foreground">{memberName}'s History</span>
-                      <span className="text-xs text-muted font-mono bg-white/5 px-2 py-0.5 rounded-full">{histories.length}</span>
-                    </div>
+                  // Editorial subsection header: Syne 13px + mono count + lime fade-rule.
+                  const headerInner = (
+                    <>
+                      <span className="font-heading font-bold text-[13px] text-foreground shrink-0 group-hover:text-primary transition-colors">
+                        {memberName}&apos;s History
+                      </span>
+                      <span className="font-mono text-[11px] font-semibold text-subtle shrink-0">
+                        ({histories.length})
+                      </span>
+                      <span
+                        className="h-0.5 flex-1 rounded-sm"
+                        style={{ background: "linear-gradient(90deg, var(--color-primary), transparent)" }}
+                      />
+                    </>
                   );
 
                   return (
-                    <div key={memberId} className="bg-surface border border-border rounded-2xl overflow-hidden shadow-sm">
+                    <div key={memberId} className="flex flex-col">
                       {selectedContributor === "All" ? (
                         <button
                           onClick={() => toggleMemberHistory(memberId)}
-                          className="group w-full flex items-center justify-between p-3 hover:bg-white/5 transition-colors cursor-pointer"
+                          className="group flex items-center gap-3 w-full text-left px-1 focus:outline-none"
                         >
-                          {headerContent}
+                          {headerInner}
                           {isMinimized ? (
-                            <ChevronRight className="h-4 w-4 text-muted group-hover:text-foreground transition-colors" />
+                            <ChevronDown className="h-4 w-4 text-subtle group-hover:text-foreground transition-colors shrink-0" />
                           ) : (
-                            <ChevronDown className="h-4 w-4 text-muted group-hover:text-foreground transition-colors" />
+                            <ChevronUp className="h-4 w-4 text-subtle group-hover:text-foreground transition-colors shrink-0" />
                           )}
                         </button>
                       ) : (
-                        <div className="w-full flex items-center justify-between p-3">
-                          {headerContent}
+                        <div className="group flex items-center gap-3 w-full px-1">
+                          {headerInner}
                         </div>
                       )}
 
                       {!isMinimized && (
-                        <div className="p-4 pt-0 border-t border-border-strong">
-                          <div className="grid grid-cols-1 gap-3 pt-4">
-                            {histories.map((history) => (
-                              <PayHistoryCard
-                                key={history.id}
-                                history={history}
-                                onConfirmPending={handleConfirmPendingClick}
-                                hideMemberInfo={true}
-                              />
-                            ))}
-                          </div>
+                        <div className="flex flex-col mt-1">
+                          {histories.map((history) => (
+                            <PayHistoryCard
+                              key={history.id}
+                              history={history}
+                              onConfirmPending={handleConfirmPendingClick}
+                              hideMemberInfo={true}
+                            />
+                          ))}
                         </div>
                       )}
                     </div>

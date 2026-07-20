@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { Plus, X, ChevronDown, ChevronRight } from "lucide-react";
+import { Plus, X, ChevronDown, ChevronUp } from "lucide-react";
 import { useApp, useCurrentUser } from "@/context/AppContext";
 import AddBillSheet from "@/components/AddBillSheet";
 import BillCard from "@/components/BillCard";
@@ -199,7 +199,7 @@ export default function BillsClient() {
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="w-full rounded-xl border border-primary/30 bg-background px-2 py-2 text-[10px] font-semibold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-6"
+                className="w-full border-b border-border bg-transparent px-1 py-1.5 text-[11px] font-semibold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-5"
               >
                 <option value="All">All</option>
                 <option value="Subscriptions">Subscriptions</option>
@@ -226,7 +226,7 @@ export default function BillsClient() {
               <select
                 value={filter}
                 onChange={(e) => setFilter(e.target.value as "all" | "week" | "month" | "overdue")}
-                className="w-full rounded-xl border border-primary/30 bg-background px-2 py-2 text-[10px] font-semibold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-6"
+                className="w-full border-b border-border bg-transparent px-1 py-1.5 text-[11px] font-semibold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-5"
               >
                 <option value="all">All</option>
                 <option value="week">This Week</option>
@@ -249,7 +249,7 @@ export default function BillsClient() {
               <select
                 value={displayFrequency}
                 onChange={(e) => setDisplayFrequency(e.target.value as FrequencyType)}
-                className="w-full rounded-xl border border-primary/30 bg-background px-2 py-2 text-[10px] font-semibold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-6"
+                className="w-full border-b border-border bg-transparent px-1 py-1.5 text-[11px] font-semibold text-foreground focus:border-primary focus:outline-none appearance-none cursor-pointer pr-5"
               >
                 <option value="weekly">Weekly</option>
                 <option value="fortnightly">Fortnightly</option>
@@ -272,7 +272,7 @@ export default function BillsClient() {
             placeholder="Search bills by name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-background border border-primary/30 rounded-xl pl-4 pr-10 py-2.5 font-body text-sm placeholder:text-muted focus:outline-none focus:border-primary text-foreground"
+            className="w-full bg-transparent border-b border-border pl-1 pr-8 py-2 font-body text-sm placeholder:text-muted focus:outline-none focus:border-primary text-foreground"
           />
           {searchQuery && (
             <button
@@ -287,20 +287,17 @@ export default function BillsClient() {
 
       {/* Bills Scrollable Container */}
       <div className="space-y-3">
-        <div className="flex items-center justify-between px-1">
-          <h2 className="text-xs font-bold text-subtle capitalize tracking-wider">
-            Bills List
-          </h2>
+        <div className="flex items-center justify-end px-1">
           <button
             onClick={() => setIsEditCategoryOrderOpen(true)}
-            className="text-[10px] font-bold text-muted hover:text-foreground uppercase tracking-wider transition-colors"
+            className="text-[10px] font-heading font-bold text-muted hover:text-foreground uppercase tracking-wider transition-colors"
           >
             Edit Order
           </button>
         </div>
         {filteredBills.length === 0 ? (
-          <div className="bg-surface border border-border rounded-2xl p-8 text-center shadow-sm">
-            <p className="text-muted font-mono text-center py-4 text-sm">{emptyStateMessage}</p>
+          <div className="py-10 text-center">
+            <p className="text-muted font-mono text-sm">{emptyStateMessage}</p>
           </div>
         ) : (
           <div className="space-y-6">
@@ -314,23 +311,30 @@ export default function BillsClient() {
                 return a.localeCompare(b);
               })
               .map(([category, categoryBills]) => (
-              <div key={category} className="space-y-2">
+              <div key={category} className="flex flex-col">
                 <button
                   onClick={() => toggleCategory(category)}
-                  className="flex items-center gap-2 w-full text-left px-1 focus:outline-none group"
+                  className="flex items-center gap-3 w-full text-left px-1 focus:outline-none group"
                 >
-                  {!expandedCategories[category] ? (
-                    <ChevronRight className="h-4 w-4 text-muted group-hover:text-foreground transition-colors" />
+                  <span className="font-heading font-bold text-[15px] text-foreground shrink-0 group-hover:text-primary transition-colors">
+                    {category}
+                  </span>
+                  <span className="font-mono text-[11px] font-semibold text-subtle shrink-0">
+                    ({categoryBills.length})
+                  </span>
+                  <span
+                    className="h-0.5 flex-1 rounded-sm"
+                    style={{ background: "linear-gradient(90deg, var(--color-primary), transparent)" }}
+                  />
+                  {expandedCategories[category] ? (
+                    <ChevronUp className="h-4 w-4 text-subtle group-hover:text-foreground transition-colors shrink-0" />
                   ) : (
-                    <ChevronDown className="h-4 w-4 text-muted group-hover:text-foreground transition-colors" />
+                    <ChevronDown className="h-4 w-4 text-subtle group-hover:text-foreground transition-colors shrink-0" />
                   )}
-                  <h3 className="text-xs font-bold text-subtle uppercase tracking-wider group-hover:text-foreground transition-colors">
-                    {category} <span className="text-muted font-normal ml-1">({categoryBills.length})</span>
-                  </h3>
                 </button>
-                
+
                 {expandedCategories[category] && (
-                  <div className="grid grid-cols-1 gap-3">
+                  <div className="flex flex-col mt-1">
                     {categoryBills.map((bill) => (
                       <BillCard
                         key={bill.id}

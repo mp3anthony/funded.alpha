@@ -1,5 +1,16 @@
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 import { type Bill, type Fund, type PayHistory, type PaySchedule, type BillSplit } from "@/context/AppContext";
 import { type HouseholdContribution } from "@/types";
+
+/**
+ * className combiner for the editorial UI primitives — clsx for conditional
+ * joining, tailwind-merge to resolve conflicting Tailwind utilities so a
+ * caller's `className` override wins cleanly over a default.
+ */
+export function cn(...inputs: ClassValue[]): string {
+  return twMerge(clsx(inputs));
+}
 
 /**
  * Parses a date string robustly, handling both "YYYY-MM-DD" and natural date formats like "June 30, 2026".

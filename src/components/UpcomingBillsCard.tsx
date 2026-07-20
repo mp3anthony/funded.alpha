@@ -60,43 +60,39 @@ export const UpcomingBillsCard = React.memo(function UpcomingBillsCard({
   }, [bills]);
 
   return (
-    <div className={`bg-surface border border-border rounded-2xl p-6 flex flex-col shadow-xl transition-all duration-300 hover:border-border-strong ${isMinimised ? "h-fit" : "h-full"}`}>
-      {/* Header */}
-      <div className={`flex items-center justify-between gap-3 ${isMinimised ? "" : "mb-5"}`}>
-        <h3 className="font-heading font-bold text-sm sm:text-base text-foreground tracking-wide flex items-start gap-2 min-w-0">
-          <Calendar className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-          <span className="break-words">Upcoming Manual Payments</span>
-        </h3>
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          <Link
-            href="/bills"
-            prefetch={false}
-            className="text-[10px] font-heading font-bold uppercase tracking-wider text-primary hover:text-foreground transition-colors flex items-center gap-1 group whitespace-nowrap"
-          >
-            <span>View All <span className="hidden sm:inline">Bills</span></span>
-            <ArrowUpRight className="h-3 w-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-          </Link>
-          <button
-            onClick={handleToggle}
-            className="text-muted hover:text-foreground transition-colors p-1 flex items-center justify-center focus:outline-none"
-            aria-label={isMinimised ? "Expand Upcoming Manual Payments" : "Minimize Upcoming Manual Payments"}
-          >
-            {isMinimised ? (
-              <ChevronDown className="h-4 w-4" />
-            ) : (
-              <ChevronUp className="h-4 w-4" />
-            )}
-          </button>
-        </div>
+    <div className="flex flex-col">
+      {/* Header — editorial section with lime rule */}
+      <div className={`flex items-center gap-3 ${isMinimised ? "" : "mb-3"}`}>
+        <span className="font-heading font-bold text-[15px] text-foreground shrink-0">Upcoming Bills</span>
+        <span className="h-0.5 flex-1 rounded-sm" style={{ background: "linear-gradient(90deg, var(--color-primary), transparent)" }} />
+        <Link
+          href="/bills"
+          prefetch={false}
+          className="text-[10px] font-heading font-bold uppercase tracking-wider text-primary hover:text-foreground transition-colors flex items-center gap-1 group whitespace-nowrap shrink-0"
+        >
+          <span>View All</span>
+          <ArrowUpRight className="h-3 w-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+        </Link>
+        <button
+          onClick={handleToggle}
+          className="text-subtle hover:text-foreground transition-colors flex items-center justify-center focus:outline-none shrink-0"
+          aria-label={isMinimised ? "Expand Upcoming Bills" : "Minimize Upcoming Bills"}
+        >
+          {isMinimised ? (
+            <ChevronDown className="h-4 w-4" />
+          ) : (
+            <ChevronUp className="h-4 w-4" />
+          )}
+        </button>
       </div>
 
       {/* Content */}
       {!isMinimised && (
-        <div className="flex-1 flex flex-col justify-center">
+        <div className="flex flex-col">
           {upcomingBillsList.length === 0 ? (
             <div className="py-8 text-center flex flex-col items-center justify-center space-y-2.5">
               <div className="p-3 bg-foreground/5 rounded-full border border-border">
-                <Calendar className="h-6 w-6 text-neutral-600" />
+                <Calendar className="h-6 w-6 text-subtle" />
               </div>
               <div className="space-y-1">
                 <p className="text-sm font-semibold text-muted">No upcoming manual payments</p>
@@ -106,7 +102,7 @@ export const UpcomingBillsCard = React.memo(function UpcomingBillsCard({
               </div>
             </div>
           ) : (
-            <div className="divide-y divide-white/5 flex flex-col">
+            <div className="flex flex-col">
               {upcomingBillsList.map((bill) => {
                 // Calculate countdown
                 const today = new Date();
@@ -154,7 +150,7 @@ export const UpcomingBillsCard = React.memo(function UpcomingBillsCard({
                   <div
                     key={bill.id}
                     onClick={() => onBillClick(bill)}
-                    className="py-3.5 flex items-center justify-between hover:bg-foreground/5 -mx-4 px-4 rounded-xl cursor-pointer transition-all duration-200 group active:scale-[0.99]"
+                    className="py-3 flex items-center justify-between border-t border-border cursor-pointer transition-all duration-200 group active:scale-[0.99]"
                   >
                     <div className="flex flex-col min-w-0 pr-4">
                       <span className="font-body font-bold text-sm text-foreground truncate transition-colors">

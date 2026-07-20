@@ -254,15 +254,41 @@ body.modal-open {
   overscroll-behavior: none !important;
 }
 
-/* Base style for modal backdrops to position them relative to visual viewport */
+/* Modal backdrop.
+
+   The element has two jobs, and they want different boxes:
+     1. dim/blur the page — must cover the WHOLE screen, always;
+     2. define the box the card is centred and capped in — must be only the
+        part of the screen the keyboard isn't covering.
+
+   Sizing the element itself to the visual viewport satisfies (2) but breaks
+   (1): the overlay stops at the keyboard and the live page shows through the
+   strip above it. So the element stays full-screen for the dim, and expresses
+   the visible area through its PADDING. The card is a flex child capped at
+   max-height:100%, so it centres and sizes against the content box — the
+   visible area — while the background stays covered edge to edge.
+
+   Padding also carries the safe-area insets: backdrops portal to document.body
+   to dodge the iOS fixed-in-overflow bug (AGENTS.md invariant #2), so they sit
+   outside AppShell and inherit none of its safe-area handling. Under
+   viewport-fit=cover the viewport runs under the status bar, which would
+   otherwise hide the card's header. */
 .modal-backdrop {
   position: fixed !important;
-  top: var(--visual-viewport-offsetTop, 0px) !important;
-  height: var(--visual-viewport-height, 100dvh) !important;
+  top: 0 !important;
   left: 0 !important;
   right: 0 !important;
+  height: 100dvh !important;
   overflow-x: hidden !important;
   overscroll-behavior: contain !important;
+  padding-top: calc(
+    16px + env(safe-area-inset-top, 0px) + var(--visual-viewport-offsetTop, 0px)
+  ) !important;
+  padding-bottom: calc(
+    16px + env(safe-area-inset-bottom, 0px) + var(--keyboard-inset, 0px)
+  ) !important;
+  padding-left: calc(16px + env(safe-area-inset-left, 0px)) !important;
+  padding-right: calc(16px + env(safe-area-inset-right, 0px)) !important;
 }
 
 /* Limit modal content height and force scroll on mobile viewports */
@@ -272,7 +298,8 @@ body.modal-open {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    padding: 16px !important;
+    /* Padding intentionally NOT redeclared here — a flat `padding: 16px`
+       would reset the safe-area insets set on the base rule above. */
     overflow: hidden !important;
     overflow-x: hidden !important;
   }
@@ -281,10 +308,15 @@ body.modal-open {
   .modal-backdrop > form {
     width: 100% !important;
     max-width: 400px !important;
-    max-height: 85% !important;
-    max-height: 85dvh !important;
-    border-radius: 24px !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    /* Cap against the backdrop, not the screen. The backdrop is already
+       sized to --visual-viewport-height, so 100% shrinks with the iOS
+       keyboard; dvh does not (it tracks the layout viewport), which let
+       tall forms overflow a centred backdrop equally top and bottom. */
+    max-height: 100% !important;
+    /* Editorial turn-3: squared cards. Radius stays 2px and we do NOT
+       force a full border here — the Dialog card carries its own hairline
+       border + lime gradient top-edge, which a forced border would clobber. */
+    border-radius: 2px !important;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6) !important;
     overflow: hidden !important;
     margin: 0 auto !important;

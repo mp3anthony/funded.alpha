@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, Plus, Sparkles, AlertCircle } from "lucide-react";
+import { Plus, Sparkles, AlertCircle } from "lucide-react";
 import { useApp, useCurrentUser, type Member } from "@/context/AppContext";
 import { type ContributionRule, type HouseholdContribution } from "@/types";
 import RuleCard from "./RuleCard";
+import Dialog from "@/components/ui/Dialog";
 
 interface RulesSettingsSheetProps {
   isOpen: boolean;
@@ -36,17 +37,6 @@ export default function RulesSettingsSheet({
   const [actionTargetId, setActionTargetId] = useState("");
   const [amountToAdd, setAmountToAdd] = useState("");
   const [amountType, setAmountType] = useState<"fixed" | "percentage">("fixed");
-
-  useEffect(() => {
-    if (!isOpen) return;
-    document.body.classList.add("modal-open");
-    return () => {
-      const activeModals = document.querySelectorAll(".modal-backdrop");
-      if (activeModals.length <= 1) {
-        document.body.classList.remove("modal-open");
-      }
-    };
-  }, [isOpen]);
 
   useEffect(() => {
     if (editingRule) {
@@ -146,33 +136,27 @@ export default function RulesSettingsSheet({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] modal-backdrop flex items-end justify-center bg-foreground/20 dark:bg-black/80 backdrop-blur-sm md:items-stretch md:justify-end md:p-0 md:bg-foreground/20 dark:bg-foreground/20 dark:bg-black/80 animate-in fade-in duration-200">
-      {/* Overlay to close */}
-      <div className="absolute inset-0" onClick={onClose} />
-
-      {/* Sheet Content */}
-      <div className="relative w-full max-w-md max-h-[92dvh] md:h-screen md:max-h-screen bg-surface border border-border md:border-y-0 md:border-r-0 md:border-l rounded-t-3xl rounded-b-none md:rounded-none md:rounded-l-3xl flex flex-col shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-5 md:slide-in-from-right duration-250">
-        
-        {/* Header */}
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-surface/90 px-5 py-3 md:px-6 md:py-4 backdrop-blur">
-          <div>
-            <h2 className="font-heading text-lg font-bold text-foreground flex items-center gap-1.5">
-              <Sparkles size={18} className="text-primary animate-pulse" />
-              <span>Contribution Rules</span>
-            </h2>
-            <p className="text-[10px] text-muted font-body mt-0.5">
-              Automatically allocate excess pay when you earn above a threshold
-            </p>
-          </div>
+    <Dialog
+      open={isOpen}
+      onClose={onClose}
+      title="Contribution Rules"
+      icon={<Sparkles size={18} className="text-primary animate-pulse" />}
+      footer={
+        !isFormOpen ? (
           <button
-            onClick={onClose}
-            className="rounded-full p-2 text-muted hover:bg-white/5 hover:text-foreground transition-colors focus:outline-none"
+            onClick={() => setIsFormOpen(true)}
+            className="w-full py-3 md:py-3.5 bg-primary text-primary-fg rounded-[2px] font-heading text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer hover:brightness-110 active:scale-[0.98]"
           >
-            <X size={18} />
+            <Plus size={14} />
+            <span>Add automation rule</span>
           </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto">
+        ) : undefined
+      }
+    >
+      <p className="text-[11px] text-muted font-body -mt-1 mb-4">
+        Automatically allocate excess pay when you earn above a threshold
+      </p>
+      <div className="-mx-5">
           {/* Rule Form Panel Overlay */}
           {isFormOpen ? (
           <form onSubmit={handleSave} className="flex flex-col space-y-5 px-6 py-5 border-b border-border-strong bg-background/50">
@@ -188,7 +172,7 @@ export default function RulesSettingsSheet({
               <select
                 value={memberId}
                 onChange={(e) => setMemberId(e.target.value)}
-                className="w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+                className="w-full rounded-[2px] border border-border bg-surface px-4 py-2.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
                 required
               >
                 {householdMembers.map((m) => (
@@ -213,7 +197,7 @@ export default function RulesSettingsSheet({
                   min="0.01"
                   value={threshold}
                   onChange={(e) => setThreshold(e.target.value)}
-                  className="w-full bg-surface border border-border rounded-xl pl-6 pr-3 py-2.5 font-mono text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+                  className="w-full bg-surface border border-border rounded-[2px] pl-6 pr-3 py-2.5 font-mono text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
                   required
                 />
               </div>
@@ -228,7 +212,7 @@ export default function RulesSettingsSheet({
                 <select
                   value={actionType}
                   onChange={(e) => setActionType(e.target.value as any)}
-                  className="w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 appearance-none cursor-pointer pr-10"
+                  className="w-full rounded-[2px] border border-border bg-surface px-4 py-2.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 appearance-none cursor-pointer pr-10"
                 >
                   <option value="goal">Add to Goal</option>
                   <option value="contribution">Add to Contribution</option>
@@ -250,7 +234,7 @@ export default function RulesSettingsSheet({
                 <select
                   value={actionTargetId}
                   onChange={(e) => setActionTargetId(e.target.value)}
-                  className="w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+                  className="w-full rounded-[2px] border border-border bg-surface px-4 py-2.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
                   required
                 >
                   <option value="" disabled>Select goal...</option>
@@ -262,7 +246,7 @@ export default function RulesSettingsSheet({
                 </select>
               </div>
             ) : (
-              <div className="p-3 bg-surface border border-border-strong rounded-xl text-[11px] text-muted">
+              <div className="p-3 bg-surface border border-border-strong rounded-[2px] text-[11px] text-muted">
                 Action: Add excess money directly to my active Joint Fund contribution
               </div>
             )}
@@ -276,7 +260,7 @@ export default function RulesSettingsSheet({
                 <select
                   value={amountType}
                   onChange={(e) => setAmountType(e.target.value as any)}
-                  className="w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 appearance-none cursor-pointer pr-10"
+                  className="w-full rounded-[2px] border border-border bg-surface px-4 py-2.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 appearance-none cursor-pointer pr-10"
                 >
                   <option value="fixed">Fixed Dollar ($)</option>
                   <option value="percentage">Percentage (%)</option>
@@ -305,7 +289,7 @@ export default function RulesSettingsSheet({
                       min="0.01"
                       value={amountToAdd}
                       onChange={(e) => setAmountToAdd(e.target.value)}
-                      className="w-full bg-surface border border-border rounded-xl pl-6 pr-3 py-2.5 font-mono text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+                      className="w-full bg-surface border border-border rounded-[2px] pl-6 pr-3 py-2.5 font-mono text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
                       required
                     />
                   </>
@@ -319,7 +303,7 @@ export default function RulesSettingsSheet({
                       max="100"
                       value={amountToAdd}
                       onChange={(e) => setAmountToAdd(e.target.value)}
-                      className="w-full bg-surface border border-border rounded-xl pl-6 pr-10 py-2.5 font-mono text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+                      className="w-full bg-surface border border-border rounded-[2px] pl-6 pr-10 py-2.5 font-mono text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
                       required
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted font-mono text-xs">%</span>
@@ -348,14 +332,14 @@ export default function RulesSettingsSheet({
                   setIsFormOpen(false);
                   setEditingRule(null);
                 }}
-                className="flex-1 py-2.5 border border-border rounded-xl text-xs font-bold text-muted hover:text-foreground hover:bg-white/5 transition-all cursor-pointer uppercase tracking-wider"
+                className="flex-1 py-2.5 border border-border rounded-[2px] text-xs font-bold text-muted hover:text-foreground hover:bg-white/5 transition-all cursor-pointer uppercase tracking-wider"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={!isFormValid}
-                className={`flex-1 py-2.5 rounded-xl font-heading text-xs font-bold uppercase tracking-wider transition-all ${
+                className={`flex-1 py-2.5 rounded-[2px] font-heading text-xs font-bold uppercase tracking-wider transition-all ${
                   isFormValid
                     ? "bg-primary text-primary-fg hover:brightness-110 active:scale-95 cursor-pointer"
                     : "bg-surface-raised text-zinc-500 cursor-not-allowed"
@@ -374,7 +358,7 @@ export default function RulesSettingsSheet({
           </span>
 
           {rules.length === 0 ? (
-            <div className="py-8 text-center border border-dashed border-border rounded-xl bg-background/20">
+            <div className="py-8 text-center border border-dashed border-border rounded-[2px] bg-background/20">
               <AlertCircle className="h-6 w-6 text-muted mx-auto mb-2" />
               <p className="text-xs text-muted font-medium">No contribution rules set.</p>
               <p className="text-[10px] text-subtle mt-0.5">Automate excess pay allocation by setting a rule below.</p>
@@ -406,25 +390,7 @@ export default function RulesSettingsSheet({
             </div>
           )}
         </div>
-        </div>
-
-        {/* Footer Trigger to Add Rule */}
-        {!isFormOpen && (
-          <div 
-            style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)" }}
-            className="sticky bottom-0 border-t border-border bg-surface/95 px-5 pt-3 pb-3 md:px-6 md:pt-4 md:pb-4 backdrop-blur shrink-0"
-          >
-            <button
-              onClick={() => setIsFormOpen(true)}
-              className="w-full py-3 md:py-3.5 bg-primary text-primary-fg rounded-xl font-heading text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer hover:brightness-110 active:scale-[0.98]"
-            >
-              <Plus size={14} />
-              <span>Add automation rule</span>
-            </button>
-          </div>
-        )}
-
       </div>
-    </div>
+    </Dialog>
   );
 }
