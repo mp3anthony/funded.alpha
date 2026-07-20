@@ -53,6 +53,30 @@ sloppier cap than `max-h-[92dvh]` and looks like a tidy-up target. Both the
 dependency, because the correctness of `100%` here is entirely a property of the
 parent and is invisible at the call site.
 
+## Second cause, found on retest: safe-area insets
+
+The height fix alone left the card's top edge behind the status bar — visible
+even with no keyboard, which is what gave the second cause away. Two faults had
+been sharing one symptom, and the first fix removed the louder half.
+
+`viewportFit: 'cover'` (`layout.tsx`) runs the viewport under the status bar and
+home indicator. `AppShell` compensates throughout — header, scroll container,
+bottom nav all carry `env(safe-area-inset-*)`. But modal backdrops **portal to
+`document.body`** to dodge the iOS `position: fixed`-inside-`overflow: hidden`
+bug (AGENTS.md invariant #2), which puts them outside `AppShell` entirely, so
+they inherit none of it. The backdrop's flat `padding: 16px` therefore measured
+from the physical screen edge and parked the centred card under the status bar.
+
+This is the standing cost of that portal: **anything portalled to `body` must
+handle its own safe areas.** Worth checking first whenever a portalled surface
+looks slightly too high or too low.
+
+The insets go on the **base** rule, not the mobile media query, so notched
+tablets and landscape (where left/right insets are non-zero) are covered too.
+The media query no longer declares `padding` at all — a flat shorthand there
+would silently reset all four insets, so a comment marks the omission as
+deliberate.
+
 ## Scope
 
 No other modal declares its own height cap, so `Dialog` plus the one
