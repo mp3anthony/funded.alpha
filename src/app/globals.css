@@ -281,8 +281,11 @@ body.modal-open {
   .modal-backdrop > form {
     width: 100% !important;
     max-width: 400px !important;
-    max-height: 85% !important;
-    max-height: 85dvh !important;
+    /* Cap against the backdrop, not the screen. The backdrop is already
+       sized to --visual-viewport-height, so 100% shrinks with the iOS
+       keyboard; dvh does not (it tracks the layout viewport), which let
+       tall forms overflow a centred backdrop equally top and bottom. */
+    max-height: 100% !important;
     /* Editorial turn-3: squared cards. Radius stays 2px and we do NOT
        force a full border here — the Dialog card carries its own hairline
        border + lime gradient top-edge, which a forced border would clobber. */

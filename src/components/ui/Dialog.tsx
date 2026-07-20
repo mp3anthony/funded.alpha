@@ -22,6 +22,12 @@ import { cn } from "@/lib/utils";
      WebKit (see AGENTS.md invariant #2 and the pre-existing household
      modals that already portal for this reason).
 
+   The card's height cap is `max-h-full`, NOT a dvh value. globals.css
+   sizes .modal-backdrop to --visual-viewport-height, which shrinks when
+   the iOS keyboard opens; dvh tracks the layout viewport and does not.
+   A dvh cap therefore let tall forms grow past a centred backdrop and
+   spill out top AND bottom, with the body below never scrolling.
+
    The lime top-edge is an inner clipped bar (not a CSS border-top): the
    mobile globals.css rule forces `border: 1px … !important` on the card,
    which would otherwise overwrite a real border-top. An inner bar lives
@@ -75,7 +81,7 @@ export default function Dialog({
     >
       <div
         className={cn(
-          "relative bg-surface border border-border-strong rounded-[2px] w-full max-h-[92dvh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200",
+          "relative bg-surface border border-border-strong rounded-[2px] w-full max-h-full flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200",
           maxWidthClass
         )}
         onClick={(e) => e.stopPropagation()}
