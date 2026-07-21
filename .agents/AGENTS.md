@@ -72,9 +72,10 @@ Subagents never message me directly; they report back to the orchestrator only.
        was NOT touched unless I was told and agreed.
     5. **Review sign-off** — confirmation that "Code reviewed ✓, Docs reviewed ✓", per Code
        Reviewer's pass.
-    6. **Version impact** — the old and new version number per the Versioning table in README.md,
-       based on Investigator/Planner's bug-fix-vs-feature classification, and a note that it will
-       be applied at merge (see Completion & Deployment).
+    6. **Version impact** — a note that a version check will happen with me directly at merge time
+       (see the Version check step under Completion & Deployment), rather than a pre-decided number.
+       The Versioning table in README.md informs the suggested jump but is a loose guideline, not a
+       fixed value.
   I approve based on this summary, not by reading the raw diff myself — though the raw diff stays
   available on request. This does not replace on-device testing: the phone test remains the actual
   pass/fail gate before an issue is closed, scoped per the Platform Testing Assessment (Section 4).
@@ -82,14 +83,16 @@ Subagents never message me directly; they report back to the orchestrator only.
     1. Pushing a branch automatically triggers a Vercel preview deployment.
     2. The orchestrator tags me on the relevant GitHub issue or PR with the preview URL and asks
        me to test.
-    3. I test against the preview URL per the testing checklist scope (see Platform Testing
-       Assessment), tick off the testing checklist on the issue, and close it.
+    3. I test against the preview URL on my iPhone per the testing checklist, tick off the testing
+       checklist on the issue, and close it.
     4. Closing the issue IS the go-ahead: the orchestrator merges the branch into `main` once the
        issue is closed, without asking separately, and does not merge before it's closed.
-    5. **Version bump:** immediately before merging to `main`, the orchestrator updates the version
-       number on the app settings page per the Versioning table in README.md — patch for a bug fix
-       with no feature change, minor (patch decimal resets) for a feature addition or change —
-       matching the classification already stated in the Post-Implementation Summary.
+    5. **Version check:** immediately before merging to `main`, once I've confirmed the preview
+       passed testing, the orchestrator asks me what version number I'd like to move to next —
+       stating the current version and suggesting a possible new version based on what was
+       implemented (referencing the Versioning table in README.md as a loose guideline, not a
+       strict rule). I give the final version number, and the orchestrator applies exactly that to
+       the app settings page before merging.
     6. **Catch-up sync:** the orchestrator does not poll GitHub in the background. When I return
        to a session and say something like "check closed issues and merge anything closed and not
        yet merged," the orchestrator checks open PRs/branches against their linked GitHub issues
@@ -111,18 +114,22 @@ Subagents never message me directly; they report back to the orchestrator only.
   platform-sensitive (touches CSS, fixed positioning, viewport, touch targets, or native APIs like
   push/PWA install) or platform-agnostic (business logic, data handling, nothing touching layout or
   native browser behavior). The reasoning behind this assessment must be stated in the issue/PR, not
-  left silent.
-* **Cross-Platform Testing:** For platform-sensitive changes, the checklist added to the GitHub
-  issue by Issue logger must explicitly include separate checkboxes for:
+  left silent. This assessment no longer changes which devices get tested — every checklist is now
+  iPhone-only (see Testing checklist scope). Its purpose now is to inform how carefully Code Reviewer
+  scrutinizes cross-platform CSS/layout on a platform-sensitive change.
+* **Testing checklist scope:** Every testing checklist added to the GitHub issue by Issue logger is
+  iPhone-only, regardless of platform sensitivity. For a platform-sensitive change, the checklist
+  still calls out the iOS/WebKit concerns explicitly:
     * **iOS/WebKit:** Check for layout/styling quirks and native browser interaction.
-    * **Android/Chromium:** Check for responsiveness, touch-target sizing, and rendering differences.
-  For platform-agnostic changes, the checklist is iPhone-only, since that's my primary device and
-  my wife (Android tester) isn't always available.
-* **Current Test Devices:** Our current physical test devices are an **Apple iPhone 17** (iOS/WebKit)
-  and a **Samsung S25 FE** (Android/Chromium) — the categories above are kept generic so this list
-  can extend to other devices later without rewriting the protocol.
-* **Device Awareness:** Always consider that the app must work flawlessly on both device types a
-  platform-sensitive change touches.
+  Android is not tested pre-merge (see Device Awareness).
+* **Current Test Devices:** Our current pre-merge physical test device is an **Apple iPhone 17**
+  (iOS/WebKit) — the categories above are kept generic so this list can extend to other devices
+  later without rewriting the protocol.
+* **Device Awareness:** The app must still be built to work correctly on both iOS and Android at the
+  code level — always consider both when writing and reviewing code. Pre-merge preview testing,
+  however, is iPhone-only. Android usage happens post-merge, on `main`, via my wife and (eventually)
+  other testers using the live app normally; any Android issues they hit come back through the normal
+  Interviewer/off-the-cuff reporting flow like any other bug, not through the preview-testing checklist.
 
 ## 5. Technical Environment
 * **Platform:** GitHub (source), Vercel (hosting).

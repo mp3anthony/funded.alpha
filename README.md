@@ -395,6 +395,10 @@ Ensure `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are config
 
 ## Versioning
 
+> **Note:** This table is a loose reference for typical version jumps, not an enforced rule. The
+> actual version applied at each merge is decided with Anthony directly at merge time, via the
+> Version check step in `.agents/AGENTS.md`.
+
 | Change type | Version impact | Example |
 |-------------|---------------|---------|
 | Bug fix, no feature change | Patch (fourth decimal) | `v0.2.2` → `v0.2.2.1` |
