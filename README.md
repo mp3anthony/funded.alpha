@@ -40,7 +40,7 @@ Funded is a household cash-flow app that answers one question per payday: *how m
 - **Notifications** — in-app notification centre with bill-due alerts, snooze, read/unread state, and per-type settings
 - **Light and dark mode** — automatic via `prefers-color-scheme` CSS media query, with a manual class-based override (`.dark` / `.light`) toggle in settings
 - **PWA** — installable as a home screen app on iOS Safari and Android Chrome with full offline fallback
-- **Authentication** — email/password auth via Supabase with PKCE flow, email confirmation, and password reset
+- **Authentication** — email/password auth via Supabase (implicit flow, session persisted in `localStorage`), email confirmation, and password reset
 
 ---
 
@@ -48,15 +48,16 @@ Funded is a household cash-flow app that answers one question per payday: *how m
 
 | Layer | Technology |
 |-------|-----------|
-| Framework | [Next.js 16](https://nextjs.org/) (App Router) |
+| Framework | [Next.js 16](https://nextjs.org/) (App Router, `cacheComponents` enabled) |
 | Language | TypeScript 5 |
 | UI | React 19 |
 | Styling | [Tailwind CSS 4](https://tailwindcss.com/) with CSS custom properties |
 | Icons | [Lucide React](https://lucide.dev/) |
 | Backend / DB | [Supabase](https://supabase.com/) (PostgreSQL + Auth + Storage + Edge Functions) |
-| Auth | Supabase Auth (PKCE flow, email confirmation) |
+| Auth | Supabase Auth (implicit flow, email confirmation) |
 | File storage | Supabase Storage (avatar uploads) |
-| SSR Auth | [@supabase/ssr](https://www.npmjs.com/package/@supabase/ssr) (server-side session pre-fetching) |
+| Server-side Supabase | [@supabase/ssr](https://www.npmjs.com/package/@supabase/ssr) — Supabase clients inside API route handlers |
+| Web push | [web-push](https://www.npmjs.com/package/web-push) (VAPID) for bill-due notifications |
 | Utilities | clsx, tailwind-merge |
 
 ---
@@ -379,10 +380,14 @@ Ensure `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are config
 
 ## Contributing
 
-1. Create a feature branch from `main`
-2. Make your changes
-3. Run `npm run lint` and `npm run build` to verify
-4. Open a pull request with a clear description of the change
+This is a solo project developed under a structured **Lead Developer Liaison Protocol**: a single orchestrator session is the sole point of contact and routes every request to specialised subagents (Interviewer, Issue logger, Investigator, Planner, Implementation, Docs, Code Reviewer). The full protocol lives in [`.agents/AGENTS.md`](.agents/AGENTS.md) — the short version:
+
+- **Issues & PRDs** are tracked as GitHub issues on `mp3anthony/funded.alpha` via the `gh` CLI, triaged with canonical labels (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`).
+- **Problem Agreement** — the problem must be fully scoped — is reached before any investigation or planning. **Plan Agreement** — an approved implementation plan, including rejected alternatives — is reached before any code is written.
+- **Every change goes on a branch**, which triggers an automatic Vercel preview deployment for testing before merge.
+- **Preview testing is iPhone-only** (Apple iPhone 17, iOS/WebKit), but code must be written to work correctly on **both** iOS and Android. Android is exercised post-merge on `main` by real users; anything they hit routes back through the normal reporting flow.
+- **Closing the linked GitHub issue is the go-ahead to merge** into `main`. The version number is decided with Anthony at merge time (see Versioning).
+- Decision records live in [`docs/decisions/`](docs/decisions/); domain terms in [`docs/GLOSSARY.md`](docs/GLOSSARY.md).
 
 ### Code conventions
 
@@ -395,16 +400,17 @@ Ensure `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are config
 
 ## Versioning
 
-> **Note:** This table is a loose reference for typical version jumps, not an enforced rule. The
-> actual version applied at each merge is decided with Anthony directly at merge time, via the
-> Version check step in `.agents/AGENTS.md`.
+The app is currently at **v0.9.1** (shown at the bottom of the Settings screen). Until it's declared ready for wider testing, each merged change bumps the **last decimal** (`v0.9.1` → `v0.9.2` → `v0.9.3` …). `v0.9.0` was deliberately skipped.
 
-| Change type | Version impact | Example |
-|-------------|---------------|---------|
-| Bug fix, no feature change | Patch (fourth decimal) | `v0.2.2` → `v0.2.2.1` |
-| Feature addition or change | Minor (third decimal, patch resets) | `v0.2.2.2` → `v0.3.0` |
-| Testing-ready build | `v0.10.0` | |
-| Public beta | `v1.0.0` | |
+> **Note:** This table is a loose guideline, not an enforced rule. The actual version applied at each
+> merge is decided with Anthony directly at merge time, via the Version check step in
+> [`.agents/AGENTS.md`](.agents/AGENTS.md).
+
+| Milestone | Version |
+|-----------|---------|
+| Ongoing pre-testing changes | last-decimal bump (`v0.9.x`) |
+| Ready for wider testers | `v0.10.0` |
+| Public beta | `v1.0.0` |
 
 ---
 
