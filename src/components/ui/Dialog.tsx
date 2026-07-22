@@ -43,6 +43,8 @@ interface DialogProps {
   icon?: React.ReactNode;
   /** Body content. */
   children: React.ReactNode;
+  /** Optional non-scrolling region between the header and the scrollable body; the consumer styles its own content (no border/padding baked in). */
+  subheader?: React.ReactNode;
   /** Footer content — pass DialogButton(s); wrapped in the standard bar. */
   footer?: React.ReactNode;
   /** Panel max width. Defaults to max-w-md (matches app + globals.css cap). */
@@ -57,6 +59,7 @@ export default function Dialog({
   title,
   icon,
   children,
+  subheader,
   footer,
   maxWidthClass = "max-w-md",
   hideClose = false,
@@ -113,6 +116,9 @@ export default function Dialog({
             </button>
           )}
         </div>
+
+        {/* Subheader — non-scrolling region (consumer styles content) */}
+        {subheader && <div className="shrink-0">{subheader}</div>}
 
         {/* Body */}
         <div className="overflow-y-auto flex-1 p-5">{children}</div>

@@ -175,10 +175,9 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
       onClose={onClose}
       title="Notifications"
       icon={<Bell size={20} />}
-    >
-      <div className="-m-5">
-        {/* Tabs */}
-        <div className="flex space-x-4 border-b border-border-strong px-6 pt-1 sticky top-0 z-10 bg-surface">
+      subheader={
+        /* Tabs — non-scrolling region above the body */
+        <div className="flex space-x-4 border-b border-border-strong px-5 pt-1">
             <button
               className={`pb-2 px-1 text-sm font-semibold transition-colors relative ${activeTab === 'list' ? 'text-primary' : 'text-muted hover:text-foreground'}`}
               onClick={() => setActiveTab('list')}
@@ -198,9 +197,10 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
               )}
             </button>
         </div>
-
-        {/* Content Body */}
-        <div className="p-0">
+      }
+    >
+      {/* Content Body — horizontal full-bleed to card edges (no vertical over-pull) */}
+      <div className="-mx-5">
           {activeTab === "list" ? (
             <div className="divide-y divide-border">
               {(() => {
@@ -431,7 +431,6 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
             </div>
           )}
         </div>
-      </div>
     </Dialog>
   );
 }
