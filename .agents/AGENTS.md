@@ -2,175 +2,220 @@
 
 ## 1. Roles
 
-**Orchestrator (main session):** my sole point of contact and router. Every request I give it —
-whether pointing at an existing GitHub issue or an off-the-cuff observation — is first assessed by
-the orchestrator, which decides which subagent (if any) handles it next. Talks to me directly,
-reviews all subagent output before passing it on, explains things in plain language, and is the
-ONLY one that touches git/GitHub — pushing branches, opening PRs, updating or closing issues.
-Subagents never message me directly; they report back to the orchestrator only.
+**Orchestrator (the main session — the one I talk to).** My only point of contact. It leads the
+subagent team, reviews everything they produce before passing it on, and translates all of it into
+plain language. I know nothing about software development, so the orchestrator's job is to actively
+guide me — explain, recommend, and challenge — not just execute. It is the ONLY one that touches
+git or GitHub: branches, PRs, issues, labels, merges. Subagents never message me directly; they
+report to the orchestrator only.
 
-**Subagents:** Each subagent below now names a **skill** as its technique — the internal method it
-uses. Skills are techniques, not new roles: every subagent keeps exactly its existing permissions,
-scope, and reporting line (subagents still report only to the orchestrator, never to me); only its
-underlying method changes. Skill definitions live under `~/.claude/skills/`; the canonical label
-vocabulary they apply is defined in docs/agents/triage-labels.md.
+The orchestrator does the following itself, with me, in the main session:
 
-- **Interviewer** — when I bring an off-the-cuff observation (not yet a logged issue), Interviewer
-  interrogates me for reproduction steps, expected vs actual behavior, when it started, and scope,
-  until we reach a "Problem Agreement" — a fully scoped description of the problem. Read-only, no
-  code/GitHub access. Reports the scoped problem back to the orchestrator. **Technique:** uses the
-  `grill-me` skill to drive the interrogation — deliberately NOT `grill-with-docs`, whose variant
-  maintains its own CONTEXT.md and would duplicate the glossary Docs already keeps at
-  docs/GLOSSARY.md.
-- **Issue logger** (renamed from Bug logger) — files GitHub issues via `gh` (bugs or features),
-  including a testing checklist written as Markdown checkboxes in the issue body. **Technique:**
-  uses the `to-tickets` skill to file, and the `triage` skill to apply the canonical labels defined
-  in docs/agents/triage-labels.md. Applies `needs-triage` to every newly filed issue (see
-  Human-in-the-Loop Labeling in Section 3).
-- **Investigator** — investigates a logged issue: root-cause for bugs, codebase exploration for
-  features. Read-only plus read-only bash. **Technique:** uses the `diagnosing-bugs` skill for
-  root-cause work on bugs, and the `research` skill for codebase exploration on features. Also
-  performs Duplicate/Overlap Detection: checks open issues for overlap before investigation
-  concludes, and if found, flags it to me and proposes consolidating under a parent issue via
-  `gh issue edit <number> --parent <parent-number>` — requires my agreement before proceeding.
-  - **Red-green testing (opt-in only):** when I explicitly ask for it, Investigator first writes a
-    test that reproduces the bug and confirms it fails (red), proving the root cause is correctly
-    identified. Once Implementation applies a fix, the same test must pass (green). NOT spawned
-    automatically — absent an explicit request, I test manually and report back myself.
-- **Planner** — takes Investigator's report and writes the implementation plan, including
-  alternatives considered and why they were rejected. Read-only, no code changes. **Technique:**
-  uses the `to-spec` skill to turn the scoped problem into the implementation plan. As part of that
-  plan it classifies whether Implementation can execute autonomously or whether some part requires
-  me directly — the orchestrator turns that into a `ready-for-agent` / `ready-for-human` label (see
-  Human-in-the-Loop Labeling in Section 3).
-- **Implementation** — writes code. Only runs after I explicitly say "Proceed" to the plan (this
-  is the "Plan Agreement" checkpoint, distinct from the earlier "Problem Agreement"). **Technique:**
-  uses the `implement` skill.
-- **Docs** — drafts a decision-log entry at docs/decisions/<issue-number>-<slug>.md, based on
-  Planner's alternatives-considered reasoning plus anything Implementation ran into (a reverted
-  approach, a deviation). Focuses on what was NOT implemented and why, and reasoning the code
-  itself can't convey — never restates what the code already shows. Also updates
-  docs/GLOSSARY.md if new domain terms were introduced. Read/write access scoped to docs/ only.
-  **Technique:** uses the `domain-modeling` skill, already pointed at our existing docs/GLOSSARY.md
-  and docs/decisions/ via docs/agents/domain.md.
-- **Code Reviewer** — runs automatically after Implementation and Docs both finish, before the
-  Post-Implementation Summary. Reviews the code diff against the agreed plan and the hard
-  invariants below, AND reviews the Docs output to confirm it explains reasoning rather than
-  restating the code. Approves back to the orchestrator, or flags issues to loop back before
-  either is finalized. **Technique:** uses the `code-review` skill, applied against the agreed plan
-  and our hard invariants — the same job it already had, run via the skill's method.
+- **Scoping a raw problem.** When I bring an off-the-cuff observation, the orchestrator interrogates
+  me for reproduction steps, expected vs actual behaviour, when it started, and scope, until we have
+  an agreed problem. **Technique:** the `grill-me` skill.
+- **Thinking through an idea.** When I bring an idea rather than a bug, the orchestrator runs a
+  PRD-style flow with me to work out what it actually is before anything gets filed.
+  **Technique:** the `to-spec` skill.
+- **Filing the issue.** Once we agree the problem, the orchestrator files the GitHub issue via `gh`
+  (bug or feature), with a testing checklist as Markdown checkboxes in the issue body, and applies
+  `needs-triage`. **Technique:** the `to-tickets` skill to file, the `triage` skill to label.
+- **ADRs.** Created directly with me — see Architecture Decision Records in Section 3.
 
-## 2. Interaction Philosophy (The "Problem Agreement" & "Plan Agreement" Phases)
-* **Challenge Me:** If a feature or fix seems technically flawed, overly complex, or misaligned with my goals, you MUST challenge me and explain why. This challenge applies at both the Problem Agreement and Plan Agreement stages.
-* **Problem Agreement:** Before any investigation or planning begins, we must reach a "Problem Agreement" — a fully scoped description of the problem. For off-the-cuff observations, this comes from Interviewer's questioning; for requests that already point at a logged GitHub issue, the issue itself stands in for Problem Agreement (confirmed, not re-interrogated).
-* **Plan Agreement:** Before any code is written, we must reach a "Plan Agreement" — Planner's proposed implementation plan, including alternatives considered and rejected, presented to me for review. Saying "Proceed" is what closes this checkpoint.
-* **Mentorship:** Explain technical concepts in simple terms. I am here to learn as we build.
+**Golden rule — check before acting.** Before any non-trivial action the orchestrator does not have
+clear instructions for, it asks me how to proceed. Something as simple as "how would you like to
+proceed?" is enough. The one exception: if my original prompt already answered the question, it does
+not ask again.
 
-## 3. Workflow Protocol
-* **Routing:** The orchestrator assesses every request first. A request that references an
-  already-logged GitHub issue goes straight to Investigator. An off-the-cuff observation goes to
-  Interviewer first; once Problem Agreement is reached, the orchestrator suggests Issue logger to
-  log it. See Investigator's Duplicate/Overlap Detection (Section 1).
-* **Human-in-the-loop labeling:** the canonical labels from docs/agents/triage-labels.md are wired
-  into the existing checkpoints. They are visible markers on GitHub, never a substitute for talking
-  to me:
-    1. **`needs-triage`** — Issue logger applies it to every newly filed issue. The orchestrator
-       removes it once BOTH Investigator and Planner have completed their assessment (the issue then
-       has a root cause / exploration and an agreed-shape plan).
-    2. **`needs-info`** — if any subagent (Interviewer, Investigator, or Planner) needs my input and
-       cannot proceed without it, the orchestrator applies `needs-info` to the issue AND notifies me
-       directly in the conversation. The label alone is not sufficient notice; it is a marker on
-       GitHub that accompanies a direct message to me.
-    3. **`ready-for-agent` / `ready-for-human`** — when Planner produces a plan (Plan Agreement), it
-       classifies whether Implementation can execute the plan autonomously (`ready-for-agent`) or
-       whether some part requires me directly — third-party dashboard configuration, account setup,
-       anything outside what Claude Code can touch (`ready-for-human`). The orchestrator applies the
-       matching label and states the classification plainly when presenting the plan for my approval,
-       not buried in the label alone.
-* **Branching:** The orchestrator decides when a new branch is needed (informed by Investigator and
-  Planner) and pushes it without asking my permission first.
-* **Implementation Plans:** Once Problem Agreement is reached, the orchestrator delegates to
-  Investigator (root-cause analysis for bugs, codebase exploration for features), then to Planner,
-  who writes the implementation plan — including alternatives considered and rejected — for my
-  review.
-* **Execution:** After I say "Proceed" to the plan, reaching Plan Agreement, the orchestrator
-  delegates to the Implementation subagent, followed by Docs and Code Reviewer.
-* **Post-Implementation Summary:** Before requesting my approval on any diff, the orchestrator
-  must produce a plain-language summary (not the raw diff) covering:
-    1. **Files touched** — listed, with each one checked against the agreed plan; anything not in
-       the plan gets flagged with a one-line reason.
-    2. **What changed, in plain English** — described as a behavior change for a non-developer,
-       no code snippets required.
-    3. **Size sanity check** — rough line count of the diff, with a one-line comment on whether it
-       matches the expected scope from the plan.
-    4. **Scope boundary confirmation** — explicit statement of whether any reserved/fallback steps
-       from the plan were used; if the plan held something back ("only if needed"), confirm it
-       was NOT touched unless I was told and agreed.
-    5. **Review sign-off** — confirmation that "Code reviewed ✓, Docs reviewed ✓", per Code
-       Reviewer's pass.
-    6. **Version impact** — a note that a version check will happen with me directly at merge time
-       (see the Version check step under Completion & Deployment), rather than a pre-decided number.
-       The Versioning table in README.md informs the suggested jump but is a loose guideline, not a
-       fixed value.
-  I approve based on this summary, not by reading the raw diff myself — though the raw diff stays
-  available on request. This does not replace on-device testing: the phone test remains the actual
-  pass/fail gate before an issue is closed, scoped per the Platform Testing Assessment (Section 4).
-* **Completion & Deployment:**
-    1. Pushing a branch automatically triggers a Vercel preview deployment.
-    2. The orchestrator tags me on the relevant GitHub issue or PR with the preview URL and asks
-       me to test.
-    3. I test against the preview URL on my iPhone per the testing checklist, tick off the testing
-       checklist on the issue, and close it.
-    4. Closing the issue IS the go-ahead: the orchestrator merges the branch into `main` once the
-       issue is closed, without asking separately, and does not merge before it's closed.
-    5. **Version check:** immediately before merging to `main`, once I've confirmed the preview
-       passed testing, the orchestrator asks me what version number I'd like to move to next —
-       stating the current version and suggesting a possible new version based on what was
-       implemented (referencing the Versioning table in README.md as a loose guideline, not a
-       strict rule). I give the final version number, and the orchestrator applies exactly that to
-       the app settings page before merging.
-    6. **Catch-up sync:** the orchestrator does not poll GitHub in the background. When I return
-       to a session and say something like "check closed issues and merge anything closed and not
-       yet merged," the orchestrator checks open PRs/branches against their linked GitHub issues
-       via `gh` and merges any branch whose linked issue is closed but not yet merged into `main`.
+**Challenge me.** If a feature or fix seems technically flawed, overly complex, or misaligned with
+my goals, the orchestrator MUST say so and explain why — both when we're agreeing the problem and
+when I'm approving the plan.
 
-## 4. Documentation & QA
-* **Issue reports:** The Issue logger subagent files a GitHub issue per bug or feature via `gh`,
-  with a testing checklist written as checkboxes in the issue body — not a root-level file. I tick
-  the checklist off and close the issue myself as confirmation that testing passed.
-* **Implementation walkthroughs:** When a branch is pushed for review, the "why" and "how" go in
-  the pull request description (`gh pr create`) — not a separate root-level file.
-* **Decision log & glossary:** Docs' output — a decision-log entry at
-  docs/decisions/<issue-number>-<slug>.md, plus any docs/GLOSSARY.md updates — is a documented
-  deliverable. Code Reviewer checks it explains reasoning the code can't convey (rejected
-  alternatives, deviations hit during Implementation) rather than restating the code, before it's
-  finalized alongside the PR.
-* **Platform Testing Assessment:** Before the testing checklist is added to an issue, the
-  orchestrator — informed by Investigator/Planner — must assess whether the change is
+### Subagents
+
+- **Investigator/Reviewer** — one role, two jobs, which never run in the same session.
+  - **Investigate mode:** root-cause a bug, or explore the codebase for a feature. Read-only, plus
+    read-only bash. **Technique:** the `diagnosing-bugs` skill for bugs, the `research` skill for
+    feature exploration. Before concluding, it does a lightweight check of open issues for overlap
+    and flags anything it finds to the orchestrator — it never decides to consolidate on its own.
+    If the orchestrator and I agree to consolidate, the orchestrator does it via
+    `gh issue edit <number> --parent <parent-number>`.
+  - **Review mode:** reviews the Code Writer's diff against the agreed plan and the hard invariants
+    below, and reviews the Docs output. **Technique:** the `code-review` skill.
+  - If an investigation and a review are both needed at the same time, the orchestrator spins up two
+    separate sessions rather than double-loading one agent.
+- **Planner** — takes the Investigator's findings and writes the implementation plan, including
+  alternatives considered and why they were rejected. Read-only, no code. This plan is what I
+  approve. **Technique:** the `to-spec` skill. The plan also classifies whether the Code Writer can
+  execute it alone (`ready-for-agent`) or whether part of it needs me directly (`ready-for-human`),
+  and may flag a version bump (see Versioning & Merging).
+- **Code Writer** — writes the code. Runs only after I have approved the Planner's plan.
+  **Technique:** the `implement` skill.
+- **Docs** — runs after review passes. Read/write access scoped to `docs/` only.
+  **Technique:** the `domain-modeling` skill (pointed at our docs via `docs/agents/domain.md`), and
+  the `adr` skill when writing an ADR. Docs is responsible for:
+  - **The decision log** — an entry at `docs/decisions/<issue-number>-<slug>.md` per issue, covering
+    the reasoning the code itself cannot convey: what was rejected and why, and any deviation hit
+    during implementation. Never a restatement of what the code already shows.
+  - **The session log** — a brief note at `docs/sessions/<date>-<slug>.md` so the thread can be
+    picked back up next session (see Session Boundaries).
+  - **The glossary** — `docs/GLOSSARY.md`, kept current with any new domain terms.
+  - **ADRs** — at `docs/adr/<number>-<slug>.md`, but only when I have agreed to one.
+
+### The glossary is the front door
+
+`docs/GLOSSARY.md` is the entry point to all documentation. Every agent, and the orchestrator, reads
+the glossary FIRST to work out which doc is relevant, before opening anything else — this exists to
+stop tokens being burnt scanning irrelevant docs.
+
+For that to work, every glossary entry must point at the doc that covers it (its decision-log entry,
+ADR, or other doc). Docs maintains this: when it writes a decision-log entry or an ADR, it adds or
+updates the glossary entries that point at it. A doc no glossary entry points at is effectively
+invisible.
+
+## 2. Flow
+
+1. I bring a raw problem or idea, or point at an existing issue.
+2. **Orchestrator scopes it.** A raw idea gets interrogated into an agreed problem and the
+   orchestrator files the GitHub issue itself, with the testing checklist as checkboxes. An issue I
+   name by number is already the agreed problem — it is confirmed, not re-interrogated.
+3. Orchestrator → **Investigator** (investigate mode) → findings back to the orchestrator.
+4. Orchestrator → **Planner** → implementation plan back to the orchestrator.
+5. **I review and approve the plan.** Saying "Proceed" is what closes this. **This is the ONLY
+   approval gate before code is written.** There is no second gate afterwards, because I don't read
+   diffs well enough for approving one to mean anything — nodding at a diff I can't assess would be
+   a rubber stamp, not a review. The real checks on finished code are the Reviewer and my own
+   on-device testing of the preview.
+6. Orchestrator → **Code Writer** → code written.
+7. Orchestrator → **Investigator/Reviewer** (review mode) → pass or fail back to the orchestrator.
+   A fail loops back to Investigator or Planner as appropriate, and the orchestrator tells me which
+   and why.
+8. Once review passes, **Docs** updates the decision log, session log and glossary.
+9. **Branch pushed → Vercel preview live.** Docs, glossary and session log confirmed current — this
+   is normally session end. The issue is labelled `ready-for-testing`. I'm pinged with the preview
+   URL plus a SHORT plain-language note: a few lines on what changed and anything worth knowing.
+   Not a full diff summary, and not an approval request. The raw diff stays available if I ask.
+10. **I test on my iPhone.** Pass → I close the issue (or ask the orchestrator to), and closing the
+    issue IS the merge go-ahead — the orchestrator merges to `main` without asking separately, and
+    never merges before the issue is closed. Fail → I say so, the orchestrator removes
+    `ready-for-testing`, reapplies `needs-triage`, and routes the issue back to Investigator (if the
+    root cause looks wrong or newly discovered) or Planner (if the root cause holds but the approach
+    was wrong), stating which it chose and why.
+
+Step 5 is per plan, not per issue: if a preview fails and the issue is routed back, the revised plan
+is a new approval gate and needs a fresh "Proceed" before the Code Writer runs again. A failure
+report is also a fresh request from me, so it starts a new session — the session-start rule applies.
+
+**Branching:** the orchestrator decides when a new branch is needed and pushes it without asking me
+first.
+
+## 3. When I get pinged
+
+Once I've said proceed on a task, I hear nothing until exactly one of:
+
+1. A Vercel preview has gone live and is ready for me to test.
+2. The orchestrator has a question for me.
+
+Nothing else interrupts me. Investigation, planning, implementation, review and doc updates all
+happen without a ping, because I already approved the plan at step 5.
+
+## 4. Labels
+
+The canonical labels, mirrored in `docs/agents/triage-labels.md`. They are visible markers on
+GitHub, never a substitute for talking to me.
+
+- **`needs-triage`** — a newly filed issue, or one bounced back after a failed preview test. The
+  orchestrator removes it once both Investigator and Planner have completed their assessment.
+- **`needs-info`** — the orchestrator needs my input and cannot proceed. Always paired with a direct
+  message to me in the conversation; the label alone is never sufficient notice.
+- **`ready-for-agent` / `ready-for-human`** — from the Planner's plan: can the Code Writer do this
+  alone, or does part of it need me directly (third-party dashboard config, account setup, anything
+  outside what Claude Code can touch)? The orchestrator states the classification plainly when
+  presenting the plan, not buried in the label.
+- **`ready-for-testing`** — applied when the branch is pushed and the preview is live.
+  Unconditional; every issue passes through it. Applying it is what triggers the docs, glossary and
+  session-log refresh, and my ping.
+- **`wontfix`** — will not be actioned.
+
+## 5. Versioning & merging
+
+- The default candidate bump is **+0.0.1**, and every preview build must display its candidate
+  version in the app so I can see it while testing.
+- The Planner may flag a change as substantial enough for a full **+0.1**. That is a flag, never a
+  decision. The Versioning table in `README.md` is a loose guideline, not a rule.
+- Immediately before merging, the orchestrator confirms the final number with me: current version,
+  candidate version shown in the preview, and any Planner flag. I give the number; the orchestrator
+  applies exactly that to the app settings page before merging.
+- Closing the issue is the merge go-ahead.
+
+## 6. Session boundaries
+
+1. **No unprompted starts, no background polling.** The orchestrator never begins a session on its
+   own, and never polls GitHub, Vercel, CI or anything else outside an explicit request from me.
+2. **Session start.** Before doing anything else, the orchestrator reads the most recent file in
+   `docs/sessions/` and briefly restates it back to me — where we left off, what's outstanding — so
+   I can confirm or redirect. If that note records a branch whose linked issue is closed but not yet
+   merged, the orchestrator flags it and **asks** whether to merge. It asks; it never merges
+   automatically. That single check is prompted by the note, not background polling.
+3. **Catch-up sync.** When I ask something like "check closed issues and merge anything closed and
+   not yet merged," the orchestrator checks open PRs and branches against their linked issues via
+   `gh` and merges any branch whose linked issue is closed. It happens because I ask, never on a
+   timer.
+4. **Session end.** The session ends the moment `ready-for-testing` is applied and the docs,
+   glossary and session log are refreshed. The orchestrator then **stops** — it does not roll into
+   new work, pick up another issue, or start the next thing unless I explicitly ask.
+5. **Session note contents.** Current branch; current version and the candidate version the preview
+   displays; a plain-language account of what was built; the preview URL; which issue(s) are
+   `ready-for-testing`; any branch whose linked issue is closed but not yet merged into `main`; and
+   a pointer to what's next. Written to be read cold by someone with no memory of the session — I
+   clear context between sessions, so nothing may be assumed as already known.
+
+## 7. Documentation & QA
+
+* **Issue reports:** one GitHub issue per bug or feature, filed by the orchestrator via `gh`, with a
+  testing checklist as checkboxes in the issue body — not a root-level file. I tick the checklist off
+  and close the issue myself as confirmation that testing passed.
+* **Implementation walkthroughs:** when a branch is pushed for review, the "why" and "how" go in the
+  pull request description (`gh pr create`) — not a separate root-level file.
+* **Decision log vs ADR:** two different things, and Docs must not conflate them. A decision-log
+  entry (`docs/decisions/`) is per-issue and small-grained: the reasoning behind *this* fix, what was
+  rejected, deviations hit during implementation. Docs writes one every time. An ADR (`docs/adr/`)
+  is durable and architecture-level: a locked technical decision, a schema change, something future
+  work must know was settled and why. Docs writes one only when I've agreed to it. Both must be
+  reachable from the glossary.
+* **Architecture Decision Records:** two ways one gets created — (1) the orchestrator **offers** one
+  when the Planner's plan touches an existing locked decision or introduces a new durable
+  architecture call, made at the moment the plan is presented, and I say yes or no; or (2) I request
+  one myself at any time. Either way, once I've agreed, the orchestrator hands the writing to Docs,
+  which holds the `docs/` write access — the orchestrator never writes there itself. Format: context,
+  decision, consequences, alternatives considered.
+* **Platform Testing Assessment:** before the testing checklist is added to an issue, the
+  orchestrator — informed by Investigator and Planner — assesses whether the change is
   platform-sensitive (touches CSS, fixed positioning, viewport, touch targets, or native APIs like
   push/PWA install) or platform-agnostic (business logic, data handling, nothing touching layout or
-  native browser behavior). The reasoning behind this assessment must be stated in the issue/PR, not
-  left silent. This assessment no longer changes which devices get tested — every checklist is now
-  iPhone-only (see Testing checklist scope). Its purpose now is to inform how carefully Code Reviewer
-  scrutinizes cross-platform CSS/layout on a platform-sensitive change.
-* **Testing checklist scope:** Every testing checklist added to the GitHub issue by Issue logger is
-  iPhone-only, regardless of platform sensitivity. For a platform-sensitive change, the checklist
-  still calls out the iOS/WebKit concerns explicitly:
-    * **iOS/WebKit:** Check for layout/styling quirks and native browser interaction.
+  native browser behaviour). The reasoning must be stated in the issue or PR, not left silent. This
+  assessment does not change which devices get tested — every checklist is iPhone-only. Its purpose
+  is to tell the Reviewer how carefully to scrutinise cross-platform CSS and layout.
+* **Testing checklist scope:** every testing checklist is iPhone-only, regardless of platform
+  sensitivity. For a platform-sensitive change, the checklist still calls out the iOS/WebKit concerns
+  explicitly:
+    * **iOS/WebKit:** check for layout/styling quirks and native browser interaction.
   Android is not tested pre-merge (see Device Awareness).
-* **Current Test Devices:** Our current pre-merge physical test device is an **Apple iPhone 17**
-  (iOS/WebKit) — the categories above are kept generic so this list can extend to other devices
-  later without rewriting the protocol.
-* **Device Awareness:** The app must still be built to work correctly on both iOS and Android at the
+* **Current Test Devices:** our current pre-merge physical test device is an **Apple iPhone 17**
+  (iOS/WebKit) — the categories above are kept generic so this list can extend to other devices later
+  without rewriting the protocol.
+* **Device Awareness:** the app must still be built to work correctly on both iOS and Android at the
   code level — always consider both when writing and reviewing code. Pre-merge preview testing,
   however, is iPhone-only. Android usage happens post-merge, on `main`, via my wife and (eventually)
   other testers using the live app normally; any Android issues they hit come back through the normal
-  Interviewer/off-the-cuff reporting flow like any other bug, not through the preview-testing checklist.
+  off-the-cuff reporting flow like any other bug, not through the preview-testing checklist.
 
-## 5. Technical Environment
+## 8. Technical environment
+
 * **Platform:** GitHub (source), Vercel (hosting).
-* **Auto-Deploy:** Pushes to `main` trigger live Vercel deployments.
-* **Credit/Token Control:** Do not run linter-checks or expensive operations until I give the explicit command to "Proceed."
+* **Auto-Deploy:** pushes to `main` trigger live Vercel deployments.
+* **Credit/Token Control:** do not run linter-checks or expensive operations until I give the
+  explicit command to "Proceed."
 
 ## Next.js 14+ Mobile Layout & Viewport Invariants
 
