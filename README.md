@@ -74,7 +74,7 @@ Funded is a household cash-flow app that answers one question per payday: *how m
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/mp3anthony/funded.alpha.git
+git clone https://github.com/mp3anthony/funded.git
 cd funded-nextjs
 
 # 2. Install dependencies
@@ -382,7 +382,7 @@ Ensure `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are config
 
 This is a solo project developed under a structured **Lead Developer Liaison Protocol**: a single orchestrator session is the sole point of contact and routes every request to specialised subagents (Interviewer, Issue logger, Investigator, Planner, Implementation, Docs, Code Reviewer). The full protocol lives in [`.agents/AGENTS.md`](.agents/AGENTS.md) — the short version:
 
-- **Issues & PRDs** are tracked as GitHub issues on `mp3anthony/funded.alpha` via the `gh` CLI, triaged with canonical labels (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`).
+- **Issues & PRDs** are tracked as GitHub issues on `mp3anthony/funded` via the `gh` CLI, triaged with canonical labels (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `ready-for-testing`, `wontfix`).
 - **Problem Agreement** — the problem must be fully scoped — is reached before any investigation or planning. **Plan Agreement** — an approved implementation plan, including rejected alternatives — is reached before any code is written.
 - **Every change goes on a branch**, which triggers an automatic Vercel preview deployment for testing before merge.
 - **Preview testing is iPhone-only** (Apple iPhone 17, iOS/WebKit), but code must be written to work correctly on **both** iOS and Android. Android is exercised post-merge on `main` by real users; anything they hit routes back through the normal reporting flow.

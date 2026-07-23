@@ -4,7 +4,7 @@
 
 ### Issue tracker
 
-Issues and PRDs are tracked as GitHub issues on `mp3anthony/funded.alpha` via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+Issues and PRDs are tracked as GitHub issues on `mp3anthony/funded` via the `gh` CLI. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 
